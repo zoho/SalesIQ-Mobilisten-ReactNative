@@ -48,4 +48,4 @@ allprojects {
 Then, press **Sync Now** in the bar that appears in the IDE.
 
 
-Help Doc :- [ZohoSalesIQ ReactNative SDK](https://www.zoho.com/salesiq/help/developer-section/android-sdk-overview.html)
+Help Doc :- [ZohoSalesIQ ReactNative SDK](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html)
