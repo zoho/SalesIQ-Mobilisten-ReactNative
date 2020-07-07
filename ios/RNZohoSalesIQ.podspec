@@ -1,13 +1,13 @@
 
 Pod::Spec.new do |s|
   s.name          = "RNZohoSalesIQ"
-  s.version       = "1.0.0"
-  s.summary       = "Mobilisten React Native"
-  s.description   = "Mobilisten React Native"
+  s.version       = "3.1.0"
+  s.summary       = "Mobilisten React Native Wrapper"
+  s.description   = "Mobilisten React Native Wrapper"
   s.homepage      = "https://zoho.com"
   s.license       = { :type => "MIT", :text=> <<-LICENSE
                           MIT License
-                          Copyright (c) 2018 Zoho Corporation
+                          Copyright (c) 2020 Zoho Corporation
                           Permission is hereby granted, free of charge, to any person obtaining a copy
                           of this software and associated documentation files (the "Software"), to deal
                           in the Software without restriction, including without limitation the rights
@@ -25,14 +25,13 @@ Pod::Spec.new do |s|
                           SOFTWARE
                           LICENSE
                   }
-  s.author        = { "angu" => "angusamy.g@zohocorp.com" }
+  s.author        = { "Rishabh Raghunath" => "rishabh.r@zohocorp.com" }
   s.platform      = :ios, "9.0"
-  s.source        = { :git => "https://github.com/zoho/SalesIQ-Mobilisten-iOS", :tag => "1.0.0" }
+  s.source        = { :git => "https://github.com/zoho/SalesIQ-Mobilisten-iOS", :tag => "v#{s.version}" }
   s.source_files  = "*.{h,m}"
   s.requires_arc  = true
 
   s.dependency "React"
-  s.vendored_frameworks = "Mobilisten.framework"
-  #s.dependency "others"
+  s.dependency "Mobilisten", "#{s.version}"
 
 end
