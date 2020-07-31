@@ -6,6 +6,33 @@
 
 RCT_EXPORT_MODULE();
 
+- (void)performAdditionalSetup{
+    //MARK:- PERFORM ADDITIONAL SETUP HERE
+    
+    //Add calls to any native code/native Mobilisten API here.
+    
+}
+
+RCT_EXPORT_METHOD(init:(NSString *)appKey accessKey:(NSString *)accessKey){
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
+            if(complete){
+                
+            }else{
+                
+            }
+        }];
+        [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
+        ZohoSalesIQ.delegate = self;
+        [ZohoSalesIQ Chat].delegate = self;
+        [ZohoSalesIQ FAQ].delegate = self;
+    });
+    if(actionDictionary == nil){
+        actionDictionary = [[NSMutableDictionary<NSString *, SIQActionHandler *> alloc] init];
+    }
+    [self performAdditionalSetup];
+}
+
 bool hasListeners;
 
 -(void)startObserving {
@@ -17,6 +44,8 @@ bool hasListeners;
 }
 
 //MARK:- EVENT TYPES
+NSMutableDictionary<NSString *, SIQActionHandler *> *actionDictionary;
+
 NSString *OPERATORS_OFFLINE = @"OPERATORS_OFFLINE";
 NSString *OPERATORS_ONLINE = @"OPERATORS_ONLINE";
 NSString *CHATVIEW_CLOSED = @"CHATVIEW_CLOSED";
@@ -38,6 +67,7 @@ NSString *CHAT_MISSED = @"CHAT_MISSED";
 NSString *CHAT_OPENED = @"CHAT_OPENED";
 NSString *RATING_RECEIVED = @"RATING_RECEIVED";
 NSString *CHAT_REOPENED = @"CHAT_REOPENED";
+NSString *PERFORM_CHATACTION = @"PERFORM_CHATACTION";
 
 NSString *UNREAD_COUNT_CHANGED = @"UNREAD_COUNT_CHANGED";
 NSString *VISITOR_IPBLOCKED = @"VISITOR_IPBLOCKED";
@@ -53,27 +83,28 @@ NSString *TYPE_CLOSED = @"CLOSED";
 NSString *TYPE_ENDED = @"ENDED";
 
 - (NSArray<NSString *> *)supportedEvents {
-  return @[OPERATORS_OFFLINE,
-           OPERATORS_ONLINE,
-           CHATVIEW_CLOSED,
-           CHATVIEW_OPENED,
-           HOMEVIEW_CLOSED,
-           HOMEVIEW_OPENED,
-           SUPPORT_CLOSED,
-           SUPPORT_OPENED,
-           ARTICLE_CLOSED,
-           ARTICLE_DISLIKED,
-           ARTICLE_LIKED,
-           ARTICLE_OPENED,
-           CHAT_ATTENDED,
-           CHAT_CLOSED,
-           FEEDBACK_RECEIVED,
-           CHAT_MISSED,
-           CHAT_OPENED,
-           RATING_RECEIVED,
-           CHAT_REOPENED,
-           UNREAD_COUNT_CHANGED,
-           VISITOR_IPBLOCKED];
+    return @[OPERATORS_OFFLINE,
+             OPERATORS_ONLINE,
+             CHATVIEW_CLOSED,
+             CHATVIEW_OPENED,
+             HOMEVIEW_CLOSED,
+             HOMEVIEW_OPENED,
+             SUPPORT_CLOSED,
+             SUPPORT_OPENED,
+             ARTICLE_CLOSED,
+             ARTICLE_DISLIKED,
+             ARTICLE_LIKED,
+             ARTICLE_OPENED,
+             CHAT_ATTENDED,
+             CHAT_CLOSED,
+             FEEDBACK_RECEIVED,
+             CHAT_MISSED,
+             CHAT_OPENED,
+             RATING_RECEIVED,
+             CHAT_REOPENED,
+             UNREAD_COUNT_CHANGED,
+             VISITOR_IPBLOCKED,
+             PERFORM_CHATACTION];
 }
 
 - (NSDictionary *) constantsToExport {
@@ -93,6 +124,7 @@ NSString *TYPE_ENDED = @"ENDED";
         @"CHAT_ATTENDED": CHAT_ATTENDED,
         @"CHAT_CLOSED": CHAT_CLOSED,
         @"FEEDBACK_RECEIVED": FEEDBACK_RECEIVED,
+        @"PERFORM_CHATACTION": PERFORM_CHATACTION,
         @"CHAT_MISSED": CHAT_MISSED,
         @"CHAT_OPENED": CHAT_OPENED,
         @"RATING_RECEIVED": RATING_RECEIVED,
@@ -120,17 +152,37 @@ NSString *TYPE_ENDED = @"ENDED";
     return dispatch_get_main_queue();
 }
 
++ (NSMutableDictionary *)getChatActionArguments: (SIQChatActionArguments*)arguments withID:(NSString*)actionID actionName:(NSString*)actionName
+{
+    NSMutableDictionary *argumentsDict = [NSMutableDictionary dictionary];
+    if([arguments elementID] != nil){
+        NSString *elementID = [arguments elementID];
+        [argumentsDict setObject:elementID forKey:@"elementID"];
+    }
+    [argumentsDict setObject:actionName forKey:@"clientActionName"];
+    if([arguments identifier] != nil){
+        NSString *identifier = [arguments identifier];
+        [argumentsDict setObject:identifier forKey:@"name"];
+    }
+    if([arguments label] != nil){
+        NSString *label = [arguments label];
+        [argumentsDict setObject:label forKey:@"label"];
+    }
+    [argumentsDict setObject:actionID forKey:@"uuid"];
+    return argumentsDict;
+}
+
 + (NSMutableDictionary *)getFAQCategoryObject: (SIQFAQCategory*) category
 {
     NSMutableDictionary *categoryDict = [NSMutableDictionary dictionary];
-        if([category id] != nil){
-            NSString *categoryID = [category id];
-            [categoryDict setObject: categoryID  forKey: @"id"];
-            if([category name] != nil)
-                [categoryDict setObject: [category name]  forKey: @"name"];
-            
-            [categoryDict setObject: @([category articleCount])  forKey: @"articleCount"];
-        }
+    if([category id] != nil){
+        NSString *categoryID = [category id];
+        [categoryDict setObject: categoryID  forKey: @"id"];
+        if([category name] != nil)
+            [categoryDict setObject: [category name]  forKey: @"name"];
+        
+        [categoryDict setObject: @([category articleCount])  forKey: @"articleCount"];
+    }
     return categoryDict;
 }
 
@@ -182,13 +234,13 @@ NSString *TYPE_ENDED = @"ENDED";
         
         if([article createdTime] != nil){
             NSDate *modifiedTime = [article createdTime];
-             int time = (int)[modifiedTime timeIntervalSince1970];
-             [articleDict setObject: @(time) forKey: @"createdTime"];
+            int time = (int)[modifiedTime timeIntervalSince1970];
+            [articleDict setObject: @(time) forKey: @"createdTime"];
         }
         
         if([article name] != nil)
             [articleDict setObject: [article name]  forKey: @"name"];
-                 
+        
         [articleDict setObject: @([article viewCount])  forKey: @"viewCount"];
         
         [articleDict setObject: @([article likeCount])  forKey: @"likeCount"];
@@ -321,20 +373,6 @@ NSString *TYPE_ENDED = @"ENDED";
     [ZohoSalesIQ handleNotificationAction:info response:response];
 }
 
-
-RCT_EXPORT_METHOD(init:(NSString *)appKey accessKey:(NSString *)accessKey){
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
-            
-        }];
-        //[ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:nil];
-        [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
-        ZohoSalesIQ.delegate = self;
-        [ZohoSalesIQ Chat].delegate = self;
-        [ZohoSalesIQ FAQ].delegate = self;
-    });
-}
-
 RCT_EXPORT_METHOD(setChatTitle: (NSString *)chattitle){
     [[ZohoSalesIQ Chat] setTitle:chattitle];
 }
@@ -406,7 +444,12 @@ RCT_EXPORT_METHOD(setOperatorEmail: (NSString *)email){
     [[ZohoSalesIQ Chat] setAgentEmail:email];
 }
 RCT_EXPORT_METHOD(setThemeColorforAndroid: (NSString *)attribute color_code:(NSString *)color_code){
-    
+    unsigned rgbValue = 0;
+    NSScanner *scanner = [NSScanner scannerWithString:color_code];
+    [scanner setScanLocation:1];
+    [scanner scanHexInt:&rgbValue];
+    UIColor *themeColor = [UIColor colorWithRed:((rgbValue & 0xFF0000) >> 16)/255.0 green:((rgbValue & 0xFF00) >> 8)/255.0 blue:(rgbValue & 0xFF)/255.0 alpha:1.0];
+    [[ZohoSalesIQ Chat] setThemeColor: themeColor];
 }
 RCT_EXPORT_METHOD(setThemeColorforiOS: (NSString *)color_code){
     unsigned rgbValue = 0;
@@ -448,6 +491,69 @@ RCT_EXPORT_METHOD(setVisitorContactNumber: (NSString *)number){
 RCT_EXPORT_METHOD(setVisitorAddInfo: (NSString *)key value:(NSString *)value){
     [[ZohoSalesIQ Visitor] addInfo:key value:value];
 }
+RCT_EXPORT_METHOD(setVisitorLocation: (NSDictionary *)location){
+    
+    if(location!= nil){
+        SIQVisitorLocation *visitorLocation = [SIQVisitorLocation new];
+        NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+        formatter.numberStyle = NSNumberFormatterDecimalStyle;
+        
+        if([location valueForKey:@"latitude"]!=nil){
+            //NSNumber *latitude = [f numberFromString:[location valueForKey:@"latitude"]];
+            if([[location valueForKey:@"latitude"] isKindOfClass:[NSNumber class]]){
+                [visitorLocation setLatitude:[location valueForKey:@"latitude"]];
+            }
+            if([[location valueForKey:@"latitude"] isKindOfClass:[NSString class]]){
+                NSNumber *latitude = [formatter numberFromString:[location valueForKey:@"latitude"]];
+                [visitorLocation setLatitude:latitude];
+            }
+        }
+        
+        if([location valueForKey:@"longitude"]!=nil){
+            if([[location valueForKey:@"longitude"] isKindOfClass:[NSNumber class]]){
+                [visitorLocation setLongitude:[location valueForKey:@"longitude"]];
+            }
+            if([[location valueForKey:@"longitude"] isKindOfClass:[NSString class]]){
+                NSNumber *longitude = [formatter numberFromString:[location valueForKey:@"longitude"]];
+                [visitorLocation setLongitude:longitude];
+            }
+        }
+        
+        if([location valueForKey:@"zipCode"]!=nil){
+            if([[location valueForKey:@"zipCode"] isKindOfClass:[NSString class]]){
+                [visitorLocation setZipCode:[location valueForKey:@"zipCode"]];
+            }
+        }
+        
+        if([location valueForKey:@"city"]!=nil){
+            if([[location valueForKey:@"city"] isKindOfClass:[NSString class]]){
+                [visitorLocation setCity:[location valueForKey:@"city"]];
+            }
+        }
+        
+        if([location valueForKey:@"state"]!=nil){
+            if([[location valueForKey:@"state"] isKindOfClass:[NSString class]]){
+                [visitorLocation setState:[location valueForKey:@"state"]];
+            }
+        }
+        
+        if([location valueForKey:@"country"]!=nil){
+            if([[location valueForKey:@"country"] isKindOfClass:[NSString class]]){
+                [visitorLocation setCountry:[location valueForKey:@"country"]];
+            }
+        }
+        
+        if([location valueForKey:@"countryCode"]!=nil){
+            if([[location valueForKey:@"countryCode"] isKindOfClass:[NSString class]]){
+                [visitorLocation setCountryCode:[location valueForKey:@"countryCode"]];
+            }
+        }
+        
+        [[ZohoSalesIQ Visitor] setLocation:visitorLocation];
+        
+    }
+    
+}
 RCT_EXPORT_METHOD(setQuestion: (NSString *)question){
     [[ZohoSalesIQ Visitor] setQuestion:question];
 }
@@ -473,7 +579,10 @@ RCT_EXPORT_METHOD(disableInAppNotification){
     [[ZohoSalesIQ Chat] setVisibility:ChatComponentInAppNotifications visible:NO];
 }
 RCT_EXPORT_METHOD(setConversationVisibility: (BOOL)visibility){
-    [[ZohoSalesIQ Chat] setVisibility:ChatComponentConversationHistory visible:visibility];
+    [[ZohoSalesIQ Conversation] setVisibility:visibility];
+}
+RCT_EXPORT_METHOD(setConversationListTitle: (NSString *)title){
+    [[ZohoSalesIQ Conversation] setTitle:title];
 }
 RCT_EXPORT_METHOD(setFAQVisibility: (BOOL)visibility){
     [[ZohoSalesIQ FAQ] setVisibility:visibility];
@@ -665,111 +774,160 @@ RCT_EXPORT_METHOD(fetchAttenderImage:(NSString *)id: (BOOL)fetchDefault: (RCTRes
     }];
 }
 
+RCT_EXPORT_METHOD(registerChatAction: (NSString *)actionName){
+    
+    SIQChatAction *chatAction = [[SIQChatAction alloc] initWithName:actionName action:^(SIQChatActionArguments * _Nonnull arguments, SIQActionHandler * _Nonnull handler) {
+        NSString *uuid = [[NSUUID UUID] UUIDString];
+        [actionDictionary setObject:handler forKey:uuid];
+        [self sendEventWithName:PERFORM_CHATACTION body: [RNZohoSalesIQ getChatActionArguments:arguments withID:uuid actionName:actionName]];
+    }];
+    
+    [[ZohoSalesIQ ChatActions] registerWithAction:chatAction];
+}
+
+RCT_EXPORT_METHOD(completeChatAction:(NSString *)uuid){
+    if([actionDictionary valueForKey:uuid] != nil){
+        SIQActionHandler *handler = [actionDictionary valueForKey:uuid];
+        
+        [handler successWithMessage:nil];
+        [actionDictionary removeObjectForKey:uuid];
+        
+    }
+}
+
+RCT_EXPORT_METHOD(setChatActionTimeout:(NSNumber *  _Nonnull) timeout){
+    [[ZohoSalesIQ ChatActions] setTimeout:timeout.doubleValue];
+}
+
+
+RCT_EXPORT_METHOD(completeChatActionWithMessage: (NSString *)uuid complete:(BOOL)complete message:(NSString*)message){
+    
+    if([actionDictionary valueForKey:uuid] != nil){
+        SIQActionHandler *handler = [actionDictionary valueForKey:uuid];
+        
+        if(complete){
+            [handler successWithMessage:message];
+        }else{
+            [handler faliureWithMessage:message];
+        }
+        
+        [actionDictionary removeObjectForKey:uuid];
+    }
+    
+}
+
+RCT_EXPORT_METHOD(unregisterChatAction: (NSString *)actionName){
+    [[ZohoSalesIQ ChatActions] unregisterWithNameWithName:actionName];
+}
+
+RCT_EXPORT_METHOD(unregisterAllChatActions){
+    [[ZohoSalesIQ ChatActions] unregisterAll];
+}
 
 //MARK:- DELEGATE METHODS - EVENTS
 - (void)agentsOffline {
     if (hasListeners)
-    [self sendEventWithName:OPERATORS_OFFLINE body:[NSNull null]];
+        [self sendEventWithName:OPERATORS_OFFLINE body:[NSNull null]];
 }
 
 - (void)agentsOnline {
     if (hasListeners)
-    [self sendEventWithName:OPERATORS_ONLINE body:[NSNull null]];
+        [self sendEventWithName:OPERATORS_ONLINE body:[NSNull null]];
 }
 
 - (void)chatViewClosedWithId:(NSString * _Nullable)id {
     if (hasListeners)
-    [self sendEventWithName:CHATVIEW_CLOSED body:id];
+        [self sendEventWithName:CHATVIEW_CLOSED body:id];
 }
 
 - (void)chatViewOpenedWithId:(NSString * _Nullable)id {
     if (hasListeners)
-    [self sendEventWithName:CHATVIEW_OPENED body:id];
+        [self sendEventWithName:CHATVIEW_OPENED body:id];
 }
 
 - (void)homeViewClosed {
     if (hasListeners)
-    [self sendEventWithName:HOMEVIEW_CLOSED body:[NSNull null]];
+        [self sendEventWithName:HOMEVIEW_CLOSED body:[NSNull null]];
 }
 
 - (void)homeViewOpened {
     if (hasListeners)
-    [self sendEventWithName:HOMEVIEW_OPENED body:[NSNull null]];
+        [self sendEventWithName:HOMEVIEW_OPENED body:[NSNull null]];
 }
 
 - (void)supportClosed {
     if (hasListeners)
-    [self sendEventWithName:SUPPORT_CLOSED body:[NSNull null]];
+        [self sendEventWithName:SUPPORT_CLOSED body:[NSNull null]];
 }
 
 - (void)supportOpened {
     if (hasListeners)
-    [self sendEventWithName:SUPPORT_OPENED body:[NSNull null]];
+        [self sendEventWithName:SUPPORT_OPENED body:[NSNull null]];
 }
 
 - (void)articleClosedWithId:(NSString * _Nullable)id {
     if (hasListeners)
-    [self sendEventWithName:ARTICLE_CLOSED body:id];
+        [self sendEventWithName:ARTICLE_CLOSED body:id];
 }
 
 - (void)articleDislikedWithId:(NSString * _Nullable)id {
     if (hasListeners)
-    [self sendEventWithName:ARTICLE_DISLIKED body:id];
+        [self sendEventWithName:ARTICLE_DISLIKED body:id];
 }
 
 - (void)articleLikedWithId:(NSString * _Nullable)id {
     if (hasListeners)
-    [self sendEventWithName:ARTICLE_LIKED body:id];
+        [self sendEventWithName:ARTICLE_LIKED body:id];
 }
 
 - (void)articleOpenedWithId:(NSString * _Nullable)id {
     if (hasListeners)
-    [self sendEventWithName:ARTICLE_OPENED body:id];
+        [self sendEventWithName:ARTICLE_OPENED body:id];
 }
 
 - (void)chatAttendedWithChat:(SIQVisitorChat * _Nullable)chat {
     if (hasListeners)
-    [self sendEventWithName:CHAT_ATTENDED body: [RNZohoSalesIQ getChatObject:chat]];
+        [self sendEventWithName:CHAT_ATTENDED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatClosedWithChat:(SIQVisitorChat * _Nullable)chat {
     if (hasListeners)
-    [self sendEventWithName:CHAT_CLOSED body: [RNZohoSalesIQ getChatObject:chat]];
+        [self sendEventWithName:CHAT_CLOSED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatFeedbackRecievedWithChat:(SIQVisitorChat * _Nullable)chat {
     if (hasListeners)
-    [self sendEventWithName:FEEDBACK_RECEIVED body: [RNZohoSalesIQ getChatObject:chat]];
+        [self sendEventWithName:FEEDBACK_RECEIVED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatMissedWithChat:(SIQVisitorChat * _Nullable)chat {
     if (hasListeners)
-    [self sendEventWithName:CHAT_MISSED body: [RNZohoSalesIQ getChatObject:chat]];
+        [self sendEventWithName:CHAT_MISSED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatOpenedWithChat:(SIQVisitorChat * _Nullable)chat {
     if (hasListeners)
-    [self sendEventWithName:CHAT_OPENED body: [RNZohoSalesIQ getChatObject:chat]];
+        [self sendEventWithName:CHAT_OPENED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatRatingRecievedWithChat:(SIQVisitorChat * _Nullable)chat {
     if (hasListeners)
-    [self sendEventWithName:RATING_RECEIVED body: [RNZohoSalesIQ getChatObject:chat]];
+        [self sendEventWithName:RATING_RECEIVED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatReopenedWithChat:(SIQVisitorChat * _Nullable)chat {
     if (hasListeners)
-    [self sendEventWithName:CHAT_REOPENED body: [RNZohoSalesIQ getChatObject:chat]];
+        [self sendEventWithName:CHAT_REOPENED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)unreadCountChanged:(NSInteger)count {
     if (hasListeners)
-    [self sendEventWithName:UNREAD_COUNT_CHANGED body: @(count)];
+        [self sendEventWithName:UNREAD_COUNT_CHANGED body: @(count)];
 }
 
 - (void)visitorIPBlocked {
     if (hasListeners)
-    [self sendEventWithName:VISITOR_IPBLOCKED body:[NSNull null]];
+        [self sendEventWithName:VISITOR_IPBLOCKED body:[NSNull null]];
 }
 
 @end

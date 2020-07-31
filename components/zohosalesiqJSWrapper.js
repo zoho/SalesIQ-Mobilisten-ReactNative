@@ -31,6 +31,7 @@ module.exports = {
     EVENT_ARTICLE_DISLIKED : RNZohoSalesIQ.ARTICLE_DISLIKED,
     EVENT_ARTICLE_OPENED : RNZohoSalesIQ.ARTICLE_OPENED,
     EVENT_ARTICLE_CLOSED : RNZohoSalesIQ.ARTICLE_CLOSED,
+    EVENT_PERFORM_CHATACTION : RNZohoSalesIQ.PERFORM_CHATACTION,
 
     init: function(appKey,accessKey){
         RNZohoSalesIQ.init(appKey,accessKey);
@@ -101,8 +102,8 @@ module.exports = {
     setConversationVisibility : function(visibility){
       RNZohoSalesIQ.setConversationVisibility(visibility);
     },
-    setConversationTitle : function(title){
-      RNZohoSalesIQ.setConversationTitle(title);
+    setConversationListTitle : function(title){
+      RNZohoSalesIQ.setConversationListTitle(title);
     },
     setFAQVisibility : function(visibility){
       RNZohoSalesIQ.setFAQVisibility(visibility);
@@ -124,6 +125,12 @@ module.exports = {
     },
     registerVisitor : function(visitorId){
       RNZohoSalesIQ.registerVisitor(visitorId);
+    },
+    setThemeColorforAndroid: function(attribute, colorCode){
+      RNZohoSalesIQ.setThemeColorforAndroid(attribute, colorCode);
+    },
+    setThemeColorforiOS: function(colorCode){
+      RNZohoSalesIQ.setThemeColorforiOS(colorCode);
     },
     setVisitorNameVisibility: function(visible){
       RNZohoSalesIQ.setVisitorNameVisibility(visible);
@@ -156,10 +163,31 @@ module.exports = {
       RNZohoSalesIQ.unregisterVisitor();
     },
     setPageTitle : function(title){
-        RNZohoSalesIQ.setPageTitle(title);
+      RNZohoSalesIQ.setPageTitle(title);
     },
     setCustomAction : function(actionName){
-        RNZohoSalesIQ.setCustomAction(actionName);
+      RNZohoSalesIQ.setCustomAction(actionName);
+    },
+    registerChatAction : function(chatActionName){
+      RNZohoSalesIQ.registerChatAction(chatActionName);
+    },
+    unregisterChatAction : function(chatActionName){
+      RNZohoSalesIQ.unregisterChatAction(chatActionName);
+    },
+    unregisterAllChatActions: function(){
+      RNZohoSalesIQ.unregisterAllChatActions();
+    },
+    completeChatAction: function(uuid){
+      RNZohoSalesIQ.completeChatAction(uuid);
+    },
+    completeChatActionWithMessage: function(uuid, success, message){
+      RNZohoSalesIQ.completeChatActionWithMessage(uuid, success, message);
+    },
+    setChatActionTimeout: function(timeout){
+      RNZohoSalesIQ.setChatActionTimeout(timeout);
+    },
+    setVisitorLocation: function(location){
+      RNZohoSalesIQ.setVisitorLocation(location);
     },
     addEventListener: function (type, listener){
         listener = emitter.addListener(type, listener);

@@ -1,7 +1,7 @@
 
 Pod::Spec.new do |s|
   s.name          = "RNZohoSalesIQ"
-  s.version       = "3.1.0"
+  s.version       = "3.2.0"
   s.summary       = "Mobilisten React Native Wrapper"
   s.description   = "Mobilisten React Native Wrapper"
   s.homepage      = "https://zoho.com"

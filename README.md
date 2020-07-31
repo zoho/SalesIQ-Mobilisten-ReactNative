@@ -1,50 +1,51 @@
+## Integrate React Native ZohoSalesIQ SDK:
 
-# react-native-zohosalesiq-mobilisten
+Open your react-native project in the terminal and install the package using the commands as follows :
 
-## Getting started
+    - npm install react-native-zohosalesiq-mobilisten --save
+    - react-native link react-native-zohosalesiq-mobilisten
 
-`$ npm install react-native-zohosalesiq-mobilisten --save`
+###### iOS Setup :
 
-### Automatic installation
+Open **Podfile** inside the **ios** folder of your react native project.
 
-`$ react-native link react-native-zohosalesiq-mobilisten`
+If you don't have Podfile, run the following command from the ios folder :
 
-### Manual installation
+```
+pod init
+```
 
-#### iOS
+Include **ZohoSalesIQ React Native SDK** into your Podfile as follows :
 
-1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-2. Go to `node_modules` ➜ `react-native-zohosalesiq-mobilisten` and add `RNZohosalesiqMobilisten.xcodeproj`
-3. In XCode, in the project navigator, select your project. Add `libRNZohosalesiqMobilisten.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
-4. Run your project (`Cmd+R`)<
+```
+target 'YourProjectName' do
 
-#### Android
+pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten/ios/RNZohoSalesIQ.podspec'
 
-1. Open up `android/app/src/main/java/[...]/MainActivity.java`
-  - Add `import com.reactlibrary.RNZohosalesiqMobilistenPackage;` to the imports at the top of the file
-  - Add `new RNZohosalesiqMobilistenPackage()` to the list returned by the `getPackages()` method
-2. Append the following lines to `android/settings.gradle`:
-  	```
-  	include ':react-native-zohosalesiq-mobilisten'
-  	project(':react-native-zohosalesiq-mobilisten').projectDir = new File(rootProject.projectDir, 	'../node_modules/react-native-zohosalesiq-mobilisten/android')
-  	```
-3. Insert the following lines inside the dependencies block in `android/app/build.gradle`:
-  	```
-      compile project(':react-native-zohosalesiq-mobilisten')
-  	```
+end
+```
 
-## Usage
-```javascript
-import { ZohoSalesIQ } from 'react-native-zohosalesiq-mobilisten';
+Run command **pod install** from the ios directory.
 
-if (Platform.OS === 'ios'){
-    ZohoSalesIQ.init("ios_app_key","ios_access_key");
-    ZohoSalesIQ.setLauncherVisibility(true);
-    //By default, if you wish to display the chat button/bubble on the application, then use .setLauncherVisibility() API.
-}
-else{
-   ZohoSalesIQ.init("android_app_key","android_access_key");
-   ZohoSalesIQ.setLauncherVisibility(true);
-   //By default, if you wish to display the chat button/bubble on the application, then use .setLauncherVisibility() API.
+**Note :**
+After a successful pod install, open the iOS project in Xcode and navigate to the **Build Settings > Build Options** and set **ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES** to **Yes**
+
+###### Android Setup :
+
+Open the android folder of your react-native project in Android Studio or any other platform for Android development.
+
+Add the following maven repository in the project level build.gradle file.
+
+```
+allprojects {
+    repositories {
+  .....
+      maven { url 'https://maven.zohodl.com' }
+    }
 }
 ```
+
+Then, press **Sync Now** in the bar that appears in the IDE.
+
+
+Help Doc :- [ZohoSalesIQ ReactNative SDK](https://www.zoho.com/salesiq/help/developer-section/android-sdk-overview.html)

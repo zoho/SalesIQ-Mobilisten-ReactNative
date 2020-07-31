@@ -1,0 +1,44 @@
+{
+  "_from": "react-native-salesiq-mobilisten-sdk",
+  "_id": "react-native-salesiq-mobilisten-sdk@1.0.16",
+  "_inBundle": false,
+  "_integrity": "sha512-tRALYCbppc8n7IdoW98VrSiT47JUF73FWOjBkG4AXP+aoqPnoqluq82cqzJWi2pgsEmzVSCKYF4lLIu/iDJqgg==",
+  "_location": "/react-native-salesiq-mobilisten-sdk",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "react-native-salesiq-mobilisten-sdk",
+    "name": "react-native-salesiq-mobilisten-sdk",
+    "escapedName": "react-native-salesiq-mobilisten-sdk",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-native-salesiq-mobilisten-sdk/-/react-native-salesiq-mobilisten-sdk-1.0.16.tgz",
+  "_shasum": "798eae5fdf09d5f1466f58243d4d4ebaa84f8f65",
+  "_spec": "react-native-salesiq-mobilisten-sdk",
+  "_where": "/Users/angusamy-8537/Desktop/react-native projects/SalesIQSdk",
+  "author": "",
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "## Getting started",
+  "keywords": [
+    "react-native"
+  ],
+  "license": "",
+  "main": "index.js",
+  "name": "react-native-salesiq-mobilisten-sdk",
+  "peerDependencies": {
+    "react-native": "^0.41.2",
+    "react-native-windows": "0.41.0-rc.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.16"
+}

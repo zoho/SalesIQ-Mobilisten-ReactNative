@@ -10,17 +10,22 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.zoho.commons.OnInitCompleteListener;
+import com.zoho.livechat.android.SIQVisitorLocation;
+import com.zoho.livechat.android.SalesIQCustomAction;
 import com.zoho.livechat.android.VisitorChat;
 import com.zoho.livechat.android.constants.ConversationType;
 import com.zoho.livechat.android.constants.SalesIQConstants;
@@ -31,7 +36,9 @@ import com.zoho.livechat.android.listeners.FAQCategoryListener;
 import com.zoho.livechat.android.listeners.FAQListener;
 import com.zoho.livechat.android.listeners.OpenArticleListener;
 import com.zoho.livechat.android.listeners.OperatorImageListener;
+import com.zoho.livechat.android.listeners.SalesIQActionListener;
 import com.zoho.livechat.android.listeners.SalesIQChatListener;
+import com.zoho.livechat.android.listeners.SalesIQCustomActionListener;
 import com.zoho.livechat.android.listeners.SalesIQFAQListener;
 import com.zoho.livechat.android.listeners.SalesIQListener;
 import com.zoho.livechat.android.models.SalesIQArticle;
@@ -42,8 +49,10 @@ import com.zoho.salesiqembed.ZohoSalesIQ;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
+import java.util.Hashtable;
 import java.util.Map;
+import java.util.UUID;
+
 import com.zoho.commons.ChatComponent;
 
 public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
@@ -70,6 +79,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   private static final String EVENT_VISITOR_IPBLOCKED = "EVENT_VISITOR_IPBLOCKED";         // No I18N
   private static final String EVENT_FEEDBACK_RECEIVED = "EVENT_FEEDBACK_RECEIVED";         // No I18N
   private static final String EVENT_RATING_RECEIVED = "EVENT_RATING_RECEIVED";         // No I18N
+  private static final String EVENT_PERFORM_CHATACTION = "EVENT_PERFORM_CHATACTION";         // No I18N
 
   private static final String TYPE_OPEN = "OPEN";         // No I18N
   private static final String TYPE_CONNECTED = "CONNECTED";         // No I18N
@@ -81,6 +91,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   private static final int INVALID_FILTER_CODE = 604;         // No I18N
   private static final String INVALID_FILTER_TYPE = "invalid filter type";         // No I18N
   private static final String TRYCATCH_EXCEPTION = "trycatch exception";         // No I18N
+
+  private static Hashtable<String, SalesIQCustomActionListener> actionsList = new Hashtable<>();
 
   public RNZohoSalesIQ(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -112,6 +124,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     constants.put("CHAT_REOPENED", EVENT_CHAT_REOPENED);         // No I18N
     constants.put("FEEDBACK_RECEIVED", EVENT_FEEDBACK_RECEIVED);         // No I18N
     constants.put("RATING_RECEIVED", EVENT_RATING_RECEIVED);         // No I18N
+    constants.put("PERFORM_CHATACTION", EVENT_PERFORM_CHATACTION);         // No I18N
 
     constants.put("ARTICLE_LIKED", EVENT_ARTICLE_LIKED);         // No I18N
     constants.put("ARTICLE_DISLIKED", EVENT_ARTICLE_DISLIKED);         // No I18N
@@ -367,6 +380,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
           ZohoSalesIQ.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.FAQ.setListener(new RNZohoSalesIQListener());
+          ZohoSalesIQ.ChatActions.setListener(new RNZohoSalesIQListener());
         }
       });
     }
@@ -596,7 +610,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void setConversationTitle(final String title) {
+  public void setConversationListTitle(final String title) {
     Handler handler = new Handler(Looper.getMainLooper());
     handler.post(new Runnable() {
       public void run() {
@@ -763,6 +777,122 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     });
   }
 
+  @ReactMethod
+  public void registerChatAction(final String actionName) {
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable() {
+      public void run() {
+        ZohoSalesIQ.ChatActions.register(actionName);
+      }
+    });
+  }
+
+  @ReactMethod
+  public void unregisterChatAction(final String actionName) {
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable() {
+      public void run() {
+        ZohoSalesIQ.ChatActions.unregister(actionName);
+      }
+    });
+  }
+
+  @ReactMethod
+  public void unregisterAllChatActions() {
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable() {
+      public void run() {
+        ZohoSalesIQ.ChatActions.unregisterAll();
+      }
+    });
+  }
+
+  @ReactMethod
+  public void setChatActionTimeout(final double timeout) {
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable() {
+      public void run() {
+        ZohoSalesIQ.ChatActions.setTimeout((long)timeout*1000);
+      }
+    });
+  }
+
+  @ReactMethod
+  public void completeChatAction(final String uuid) {
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable() {
+      public void run() {
+        SalesIQCustomActionListener listener;
+        listener = actionsList.get(uuid);
+        if (listener != null){
+          listener.onSuccess();
+        }
+        if (actionsList != null) {
+          actionsList.remove(uuid);
+        }
+      }
+    });
+  }
+
+  @ReactMethod
+  public void completeChatActionWithMessage(final String uuid, final boolean success, final String message) {
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable() {
+      public void run() {
+        SalesIQCustomActionListener listener = actionsList.get(uuid);
+        if (listener != null){
+          if (success) {
+            if (message != null) {
+              listener.onSuccess(message);
+            }
+            else{
+              listener.onSuccess();
+            }
+          }
+          else{
+            if (message != null) {
+              listener.onFailure(message);
+            }
+            else{
+              listener.onFailure();
+            }
+          }
+        }
+        if (actionsList != null) {
+          actionsList.remove(uuid);
+        }
+      }
+    });
+  }
+
+  @ReactMethod
+  public void setVisitorLocation(final ReadableMap visitorLocation){
+    SIQVisitorLocation siqVisitorLocation = new SIQVisitorLocation();
+
+    if (visitorLocation.hasKey("latitude")){
+      siqVisitorLocation.setLatitude(visitorLocation.getDouble("latitude"));         // No I18N
+    }
+    if (visitorLocation.hasKey("longitude")){
+      siqVisitorLocation.setLongitude(visitorLocation.getDouble("longitude"));         // No I18N
+    }
+    if (visitorLocation.hasKey("country")){
+      siqVisitorLocation.setCountry(visitorLocation.getString("country"));         // No I18N
+    }
+    if (visitorLocation.hasKey("city")){
+      siqVisitorLocation.setCity(visitorLocation.getString("city"));         // No I18N
+    }
+    if (visitorLocation.hasKey("state")){
+      siqVisitorLocation.setState(visitorLocation.getString("state"));         // No I18N
+    }
+    if (visitorLocation.hasKey("countryCode")){
+      siqVisitorLocation.setCountryCode(visitorLocation.getString("countryCode"));         // No I18N
+    }
+    if (visitorLocation.hasKey("zipCode")){
+      siqVisitorLocation.setZipCode(visitorLocation.getString("zipCode"));         // No I18N
+    }
+    ZohoSalesIQ.Visitor.setLocation(siqVisitorLocation);
+  }
+
   public static void handleNotification(final Application application, final Map extras) {
     SharedPreferences sharedPreferences = application.getSharedPreferences("siq_session", 0);         // No I18N
     final String appKey = sharedPreferences.getString("salesiq_appkey", null);         // No I18N
@@ -799,6 +929,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
               }
             });
           }
+        }
+
+        @Override
+        public void onInitError() {
+
         }
       });
       ZohoSalesIQ.setPlatformName(SalesIQConstants.Platform.REACT_NATIVE);
@@ -840,7 +975,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     WritableMap visitorMap = new WritableNativeMap();
     visitorMap.putString("id", chat.getChatID());         // No I18N
     visitorMap.putInt("unreadCount", chat.getUnreadCount());         // No I18N
-    visitorMap.putBoolean("isBotAttender", chat.isBotAttender());
+    visitorMap.putBoolean("isBotAttender", chat.isBotAttender());         // No I18N
     if (chat.getQuestion() != null){
       visitorMap.putString("question", chat.getQuestion());         // No I18N
     }
@@ -896,7 +1031,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     return articleMap;
   }
 
-  public class RNZohoSalesIQListener implements SalesIQListener, SalesIQChatListener, SalesIQFAQListener {
+  public class RNZohoSalesIQListener implements SalesIQListener, SalesIQChatListener, SalesIQFAQListener, SalesIQActionListener {
 
     @Override
     public void handleFeedback(VisitorChat visitorChat) {
@@ -993,6 +1128,24 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     public void handleChatReOpened(VisitorChat visitorChat) {
       WritableMap visitorMap = getChatMapObject(visitorChat);
       eventEmitter(EVENT_CHAT_REOPENED, visitorMap);
+    }
+
+
+
+    @Override
+    public void handleCustomAction(SalesIQCustomAction salesIQCustomAction, final SalesIQCustomActionListener salesIQCustomActionListener) {
+      UUID uuid = UUID.randomUUID();
+
+      final WritableMap actionDetailsMap = new WritableNativeMap();
+      actionDetailsMap.putString("uuid", uuid.toString());         // No I18N
+      actionDetailsMap.putString("elementID", salesIQCustomAction.elementID);         // No I18N
+      actionDetailsMap.putString("label", salesIQCustomAction.label);         // No I18N
+      actionDetailsMap.putString("name", salesIQCustomAction.name);         // No I18N
+      actionDetailsMap.putString("clientActionName", salesIQCustomAction.clientActionName);         // No I18N
+
+      actionsList.put(uuid.toString(), salesIQCustomActionListener);
+
+      eventEmitter(EVENT_PERFORM_CHATACTION, actionDetailsMap);
     }
   }
 }
