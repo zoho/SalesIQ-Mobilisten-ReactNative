@@ -10,7 +10,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import com.facebook.react.bridge.Callback;
@@ -24,6 +23,7 @@ import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.zoho.commons.OnInitCompleteListener;
+import com.zoho.livechat.android.SIQVisitor;
 import com.zoho.livechat.android.SIQVisitorLocation;
 import com.zoho.livechat.android.SalesIQCustomAction;
 import com.zoho.livechat.android.VisitorChat;
@@ -1101,6 +1101,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     @Override
+    public void handleTrigger(String triggerName, SIQVisitor visitor) {
+
+    }
+
+    @Override
     public void handleChatOpened(VisitorChat visitorChat) {
       WritableMap visitorMap = getChatMapObject(visitorChat);
       eventEmitter(EVENT_CHAT_OPENED, visitorMap);
@@ -1129,8 +1134,6 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
       WritableMap visitorMap = getChatMapObject(visitorChat);
       eventEmitter(EVENT_CHAT_REOPENED, visitorMap);
     }
-
-
 
     @Override
     public void handleCustomAction(SalesIQCustomAction salesIQCustomAction, final SalesIQCustomActionListener salesIQCustomActionListener) {
