@@ -376,7 +376,24 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
       Handler handler = new Handler(Looper.getMainLooper());
       handler.post(new Runnable() {
         public void run() {
-          initSalesIQ(activity.getApplication(), activity, appKey, accessKey);
+          initSalesIQ(activity.getApplication(), activity, appKey, accessKey, null);
+          ZohoSalesIQ.setListener(new RNZohoSalesIQListener());
+          ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
+          ZohoSalesIQ.FAQ.setListener(new RNZohoSalesIQListener());
+          ZohoSalesIQ.ChatActions.setListener(new RNZohoSalesIQListener());
+        }
+      });
+    }
+  }
+
+  @ReactMethod
+  public void initWithCallback(final String appKey, final String accessKey, final Callback initCallback ) {
+    final Activity activity = getCurrentActivity();
+    if (activity != null) {
+      Handler handler = new Handler(Looper.getMainLooper());
+      handler.post(new Runnable() {
+        public void run() {
+          initSalesIQ(activity.getApplication(), activity, appKey, accessKey, initCallback);
           ZohoSalesIQ.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.FAQ.setListener(new RNZohoSalesIQListener());
@@ -901,7 +918,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
       Handler handler = new Handler(Looper.getMainLooper());
       handler.post(new Runnable() {
         public void run() {
-          initSalesIQ(application, null, appKey, accessKey);
+          initSalesIQ(application, null, appKey, accessKey, null);
           ZohoSalesIQ.Notification.handle(application, extras, 0);
         }
       });
@@ -913,7 +930,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     istestdevice = testdevice;
   }
 
-  private static void initSalesIQ(final Application application, final Activity activity, final String appKey, final String accessKey) {
+  private static void initSalesIQ(final Application application, final Activity activity, final String appKey, final String accessKey, final Callback initCallback) {
     if (application != null) {
       ZohoSalesIQ.init(application, appKey, accessKey, null, new OnInitCompleteListener() {
         @Override
@@ -929,11 +946,16 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
               }
             });
           }
+          if (initCallback != null){
+            initCallback.invoke(true);
+          }
         }
 
         @Override
         public void onInitError() {
-
+          if (initCallback != null){
+            initCallback.invoke(false);
+          }
         }
       });
       ZohoSalesIQ.setPlatformName(SalesIQConstants.Platform.REACT_NATIVE);

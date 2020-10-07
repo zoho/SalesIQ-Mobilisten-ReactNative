@@ -32,9 +32,13 @@ module.exports = {
     EVENT_ARTICLE_OPENED : RNZohoSalesIQ.ARTICLE_OPENED,
     EVENT_ARTICLE_CLOSED : RNZohoSalesIQ.ARTICLE_CLOSED,
     EVENT_PERFORM_CHATACTION : RNZohoSalesIQ.PERFORM_CHATACTION,
+    //EVENT_CUSTOMTRIGGER: RNZohoSalesIQ.CUSTOMTRIGGER,
 
     init: function(appKey,accessKey){
         RNZohoSalesIQ.init(appKey,accessKey);
+    },
+    initWithCallback: function(appKey,accessKey,callback){
+        RNZohoSalesIQ.initWithCallback(appKey,accessKey,callback);
     },
     setChatTitle : function(title){
         RNZohoSalesIQ.setChatTitle(title);

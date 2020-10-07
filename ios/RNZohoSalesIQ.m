@@ -16,7 +16,29 @@ RCT_EXPORT_MODULE();
 RCT_EXPORT_METHOD(init:(NSString *)appKey accessKey:(NSString *)accessKey){
     dispatch_async(dispatch_get_main_queue(), ^{
         [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
-            if(complete){
+
+        }];
+        [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
+        ZohoSalesIQ.delegate = self;
+        [ZohoSalesIQ Chat].delegate = self;
+        [ZohoSalesIQ FAQ].delegate = self;
+    });
+    if(actionDictionary == nil){
+        actionDictionary = [[NSMutableDictionary<NSString *, SIQActionHandler *> alloc] init];
+    }
+    [self performAdditionalSetup];
+}
+
+RCT_EXPORT_METHOD(initWithCallback:(NSString *)appKey accessKey:(NSString *)accessKey callback:(RCTResponseSenderBlock)callback){
+    __block BOOL _initComplete = false;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
+            NSNumber *success = [NSNumber numberWithBool:complete];
+            if(_initComplete == false){
+                _initComplete = true;
+                callback(@[success]);
+            }
+            if(success){
                 
             }else{
                 
@@ -928,6 +950,10 @@ RCT_EXPORT_METHOD(unregisterAllChatActions){
 - (void)visitorIPBlocked {
     if (hasListeners)
         [self sendEventWithName:VISITOR_IPBLOCKED body:[NSNull null]];
+}
+
+- (void) handleTriggerWithName:(NSString *)name visitorInformation:(SIQVisitor *)visitorInformation{
+    
 }
 
 @end
