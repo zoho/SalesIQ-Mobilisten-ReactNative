@@ -36,4 +36,4 @@ jobs:
         env:
          NODE_AUTH_TOKEN: ${{ secrets.SALESIQ_MOBILISTEN_REACTNATIVE_NPM_TOKEN }}
         run: |
-          npm publish --access public
+          npm publish
