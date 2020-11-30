@@ -1,29 +1,31 @@
 {
-  "_from": "react-native-salesiq-mobilisten-sdk",
-  "_id": "react-native-salesiq-mobilisten-sdk@1.0.16",
+  "_from": "react-native-zohosalesiq-mobilisten@^1.3.5",
+  "_id": "react-native-zohosalesiq-mobilisten@1.3.5",
   "_inBundle": false,
-  "_integrity": "sha512-tRALYCbppc8n7IdoW98VrSiT47JUF73FWOjBkG4AXP+aoqPnoqluq82cqzJWi2pgsEmzVSCKYF4lLIu/iDJqgg==",
-  "_location": "/react-native-salesiq-mobilisten-sdk",
+  "_integrity": "sha512-JKeN6N0IIA1t6jf1hhyaqdnHn41ejkBEbPtHdO2jp/PedvYM7cVl5yKBJhEVvFELRhuGkxiGs1Od4VeOivj8+A==",
+  "_location": "/react-native-zohosalesiq-mobilisten",
   "_phantomChildren": {},
   "_requested": {
-    "type": "tag",
+    "type": "range",
     "registry": true,
-    "raw": "react-native-salesiq-mobilisten-sdk",
-    "name": "react-native-salesiq-mobilisten-sdk",
-    "escapedName": "react-native-salesiq-mobilisten-sdk",
-    "rawSpec": "",
+    "raw": "react-native-zohosalesiq-mobilisten@^1.3.5",
+    "name": "react-native-zohosalesiq-mobilisten",
+    "escapedName": "react-native-zohosalesiq-mobilisten",
+    "rawSpec": "^1.3.5",
     "saveSpec": null,
-    "fetchSpec": "latest"
+    "fetchSpec": "^1.3.5"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/react-native-salesiq-mobilisten-sdk/-/react-native-salesiq-mobilisten-sdk-1.0.16.tgz",
-  "_shasum": "798eae5fdf09d5f1466f58243d4d4ebaa84f8f65",
-  "_spec": "react-native-salesiq-mobilisten-sdk",
-  "_where": "/Users/angusamy-8537/Desktop/react-native projects/SalesIQSdk",
-  "author": "",
+  "_resolved": "https://registry.npmjs.org/react-native-zohosalesiq-mobilisten/-/react-native-zohosalesiq-mobilisten-1.3.5.tgz",
+  "_shasum": "af93dafe652f30316079cd676d92463f50c9c69f",
+  "_spec": "react-native-zohosalesiq-mobilisten@^1.3.5",
+  "_where": "/Users/rishabh/Documents/Test Projects/ReactNative/reactapp",
+  "author": {
+    "name": "Angu - angusamy.g@zohocorp.com"
+  },
   "bundleDependencies": false,
   "deprecated": false,
   "description": "## Getting started",
@@ -32,7 +34,7 @@
   ],
   "license": "",
   "main": "index.js",
-  "name": "react-native-salesiq-mobilisten-sdk",
+  "name": "react-native-zohosalesiq-mobilisten",
   "peerDependencies": {
     "react-native": "^0.41.2",
     "react-native-windows": "0.41.0-rc.1"
@@ -40,5 +42,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "1.0.16"
+  "version": "1.4.0"
 }

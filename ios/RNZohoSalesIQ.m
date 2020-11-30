@@ -16,7 +16,7 @@ RCT_EXPORT_MODULE();
 RCT_EXPORT_METHOD(init:(NSString *)appKey accessKey:(NSString *)accessKey){
     dispatch_async(dispatch_get_main_queue(), ^{
         [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
-
+            
         }];
         [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
         ZohoSalesIQ.delegate = self;
@@ -93,6 +93,7 @@ NSString *PERFORM_CHATACTION = @"PERFORM_CHATACTION";
 
 NSString *UNREAD_COUNT_CHANGED = @"UNREAD_COUNT_CHANGED";
 NSString *VISITOR_IPBLOCKED = @"VISITOR_IPBLOCKED";
+NSString *CUSTOMTRIGGER = @"CUSTOMTRIGGER";
 
 //MARK:- CHAT TYPES
 NSString *TYPE_OPEN = @"OPEN";
@@ -126,7 +127,8 @@ NSString *TYPE_ENDED = @"ENDED";
              CHAT_REOPENED,
              UNREAD_COUNT_CHANGED,
              VISITOR_IPBLOCKED,
-             PERFORM_CHATACTION];
+             PERFORM_CHATACTION,
+             CUSTOMTRIGGER];
 }
 
 - (NSDictionary *) constantsToExport {
@@ -160,7 +162,8 @@ NSString *TYPE_ENDED = @"ENDED";
         @"TYPE_CONNECTED": TYPE_CONNECTED,
         @"TYPE_ENDED": TYPE_ENDED,
         @"TYPE_TRIGGERED": TYPE_TRIGGERED,
-        @"TYPE_PROACTIVE": TYPE_PROACTIVE
+        @"TYPE_PROACTIVE": TYPE_PROACTIVE,
+        @"CUSTOMTRIGGER": CUSTOMTRIGGER
     };
 }
 
@@ -172,6 +175,112 @@ NSString *TYPE_ENDED = @"ENDED";
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();
+}
+
++ (NSMutableDictionary *)getVisitorObject: (SIQVisitor*)arguments {
+    
+    NSMutableDictionary *visitorDict = [NSMutableDictionary dictionary];
+    
+    if([arguments name] != nil){
+        NSString *name = [arguments name];
+        [visitorDict setObject:name forKey:@"name"];
+    }
+    
+    if([arguments browser] != nil){
+        NSString *browser = [arguments browser];
+        [visitorDict setObject:browser forKey:@"browser"];
+    }
+    
+    if([arguments city] != nil){
+        NSString *city = [arguments city];
+        [visitorDict setObject:city forKey:@"city"];
+    }
+    
+    if([arguments countryCode] != nil){
+        NSString *countryCode = [arguments countryCode];
+        [visitorDict setObject:countryCode forKey:@"countryCode"];
+    }
+    
+    if([arguments state] != nil){
+        NSString *state = [arguments state];
+        [visitorDict setObject:state forKey:@"state"];
+    }
+    
+    if([arguments email] != nil){
+        NSString *email = [arguments email];
+        [visitorDict setObject:email forKey:@"email"];
+    }
+    
+    if([arguments lastVisitTime] != nil){
+        NSDate *lastVisitTime = [arguments lastVisitTime];
+        int time = (int)[lastVisitTime timeIntervalSince1970];
+        [visitorDict setObject: @(time) forKey: @"lastVisitTime"];
+    }
+    
+    if([arguments ip] != nil){
+        NSString *ip = [arguments ip];
+        [visitorDict setObject:ip forKey:@"ip"];
+    }
+    
+    if([arguments firstVisitTime] != nil){
+        NSDate *firstVisitTime = [arguments firstVisitTime];
+        int time = (int)[firstVisitTime timeIntervalSince1970];
+        [visitorDict setObject: @(time) forKey: @"firstVisitTime"];
+    }
+    
+    if([arguments name] != nil){
+        NSString *name = [arguments name];
+        [visitorDict setObject:name forKey:@"name"];
+    }
+    
+    if([arguments noOfDaysVisited] != nil){
+        NSNumber *noOfDaysVisited = [arguments noOfDaysVisited];
+        [visitorDict setObject:noOfDaysVisited forKey:@"noOfDaysVisited"];
+    }
+    
+    if([arguments numberOfChats] != nil){
+        NSNumber *numberOfChats = [arguments numberOfChats];
+        [visitorDict setObject:numberOfChats forKey:@"numberOfChats"];
+    }
+    
+    if([arguments numberOfVisits] != nil){
+        NSNumber *numberOfVisits = [arguments numberOfVisits];
+        [visitorDict setObject:numberOfVisits forKey:@"numberOfVisits"];
+    }
+    
+    if([arguments totalTimeSpent] != nil){
+        NSNumber *totalTimeSpent = [arguments totalTimeSpent];
+        [visitorDict setObject:totalTimeSpent forKey:@"totalTimeSpent"];
+    }
+    
+    if([arguments os] != nil){
+        NSString *os = [arguments os];
+        [visitorDict setObject:os forKey:@"os"];
+    }else{
+        [visitorDict setObject:@"iOS" forKey:@"os"];
+    }
+    
+    if([arguments phone] != nil){
+        NSString *phone = [arguments phone];
+        [visitorDict setObject:phone forKey:@"phone"];
+    }
+    
+    if([arguments region] != nil){
+        NSString *region = [arguments region];
+        [visitorDict setObject:region forKey:@"region"];
+    }
+    
+    if([arguments searchEngine] != nil){
+        NSString *searchEngine = [arguments searchEngine];
+        [visitorDict setObject:searchEngine forKey:@"searchEngine"];
+    }
+    
+    if([arguments searchQuery] != nil){
+        NSString *searchQuery = [arguments searchQuery];
+        [visitorDict setObject:searchQuery forKey:@"searchQuery"];
+    }
+    
+    return visitorDict;
 }
 
 + (NSMutableDictionary *)getChatActionArguments: (SIQChatActionArguments*)arguments withID:(NSString*)actionID actionName:(NSString*)actionName
@@ -583,16 +692,23 @@ RCT_EXPORT_METHOD(startChat: (NSString *)message){
     [[ZohoSalesIQ Chat] startChatWithQuestion:(message)];
 }
 RCT_EXPORT_METHOD(registerVisitor: (NSString *)uniqueid){
-    [ZohoSalesIQ registerVisitor:uniqueid];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [ZohoSalesIQ registerVisitor:uniqueid];
+    });
 }
 RCT_EXPORT_METHOD(unregisterVisitor){
-    [ZohoSalesIQ unregisterVisitor];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [ZohoSalesIQ unregisterVisitor];
+    });
 }
 RCT_EXPORT_METHOD(setPageTitle: (NSString *)pagetitle){
     [[ZohoSalesIQ Tracking] setPageTitle:pagetitle];
 }
 RCT_EXPORT_METHOD(setCustomAction: (NSString *)action_name){
     [[ZohoSalesIQ Tracking] setCustomAction:action_name];
+}
+RCT_EXPORT_METHOD(performCustomAction: (NSString *)action_name){
+    [[ZohoSalesIQ Visitor] performCustomAction:action_name];
 }
 RCT_EXPORT_METHOD(enableInAppNotification){
     [[ZohoSalesIQ Chat] setVisibility:ChatComponentInAppNotifications visible:YES];
@@ -953,7 +1069,23 @@ RCT_EXPORT_METHOD(unregisterAllChatActions){
 }
 
 - (void) handleTriggerWithName:(NSString *)name visitorInformation:(SIQVisitor *)visitorInformation{
-    
+    if (hasListeners){
+        
+        NSMutableDictionary *triggerInformation = [NSMutableDictionary dictionary];
+        
+        NSMutableDictionary *visitorInfo = [RNZohoSalesIQ getVisitorObject:visitorInformation];
+        
+        if(visitorInfo != nil){
+            [triggerInformation setObject:visitorInfo forKey:@"visitorInformation"];
+        }
+        
+        if(name != nil){
+            [triggerInformation setObject:name forKey:@"triggerName"];
+        }
+        
+        [self sendEventWithName:CUSTOMTRIGGER body: triggerInformation];
+        
+    }
 }
 
 @end

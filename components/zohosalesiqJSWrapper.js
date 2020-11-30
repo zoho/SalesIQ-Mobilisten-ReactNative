@@ -32,7 +32,7 @@ module.exports = {
     EVENT_ARTICLE_OPENED : RNZohoSalesIQ.ARTICLE_OPENED,
     EVENT_ARTICLE_CLOSED : RNZohoSalesIQ.ARTICLE_CLOSED,
     EVENT_PERFORM_CHATACTION : RNZohoSalesIQ.PERFORM_CHATACTION,
-    //EVENT_CUSTOMTRIGGER: RNZohoSalesIQ.CUSTOMTRIGGER,
+    EVENT_CUSTOMTRIGGER: RNZohoSalesIQ.CUSTOMTRIGGER,
 
     init: function(appKey,accessKey){
         RNZohoSalesIQ.init(appKey,accessKey);
@@ -171,6 +171,9 @@ module.exports = {
     },
     setCustomAction : function(actionName){
       RNZohoSalesIQ.setCustomAction(actionName);
+    },
+    performCustomAction : function(actionName){
+      RNZohoSalesIQ.performCustomAction(actionName);
     },
     registerChatAction : function(chatActionName){
       RNZohoSalesIQ.registerChatAction(chatActionName);
