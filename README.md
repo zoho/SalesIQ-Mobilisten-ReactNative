@@ -4,7 +4,7 @@ Open your react-native project in the terminal and install the package using the
 
     - npm install react-native-zohosalesiq-mobilisten --save
     - react-native link react-native-zohosalesiq-mobilisten
-
+    
 ###### iOS Setup :
 
 Open **Podfile** inside the **ios** folder of your react native project.
