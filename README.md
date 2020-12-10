@@ -13,7 +13,7 @@ Connect with customers at every step of their journey. Give them the best in-app
 **Android**: Android API level 14 and above is required.
 
 ## Installation
-Follow the below steps given below to complete installation of **Mobilisten** in your react-native app.
+Follow the below steps given below to complete installation of **Mobilisten** in your React-Native app.
 
 #### Installation steps for iOS
 
