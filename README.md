@@ -61,7 +61,7 @@ if (Platform.OS === 'ios'){
     ZohoSalesIQ.init("android_app_key","android_access_key");
 }
 ```
-3. If you wish to show the chat default launcher, use the [**ZohoSalesIQ.setLauncherVisibility**](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-set-launcher-visibility.html) API (Optional).
+3. If you wish to show the default chat launcher, use the [**ZohoSalesIQ.setLauncherVisibility**](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-set-launcher-visibility.html) API (Optional).
 
 ## API Documentation
 You can find the list of all APIs and their documentation [here](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-add-event-listener.html) under the **API Reference** section.
