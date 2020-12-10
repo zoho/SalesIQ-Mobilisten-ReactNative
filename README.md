@@ -9,6 +9,7 @@ Connect with customers at every step of their journey. Give them the best in-app
 
 ## Requirements
 **iOS**: Minimum deployment target should be set to iOS 10
+
 **Android**: Android API level 14 and above is required.
 
 ## Installation
