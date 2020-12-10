@@ -8,7 +8,7 @@ Connect with customers at every step of their journey. Give them the best in-app
 **Mobilisten** is a support chat SDK that comes with a set of highly configurable APIs to suit your needs. Get started by generating an `App` and `Access` keys for your bundle ID from the SalesIQ console.
 
 ## Requirements
-**iOS**: Minimum deployment target should be set to iOS 10
+**iOS**: Minimum deployment target should be set to iOS 10.
 
 **Android**: Android API level 14 and above is required.
 
