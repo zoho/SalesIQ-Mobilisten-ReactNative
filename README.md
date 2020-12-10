@@ -37,7 +37,7 @@ pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilist
 
 #### Installation steps for Android
 
-1. Navigate to the **android** folder within the project directory using Anroid Studio or any other platform of choice for Android development.
+1. Navigate to the **android** folder within the project directory using Android Studio or any other platform of choice for Android development.
 Add the following maven repository to the **build.gradle** file.
 ```
 allprojects {
@@ -49,7 +49,7 @@ allprojects {
 ```
 2. Click **Sync Now** from the toolbar on the IDE.
 
-#### Initializing Mobilisten
+## Initializing Mobilisten
 1. Generate `App` and `Access` keys for iOS and Android platforms.
 2. Use the **ZohoSalesIQ.init** API with keys for each platform as shown below.
 ```js
@@ -62,3 +62,6 @@ if (Platform.OS === 'ios'){
 }
 ```
 3. If you wish to show the default launcher, use the [**ZohoSalesIQ.setLauncherVisibility**](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-set-launcher-visibility.html) API.
+
+## API Documentation
+You can find the list of all APIs and their documentation [here](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-add-event-listener.html) in the API Reference section.
