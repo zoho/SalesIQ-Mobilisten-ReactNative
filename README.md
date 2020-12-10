@@ -15,8 +15,6 @@ Connect with customers at every step of their journey. Give them the best in-app
 ## Installation
 Follow the below steps given below to complete installation of **Mobilisten** in your React-Native app.
 
-#### Installation steps for iOS
-
 1. Install the **react-native-zohosalesiq-mobilisten** package using NPM.
 ```ruby
 npm install react-native-zohosalesiq-mobilisten --save
@@ -27,13 +25,15 @@ npm install react-native-zohosalesiq-mobilisten --save
 react-native link react-native-zohosalesiq-mobilisten
 ```
 
-3. Navigate to the **ios** folder in the project directory and open **Podfile**.
+#### Installation steps for iOS
+
+1. Navigate to the **ios** folder in the project directory and open **Podfile**.
 Add the "**/ios**" to the path for the **RNZohoSalesIQ** pod as shown below.
 ```ruby
 pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten/ios'
 ```
 
-4. Run the `pod repo update && pod install` command from the **ios** directory.
+2. Run the `pod repo update && pod install` command from the **ios** directory.
 
 #### Installation steps for Android
 
