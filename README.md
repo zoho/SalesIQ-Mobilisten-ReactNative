@@ -14,7 +14,7 @@ Connect with customers at every step of their journey. Give them the best in-app
 ## Installation
 Follow the below steps given below to complete installation of **Mobilisten** in your react-native app.
 
-####Installation steps for iOS
+#### Installation steps for iOS
 
 1. Install the **react-native-zohosalesiq-mobilisten** package using NPM.
 ```ruby
@@ -34,7 +34,7 @@ pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilist
 
 4. Run the `pod repo update && pod install` command from the **ios** directory.
 
-####Installation steps for Android
+#### Installation steps for Android
 
 1. Navigate to the **android** folder within the project directory using Anroid Studio or any other platform of choice for Android development.
 Add the following maven repository to the **build.gradle** file.
@@ -48,7 +48,7 @@ allprojects {
 ```
 2. Click **Sync Now** from the toolbar on the IDE.
 
-####Initializing Mobilisten
+#### Initializing Mobilisten
 1. Generate `App` and `Access` keys for iOS and Android platforms.
 2. Use the **ZohoSalesIQ.init** API with keys for each platform as shown below.
 ```js
@@ -61,4 +61,3 @@ if (Platform.OS === 'ios'){
 }
 ```
 3. If you wish to show the default launcher, use the [**ZohoSalesIQ.setLauncherVisibility**](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-set-launcher-visibility.html) API.
-
