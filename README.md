@@ -5,7 +5,7 @@
 Connect with customers at every step of their journey. Give them the best in-app live chat experience with Mobilisten. Mobilisten enables customers to reach you from any screen on your app, get their questions answered, and make better purchase decisions.
 
 ## Getting Started
-**Mobilisten** is a support chat SDK that comes with a set of highly configurable APIs to suit your needs. Get started by generating an `App` and `Access` keys for your bundle ID from the SalesIQ console.
+[**Mobilisten**](https://mobilisten.io/) is a support chat SDK that comes with a set of highly configurable APIs to suit your needs. Get started by generating an `App` and `Access` keys for your bundle ID from the SalesIQ console.
 
 ## Requirements
 **iOS**: Minimum deployment target should be set to iOS 10.
