@@ -30,7 +30,8 @@ react-native link react-native-zohosalesiq-mobilisten
 1. Navigate to the **ios** folder in the project directory and open **Podfile**.
 Add the "**/ios**" to the path for the **RNZohoSalesIQ** pod as shown below.
 ```ruby
-pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten/ios'
+- pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten'
++ pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten/ios'
 ```
 
 2. Run the `pod repo update && pod install` command from the **ios** directory.
