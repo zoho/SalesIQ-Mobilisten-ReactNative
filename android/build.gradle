@@ -1,8 +1,6 @@
-
 buildscript {
     repositories {
         jcenter()
-        google()
     }
 
     dependencies {
@@ -11,7 +9,6 @@ buildscript {
 }
 
 apply plugin: 'com.android.library'
-
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
@@ -34,10 +31,9 @@ android {
 
 repositories {
     mavenCentral()
-    google()
 }
 
 dependencies {
-    implementation 'com.facebook.react:react-native:+'
-    implementation 'com.zoho.salesiq:mobilisten:2.3.2'
+    compile 'com.facebook.react:react-native:+'
+    implementation 'com.zoho.salesiq:mobilisten:3.0'
 }

@@ -198,5 +198,8 @@ module.exports = {
     },
     addEventListener: function (type, listener){
         listener = emitter.addListener(type, listener);
+    },
+    syncThemeWithOS: function(sync){
+      RNZohoSalesIQ.syncThemeWithOS(sync);
     }
 }

@@ -924,6 +924,16 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     ZohoSalesIQ.Visitor.setLocation(siqVisitorLocation);
   }
 
+  @ReactMethod
+  public void syncThemeWithOS(final boolean sync){
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable() {
+      public void run() {
+        ZohoSalesIQ.syncThemeWithOS(sync);
+      }
+    });
+  }
+
   public static void handleNotification(final Application application, final Map extras) {
     SharedPreferences sharedPreferences = application.getSharedPreferences("siq_session", 0);         // No I18N
     final String appKey = sharedPreferences.getString("salesiq_appkey", null);         // No I18N
