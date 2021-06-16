@@ -145,12 +145,6 @@ module.exports = {
     disablePreChatForms: function(){
       RNZohoSalesIQ.disablePreChatForms();
     },
-    enableVoiceMessages: function(){
-      RNZohoSalesIQ.enableVoiceMessages();
-    },
-    disableVoiceMessages: function(){
-      RNZohoSalesIQ.disableVoiceMessages();
-    },
     enableScreenshotOption: function(){
       RNZohoSalesIQ.enableScreenshotOption();
     },

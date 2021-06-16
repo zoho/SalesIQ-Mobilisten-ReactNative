@@ -83,6 +83,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   private static final String EVENT_RATING_RECEIVED = "EVENT_RATING_RECEIVED";         // No I18N
   private static final String EVENT_PERFORM_CHATACTION = "EVENT_PERFORM_CHATACTION";         // No I18N
   private static final String EVENT_CUSTOMTRIGGER = "EVENT_CUSTOMTRIGGER";         // No I18N
+  private static final String EVENT_QUEUE_POSITIONCHANGE = "EVENT_QUEUE_POSITIONCHANGE";         // No I18N
 
   private static final String TYPE_OPEN = "OPEN";         // No I18N
   private static final String TYPE_CONNECTED = "CONNECTED";         // No I18N
@@ -129,6 +130,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     constants.put("RATING_RECEIVED", EVENT_RATING_RECEIVED);         // No I18N
     constants.put("PERFORM_CHATACTION", EVENT_PERFORM_CHATACTION);         // No I18N
     constants.put("CUSTOMTRIGGER", EVENT_CUSTOMTRIGGER);         // No I18N
+    constants.put("QUEUE_POSITIONCHANGE", EVENT_QUEUE_POSITIONCHANGE);         // No I18N
 
     constants.put("ARTICLE_LIKED", EVENT_ARTICLE_LIKED);         // No I18N
     constants.put("ARTICLE_DISLIKED", EVENT_ARTICLE_DISLIKED);         // No I18N
@@ -769,26 +771,6 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void enableVoiceMessages() {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
-      public void run() {
-        ZohoSalesIQ.Chat.setVisibility(ChatComponent.voiceMessage, true);
-      }
-    });
-  }
-
-  @ReactMethod
-  public void disableVoiceMessages() {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
-      public void run() {
-        ZohoSalesIQ.Chat.setVisibility(ChatComponent.voiceMessage, false);
-      }
-    });
-  }
-
-  @ReactMethod
   public void enableScreenshotOption() {
     Handler handler = new Handler(Looper.getMainLooper());
     handler.post(new Runnable() {
@@ -1137,6 +1119,12 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     public void handleFeedback(VisitorChat visitorChat) {
       WritableMap visitorMap = getChatMapObject(visitorChat);
       eventEmitter(EVENT_FEEDBACK_RECEIVED, visitorMap);
+    }
+
+    @Override
+    public void handleQueuePositionChange(VisitorChat visitorChat) {
+      WritableMap visitorMap = getChatMapObject(visitorChat);
+      eventEmitter(EVENT_QUEUE_POSITIONCHANGE, visitorMap);
     }
 
     @Override

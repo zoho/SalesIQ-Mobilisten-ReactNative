@@ -543,7 +543,7 @@ RCT_EXPORT_METHOD(setLanguage: (NSString *)language_code){
         [[ZohoSalesIQ Chat] setLanguage:LanguageHungarian];
     }else if([language_code isEqualToString:@"zh"]){
         [[ZohoSalesIQ Chat] setLanguage:LanguageChinese];
-    }else if([language_code isEqualToString:@"ha"]){
+    }else if([language_code isEqualToString:@"he"]){
         [[ZohoSalesIQ Chat] setLanguage:LanguageHebrew];
     }else if([language_code isEqualToString:@"ga"]){
         [[ZohoSalesIQ Chat] setLanguage:LanguageIrish];
@@ -739,14 +739,6 @@ RCT_EXPORT_METHOD(enablePreChatForms){
 
 RCT_EXPORT_METHOD(disablePreChatForms){
     [[ZohoSalesIQ Chat] setVisibility:ChatComponentPreChatForm visible:NO];
-}
-
-RCT_EXPORT_METHOD(enableVoiceMessages){
-    [[ZohoSalesIQ Chat] setVisibility:ChatComponentVoiceMessages visible:YES];
-}
-
-RCT_EXPORT_METHOD(disableVoiceMessages){
-    [[ZohoSalesIQ Chat] setVisibility:ChatComponentVoiceMessages visible:NO];
 }
 
 RCT_EXPORT_METHOD(enableScreenshotOption){
@@ -1046,6 +1038,10 @@ RCT_EXPORT_METHOD(unregisterAllChatActions){
 - (void)chatOpenedWithChat:(SIQVisitorChat * _Nullable)chat {
     if (hasListeners)
         [self sendEventWithName:CHAT_OPENED body: [RNZohoSalesIQ getChatObject:chat]];
+}
+
+- (void)chatQueuePositionChangedWithChat:(SIQVisitorChat *)chat {
+    // Implementation.
 }
 
 - (void)chatRatingRecievedWithChat:(SIQVisitorChat * _Nullable)chat {
