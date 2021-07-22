@@ -1,4 +1,4 @@
-package com.reactlibrary;
+package com.zohosalesiq.reactlibrary;
 
 import android.app.Activity;
 import android.app.Application;
