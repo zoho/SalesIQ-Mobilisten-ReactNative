@@ -575,12 +575,7 @@ RCT_EXPORT_METHOD(setOperatorEmail: (NSString *)email){
     [[ZohoSalesIQ Chat] setAgentEmail:email];
 }
 RCT_EXPORT_METHOD(setThemeColorforAndroid: (NSString *)attribute color_code:(NSString *)color_code){
-    unsigned rgbValue = 0;
-    NSScanner *scanner = [NSScanner scannerWithString:color_code];
-    [scanner setScanLocation:1];
-    [scanner scanHexInt:&rgbValue];
-    UIColor *themeColor = [UIColor colorWithRed:((rgbValue & 0xFF0000) >> 16)/255.0 green:((rgbValue & 0xFF00) >> 8)/255.0 blue:(rgbValue & 0xFF)/255.0 alpha:1.0];
-    [[ZohoSalesIQ Chat] setThemeColor: themeColor];
+    // No Implementation
 }
 RCT_EXPORT_METHOD(setThemeColorforiOS: (NSString *)color_code){
     unsigned rgbValue = 0;
@@ -588,7 +583,11 @@ RCT_EXPORT_METHOD(setThemeColorforiOS: (NSString *)color_code){
     [scanner setScanLocation:1];
     [scanner scanHexInt:&rgbValue];
     UIColor *themeColor = [UIColor colorWithRed:((rgbValue & 0xFF0000) >> 16)/255.0 green:((rgbValue & 0xFF00) >> 8)/255.0 blue:(rgbValue & 0xFF)/255.0 alpha:1.0];
-    [[ZohoSalesIQ Chat] setThemeColor: themeColor];
+    if(themeColor!=nil){
+        SIQTheme *theme = [SIQTheme new];
+        [theme setThemeColor:themeColor];
+        [[ZohoSalesIQ Theme] setThemeWithTheme:theme];
+    }
 }
 RCT_EXPORT_METHOD(showOperatorImageInLauncher: (BOOL)show){
     [[ZohoSalesIQ Chat] setVisibility:ChatComponentAttenderImageOnLauncher visible:show];
