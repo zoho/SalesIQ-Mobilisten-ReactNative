@@ -24,6 +24,7 @@ module.exports = {
     EVENT_CHAT_REOPENED : RNZohoSalesIQ.CHAT_REOPENED,
     EVENT_CHAT_ATTENDED : RNZohoSalesIQ.CHAT_ATTENDED,
     EVENT_CHAT_MISSED : RNZohoSalesIQ.CHAT_MISSED,
+    EVENT_CHAT_QUEUE_POSITION_CHANGED : RNZohoSalesIQ.CHAT_QUEUE_POSITION_CHANGED,
     EVENT_FEEDBACK_RECEIVED : RNZohoSalesIQ.FEEDBACK_RECEIVED,
     EVENT_RATING_RECEIVED : RNZohoSalesIQ.RATING_RECEIVED,
 
@@ -195,5 +196,11 @@ module.exports = {
     },
     syncThemeWithOS: function(sync){
       RNZohoSalesIQ.syncThemeWithOS(sync);
+    },
+    getDepartments : function(callback){
+        RNZohoSalesIQ.getDepartments(callback);
+    },
+    isMultipleOpenChatRestricted: function(callback){
+      RNZohoSalesIQ.isMultipleOpenChatRestricted(callback);
     }
 }

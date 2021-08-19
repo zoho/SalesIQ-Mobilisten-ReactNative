@@ -24,15 +24,18 @@ import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.zoho.commons.OnInitCompleteListener;
+import com.zoho.livechat.android.SIQDepartment;
 import com.zoho.livechat.android.SIQVisitor;
 import com.zoho.livechat.android.SIQVisitorLocation;
 import com.zoho.livechat.android.SalesIQCustomAction;
 import com.zoho.livechat.android.VisitorChat;
+import com.zoho.livechat.android.ZohoLiveChat;
 import com.zoho.livechat.android.constants.ConversationType;
 import com.zoho.livechat.android.constants.SalesIQConstants;
 import com.zoho.livechat.android.exception.InvalidEmailException;
 import com.zoho.livechat.android.exception.InvalidVisitorIDException;
 import com.zoho.livechat.android.listeners.ConversationListener;
+import com.zoho.livechat.android.listeners.DepartmentListener;
 import com.zoho.livechat.android.listeners.FAQCategoryListener;
 import com.zoho.livechat.android.listeners.FAQListener;
 import com.zoho.livechat.android.listeners.OpenArticleListener;
@@ -83,7 +86,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   private static final String EVENT_RATING_RECEIVED = "EVENT_RATING_RECEIVED";         // No I18N
   private static final String EVENT_PERFORM_CHATACTION = "EVENT_PERFORM_CHATACTION";         // No I18N
   private static final String EVENT_CUSTOMTRIGGER = "EVENT_CUSTOMTRIGGER";         // No I18N
-  private static final String EVENT_QUEUE_POSITIONCHANGE = "EVENT_QUEUE_POSITIONCHANGE";         // No I18N
+  private static final String EVENT_CHAT_QUEUE_POSITION_CHANGED = "EVENT_CHAT_QUEUE_POSITION_CHANGED";         // No I18N
 
   private static final String TYPE_OPEN = "OPEN";         // No I18N
   private static final String TYPE_CONNECTED = "CONNECTED";         // No I18N
@@ -94,7 +97,6 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   private static final int INVALID_FILTER_CODE = 604;         // No I18N
   private static final String INVALID_FILTER_TYPE = "invalid filter type";         // No I18N
-  private static final String TRYCATCH_EXCEPTION = "trycatch exception";         // No I18N
 
   private static Hashtable<String, SalesIQCustomActionListener> actionsList = new Hashtable<>();
 
@@ -130,7 +132,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     constants.put("RATING_RECEIVED", EVENT_RATING_RECEIVED);         // No I18N
     constants.put("PERFORM_CHATACTION", EVENT_PERFORM_CHATACTION);         // No I18N
     constants.put("CUSTOMTRIGGER", EVENT_CUSTOMTRIGGER);         // No I18N
-    constants.put("QUEUE_POSITIONCHANGE", EVENT_QUEUE_POSITIONCHANGE);         // No I18N
+    constants.put("CHAT_QUEUE_POSITION_CHANGED", EVENT_CHAT_QUEUE_POSITION_CHANGED);         // No I18N
 
     constants.put("ARTICLE_LIKED", EVENT_ARTICLE_LIKED);         // No I18N
     constants.put("ARTICLE_DISLIKED", EVENT_ARTICLE_DISLIKED);         // No I18N
@@ -244,13 +246,46 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
           }
         }
         catch (Exception e){
-          WritableMap errorMap = new WritableNativeMap();
-          errorMap.putInt("code", SalesIQConstants.LocalAPI.TRYCATCH_EXCEPTION_CODE);         // No I18N
-          errorMap.putString("message", TRYCATCH_EXCEPTION);         // No I18N
-          listCallback.invoke(errorMap, null);
+          LiveChatUtil.log(e);
         }
       }
     });
+  }
+
+  @ReactMethod
+  public void getDepartments(@NonNull final Callback departmentCallback){
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable(){
+      public void run(){
+        ZohoSalesIQ.Chat.getDepartments(new DepartmentListener() {
+          @Override
+          public void onSuccess(ArrayList<SIQDepartment> departmentList) {
+            if (departmentList != null){
+              WritableArray array = new WritableNativeArray();
+              for (int i=0; i<departmentList.size(); i++){
+                SIQDepartment department = departmentList.get(i);
+                WritableMap departmentMap = getDepartmentMapObject(department);
+                array.pushMap(departmentMap);
+              }
+              departmentCallback.invoke(null, array);
+            }
+          }
+
+          @Override
+          public void onFailure(int code, String message) {
+            WritableMap errorMap = new WritableNativeMap();
+            errorMap.putInt("code", code);         // No I18N
+            errorMap.putString("message", message);         // No I18N
+            departmentCallback.invoke(errorMap, null);
+          }
+        });
+      }
+    });
+  }
+
+  @ReactMethod
+  public void isMultipleOpenChatRestricted(@NonNull final Callback callback){
+    callback.invoke(ZohoSalesIQ.Chat.isMultipleOpenRestricted());
   }
 
   @ReactMethod
@@ -1004,6 +1039,9 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     visitorMap.putString("id", chat.getChatID());         // No I18N
     visitorMap.putInt("unreadCount", chat.getUnreadCount());         // No I18N
     visitorMap.putBoolean("isBotAttender", chat.isBotAttender());         // No I18N
+    if (chat.getQueuePosition() > 0){
+      visitorMap.putInt("queuePosition", chat.getQueuePosition());         // No I18N
+    }
     if (chat.getQuestion() != null){
       visitorMap.putString("question", chat.getQuestion());         // No I18N
     }
@@ -1020,8 +1058,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
       visitorMap.putString("lastMessageSender", chat.getLastMessageSender());         // No I18N
     }
     if (chat.getLastMessageTime() > 0){
-      int lastMessageTime = (int) chat.getLastMessageTime();
-      visitorMap.putInt("lastMessageTime", lastMessageTime);         // No I18N
+      visitorMap.putString("lastMessageTime", LiveChatUtil.getString(chat.getLastMessageTime()));         // No I18N
     }
     if (chat.getAttenderName() != null) {
       visitorMap.putString("attenderName", chat.getAttenderName());         // No I18N
@@ -1056,6 +1093,14 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
       articleMap.putString("categoryName", article.getCategoryName());         // No I18N
     }
     return articleMap;
+  }
+
+  public WritableMap getDepartmentMapObject(SIQDepartment department) {
+    WritableMap departmentMap = new WritableNativeMap();
+    departmentMap.putString("id", department.id);         // No I18N
+    departmentMap.putString("name", department.name);         // No I18N
+    departmentMap.putBoolean("available", department.available);         // No I18N
+    return departmentMap;
   }
 
   public WritableMap getVisitorInfoObject(SIQVisitor siqVisitor) {
@@ -1124,7 +1169,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     @Override
     public void handleQueuePositionChange(VisitorChat visitorChat) {
       WritableMap visitorMap = getChatMapObject(visitorChat);
-      eventEmitter(EVENT_QUEUE_POSITIONCHANGE, visitorMap);
+      eventEmitter(EVENT_CHAT_QUEUE_POSITION_CHANGED, visitorMap);
     }
 
     @Override

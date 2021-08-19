@@ -14,15 +14,13 @@ RCT_EXPORT_MODULE();
 }
 
 RCT_EXPORT_METHOD(init:(NSString *)appKey accessKey:(NSString *)accessKey){
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
-            
-        }];
-        [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
-        ZohoSalesIQ.delegate = self;
-        [ZohoSalesIQ Chat].delegate = self;
-        [ZohoSalesIQ FAQ].delegate = self;
-    });
+    [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
+        
+    }];
+    [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
+    ZohoSalesIQ.delegate = self;
+    [ZohoSalesIQ Chat].delegate = self;
+    [ZohoSalesIQ FAQ].delegate = self;
     if(actionDictionary == nil){
         actionDictionary = [[NSMutableDictionary<NSString *, SIQActionHandler *> alloc] init];
     }
@@ -31,24 +29,22 @@ RCT_EXPORT_METHOD(init:(NSString *)appKey accessKey:(NSString *)accessKey){
 
 RCT_EXPORT_METHOD(initWithCallback:(NSString *)appKey accessKey:(NSString *)accessKey callback:(RCTResponseSenderBlock)callback){
     __block BOOL _initComplete = false;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
-            NSNumber *success = [NSNumber numberWithBool:complete];
-            if(_initComplete == false){
-                _initComplete = true;
-                callback(@[success]);
-            }
-            if(success){
-                
-            }else{
-                
-            }
-        }];
-        [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
-        ZohoSalesIQ.delegate = self;
-        [ZohoSalesIQ Chat].delegate = self;
-        [ZohoSalesIQ FAQ].delegate = self;
-    });
+    [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
+        NSNumber *success = [NSNumber numberWithBool:complete];
+        if(_initComplete == false){
+            _initComplete = true;
+            callback(@[success]);
+        }
+        if(success){
+            
+        }else{
+            
+        }
+    }];
+    [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
+    ZohoSalesIQ.delegate = self;
+    [ZohoSalesIQ Chat].delegate = self;
+    [ZohoSalesIQ FAQ].delegate = self;
     if(actionDictionary == nil){
         actionDictionary = [[NSMutableDictionary<NSString *, SIQActionHandler *> alloc] init];
     }
@@ -89,6 +85,7 @@ NSString *CHAT_MISSED = @"CHAT_MISSED";
 NSString *CHAT_OPENED = @"CHAT_OPENED";
 NSString *RATING_RECEIVED = @"RATING_RECEIVED";
 NSString *CHAT_REOPENED = @"CHAT_REOPENED";
+NSString *CHAT_QUEUE_POSITION_CHANGED = @"CHAT_QUEUE_POSITION_CHANGED";
 NSString *PERFORM_CHATACTION = @"PERFORM_CHATACTION";
 
 NSString *UNREAD_COUNT_CHANGED = @"UNREAD_COUNT_CHANGED";
@@ -128,7 +125,8 @@ NSString *TYPE_ENDED = @"ENDED";
              UNREAD_COUNT_CHANGED,
              VISITOR_IPBLOCKED,
              PERFORM_CHATACTION,
-             CUSTOMTRIGGER];
+             CUSTOMTRIGGER,
+             CHAT_QUEUE_POSITION_CHANGED];
 }
 
 - (NSDictionary *) constantsToExport {
@@ -163,7 +161,8 @@ NSString *TYPE_ENDED = @"ENDED";
         @"TYPE_ENDED": TYPE_ENDED,
         @"TYPE_TRIGGERED": TYPE_TRIGGERED,
         @"TYPE_PROACTIVE": TYPE_PROACTIVE,
-        @"CUSTOMTRIGGER": CUSTOMTRIGGER
+        @"CUSTOMTRIGGER": CUSTOMTRIGGER,
+        @"CHAT_QUEUE_POSITION_CHANGED": CHAT_QUEUE_POSITION_CHANGED
     };
 }
 
@@ -462,8 +461,49 @@ NSString *TYPE_ENDED = @"ENDED";
         }
         
         [chatDict setObject: @([chat unreadCount])  forKey: @"unreadCount"];
+        
+        NSInteger queuePosition = [chat queuePosition];
+        if(queuePosition > 0) {
+            [chatDict setObject: @(queuePosition)  forKey: @"queuePosition"];
+        }
+        
     }
     return chatDict;
+}
+
++ (NSMutableDictionary *)getDepartmentObject: (SIQDepartment*)argument {
+    
+    NSMutableDictionary *departmentDictionary = [NSMutableDictionary dictionary];
+    
+    NSString *departmentName = [argument name];
+    NSString *departmentID = [argument id];
+    BOOL departmentAvailable = [argument available];
+    
+    if(departmentID != nil){
+        [departmentDictionary setObject:departmentID forKey:@"id"];
+    }
+    
+    if(departmentName != nil){
+        [departmentDictionary setObject:departmentName forKey:@"name"];
+    }
+    
+    [departmentDictionary setObject: [NSNumber numberWithBool: departmentAvailable]   forKey: @"available"];
+    
+    return departmentDictionary;
+    
+}
+
++ (NSMutableArray *)getDepartmentList: (NSArray<SIQDepartment *> *) departments
+{
+    NSMutableArray *departmentsArray = [NSMutableArray array];
+    NSInteger i = 0;
+    for (SIQDepartment *department in departments) {
+        NSMutableDictionary *departmentDictionary = [NSMutableDictionary dictionary];
+        departmentDictionary = [self getDepartmentObject:department];
+        [departmentsArray insertObject:departmentDictionary atIndex:i];
+        i = i + 1;
+    }
+    return departmentsArray;
 }
 
 + (NSMutableArray *)getChatList: (NSArray<SIQVisitorChat *> *) chats
@@ -596,9 +636,7 @@ RCT_EXPORT_METHOD(showOperatorImageInChat: (BOOL)visibility){
     [[ZohoSalesIQ Chat] setVisibility:ChatComponentAttenderImageInChat visible:visibility];
 }
 RCT_EXPORT_METHOD(setLauncherVisibility : (BOOL)show){
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [ZohoSalesIQ showLauncher:show];
-    });
+    [ZohoSalesIQ showLauncher:show];
 }
 RCT_EXPORT_METHOD(showOfflineMessage: (BOOL)visibility){
     [[ZohoSalesIQ Chat] showOfflineMessage:visibility];
@@ -691,14 +729,10 @@ RCT_EXPORT_METHOD(startChat: (NSString *)message){
     [[ZohoSalesIQ Chat] startChatWithQuestion:(message)];
 }
 RCT_EXPORT_METHOD(registerVisitor: (NSString *)uniqueid){
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [ZohoSalesIQ registerVisitor:uniqueid];
-    });
+    [ZohoSalesIQ registerVisitor:uniqueid completion:nil];
 }
 RCT_EXPORT_METHOD(unregisterVisitor){
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [ZohoSalesIQ unregisterVisitor];
-    });
+    [ZohoSalesIQ unregisterVisitorWithCompletion:nil];
 }
 RCT_EXPORT_METHOD(setPageTitle: (NSString *)pagetitle){
     [[ZohoSalesIQ Tracking] setPageTitle:pagetitle];
@@ -804,23 +838,37 @@ RCT_EXPORT_METHOD(getChatsWithFilter:(NSString *)status callback:(RCTResponseSen
     }];
 }
 
+RCT_EXPORT_METHOD(getDepartments:(RCTResponseSenderBlock)callback)
+{
+    [[ZohoSalesIQ Chat] getDepartmentsWithCompletion:^(NSError * _Nullable error, NSArray<SIQDepartment *> * _Nullable departments) {
+        if(error != nil){
+            NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getErrorObject:error];
+            callback(@[errorDictionary, @""]);
+        }else{
+            NSMutableArray *departmentsArray = [NSMutableArray array];
+            departmentsArray = [RNZohoSalesIQ getDepartmentList:departments];
+            callback(@[[NSNull null], departmentsArray]);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(isMultipleOpenChatRestricted:(RCTResponseSenderBlock)callback)
+{
+    BOOL restricted = [[ZohoSalesIQ Chat] multipleOpenRestricted];
+    callback(@[[NSNumber numberWithBool:restricted]]);
+}
+
 //MARK:- CHAT OPEN/SHOW API
 RCT_EXPORT_METHOD(openChat){
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[ZohoSalesIQ Chat] showWithReferenceID:nil new:NO];
-    });
+    [[ZohoSalesIQ Chat] showWithReferenceID:nil new:NO];
 }
 
 RCT_EXPORT_METHOD(openChatWithID: (NSString *)id){
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[ZohoSalesIQ Chat] showWithReferenceID:id new:NO];
-    });
+    [[ZohoSalesIQ Chat] showWithReferenceID:id new:NO];
 }
 
 RCT_EXPORT_METHOD(openNewChat){
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[ZohoSalesIQ Chat] showWithReferenceID:nil new:YES];
-    });
+    [[ZohoSalesIQ Chat] showWithReferenceID:nil new:YES];
 }
 
 //MARK:- CHAT END SESSION API
@@ -870,16 +918,14 @@ RCT_EXPORT_METHOD(getArticlesWithCategoryID:(NSString *)catid callback:(RCTRespo
 //MARK:- OPEN ARTICLE API
 RCT_EXPORT_METHOD(openArticle:(NSString *)id callback:(RCTResponseSenderBlock)callback)
 {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[ZohoSalesIQ FAQ] openArticleWithArticleID:id :^(NSError * _Nullable error)  {
-            if(error != nil){
-                NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getErrorObject:error];
-                callback(@[errorDictionary]);
-            }else{
-                callback(@[[NSNull null]]);
-            }
-        }];
-    });
+    [[ZohoSalesIQ FAQ] openArticleWithArticleID:id :^(NSError * _Nullable error)  {
+        if(error != nil){
+            NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getErrorObject:error];
+            callback(@[errorDictionary]);
+        }else{
+            callback(@[[NSNull null]]);
+        }
+    }];
 }
 
 //MARK:- GET ATTENDER IMAGE
@@ -1040,7 +1086,8 @@ RCT_EXPORT_METHOD(unregisterAllChatActions){
 }
 
 - (void)chatQueuePositionChangedWithChat:(SIQVisitorChat *)chat {
-    // Implementation.
+    if (hasListeners)
+        [self sendEventWithName:CHAT_QUEUE_POSITION_CHANGED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatRatingRecievedWithChat:(SIQVisitorChat * _Nullable)chat {
