@@ -14,10 +14,10 @@ RCT_EXPORT_MODULE();
 }
 
 RCT_EXPORT_METHOD(init:(NSString *)appKey accessKey:(NSString *)accessKey){
+    [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
     [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
         
     }];
-    [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
     ZohoSalesIQ.delegate = self;
     [ZohoSalesIQ Chat].delegate = self;
     [ZohoSalesIQ FAQ].delegate = self;
@@ -29,6 +29,7 @@ RCT_EXPORT_METHOD(init:(NSString *)appKey accessKey:(NSString *)accessKey){
 
 RCT_EXPORT_METHOD(initWithCallback:(NSString *)appKey accessKey:(NSString *)accessKey callback:(RCTResponseSenderBlock)callback){
     __block BOOL _initComplete = false;
+    [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
     [ZohoSalesIQ initWithAppKey:appKey accessKey:accessKey completion:^(BOOL complete) {
         NSNumber *success = [NSNumber numberWithBool:complete];
         if(_initComplete == false){
@@ -41,7 +42,6 @@ RCT_EXPORT_METHOD(initWithCallback:(NSString *)appKey accessKey:(NSString *)acce
             
         }
     }];
-    [ZohoSalesIQ setPlatformWithPlatform:@"ReactNative"];
     ZohoSalesIQ.delegate = self;
     [ZohoSalesIQ Chat].delegate = self;
     [ZohoSalesIQ FAQ].delegate = self;
