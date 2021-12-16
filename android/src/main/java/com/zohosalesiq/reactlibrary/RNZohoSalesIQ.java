@@ -534,7 +534,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     handler.post(new Runnable() {
       public void run() {
         Activity activity = getCurrentActivity();
-        if (activity != null) {
+        if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
           ZohoSalesIQ.getApplicationManager().setCurrentActivity(activity);
           ZohoSalesIQ.Chat.showOperatorImageInLauncher(show);
         }
@@ -589,7 +589,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     handler.post(new Runnable() {
       public void run() {
         Activity activity = getCurrentActivity();
-        if (activity != null) {
+        if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
           ZohoSalesIQ.getApplicationManager().setCurrentActivity(activity);
           ZohoSalesIQ.getApplicationManager().refreshChatBubble();
         }
@@ -951,6 +951,16 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     });
   }
 
+  @ReactMethod
+  public void addListener(String eventName) {
+    // Keep: Required for RN built in Event Emitter Calls.
+  }
+
+  @ReactMethod
+  public void removeListeners(Integer count) {
+    // Keep: Required for RN built in Event Emitter Calls.
+  }
+
   public static void handleNotification(final Application application, final Map extras) {
     SharedPreferences sharedPreferences = application.getSharedPreferences("siq_session", 0);         // No I18N
     final String appKey = sharedPreferences.getString("salesiq_appkey", null);         // No I18N
@@ -979,7 +989,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
           if (fcmtoken != null) {
             ZohoSalesIQ.Notification.enablePush(fcmtoken, istestdevice);
           }
-          if (activity != null) {
+          if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
               public void run() {
@@ -1000,7 +1010,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         }
       });
       ZohoSalesIQ.setPlatformName(SalesIQConstants.Platform.REACT_NATIVE);
-      if (activity != null) {
+      if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
         ZohoSalesIQ.getApplicationManager().setCurrentActivity(activity);
         ZohoSalesIQ.getApplicationManager().setAppActivity(activity);
       }
