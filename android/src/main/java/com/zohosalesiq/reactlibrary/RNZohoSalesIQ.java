@@ -952,6 +952,16 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void isChatEnabled(@NonNull final Callback callback){
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable() {
+      public void run() {
+        callback.invoke(ZohoSalesIQ.isSDKEnabled());
+      }
+    });
+  }
+
+  @ReactMethod
   public void addListener(String eventName) {
     // Keep: Required for RN built in Event Emitter Calls.
   }

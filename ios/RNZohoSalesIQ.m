@@ -782,6 +782,12 @@ RCT_EXPORT_METHOD(disableScreenshotOption){
     [[ZohoSalesIQ Chat] setVisibility:ChatComponentScreenshotOption visible:NO];
 }
 
+RCT_EXPORT_METHOD(isChatEnabled:(RCTResponseSenderBlock)callback)
+{
+    NSNumber *chatEnabled = [NSNumber numberWithBool:ZohoSalesIQ.Chat.isEnabled];
+    callback(@[chatEnabled]);
+}
+
 //MARK:- CHAT GET LIST API
 RCT_EXPORT_METHOD(getChats:(RCTResponseSenderBlock)callback)
 {
