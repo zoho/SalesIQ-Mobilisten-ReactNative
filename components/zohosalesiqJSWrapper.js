@@ -164,6 +164,9 @@ module.exports = {
     setPageTitle : function(title){
       RNZohoSalesIQ.setPageTitle(title);
     },
+    setWebhookNotificationCustomID : function(customID){
+      RNZohoSalesIQ.setWebhookNotificationCustomID(customID);
+    },
     setCustomAction : function(actionName){
       RNZohoSalesIQ.setCustomAction(actionName);
     },

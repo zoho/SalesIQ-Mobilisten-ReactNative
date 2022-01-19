@@ -960,6 +960,16 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
       }
     });
   }
+  
+  @ReactMethod
+  public void setWebhookNotificationCustomID(final String customID){
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable() {
+      public void run() {
+        ZohoSalesIQ.setWebhookNotificationID(customID);
+      }
+    });
+  }
 
   @ReactMethod
   public void addListener(String eventName) {

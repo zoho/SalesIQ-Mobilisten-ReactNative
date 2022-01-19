@@ -529,6 +529,11 @@ NSString *TYPE_ENDED = @"ENDED";
     }
 }
 
++ (void)setWebhookNotificationCustomID: (NSMutableString *)customID
+{
+    [ZohoSalesIQ setWebhookNotificationCustomID:customID];
+}
+
 + (void)processNotificationWithInfo: (NSDictionary *) info
 {
     [ZohoSalesIQ processNotificationWithInfo:info];
@@ -733,6 +738,9 @@ RCT_EXPORT_METHOD(registerVisitor: (NSString *)uniqueid){
 }
 RCT_EXPORT_METHOD(unregisterVisitor){
     [ZohoSalesIQ unregisterVisitorWithCompletion:nil];
+}
+RCT_EXPORT_METHOD(setWebhookNotificationCustomID: (NSString *)customID){
+    [ZohoSalesIQ setWebhookNotificationCustomID:customID];
 }
 RCT_EXPORT_METHOD(setPageTitle: (NSString *)pagetitle){
     [[ZohoSalesIQ Tracking] setPageTitle:pagetitle];

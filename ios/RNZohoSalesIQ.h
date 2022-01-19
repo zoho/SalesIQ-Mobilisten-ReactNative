@@ -15,6 +15,7 @@
 @interface RNZohoSalesIQ : RCTEventEmitter <RCTBridgeModule, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQFAQDelegate>
 
 + (void)enablePush:(NSString *)token isTestDevice:(BOOL)isTestDevice isProductionMode:(BOOL)isProductionMode;
++ (void)setWebhookNotificationCustomID:(NSString *)customID;
 + (void)processNotificationWithInfo: (NSDictionary *) info;
 + (BOOL)isMobilistenNotification:(NSDictionary *)info;
 + (void)handleNotificationAction: (NSDictionary *) info response:(NSString *) response;
