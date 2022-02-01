@@ -24,6 +24,7 @@ import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.zoho.commons.OnInitCompleteListener;
+import com.zoho.livechat.android.NotificationListener;
 import com.zoho.livechat.android.SIQDepartment;
 import com.zoho.livechat.android.SIQVisitor;
 import com.zoho.livechat.android.SIQVisitorLocation;
@@ -87,6 +88,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   private static final String EVENT_PERFORM_CHATACTION = "EVENT_PERFORM_CHATACTION";         // No I18N
   private static final String EVENT_CUSTOMTRIGGER = "EVENT_CUSTOMTRIGGER";         // No I18N
   private static final String EVENT_CHAT_QUEUE_POSITION_CHANGED = "EVENT_CHAT_QUEUE_POSITION_CHANGED";         // No I18N
+  private static final String EVENT_CHAT_UNREAD_COUNT_CHANGED = "EVENT_CHAT_UNREAD_COUNT_CHANGED";         // No I18N
 
   private static final String TYPE_OPEN = "OPEN";         // No I18N
   private static final String TYPE_CONNECTED = "CONNECTED";         // No I18N
@@ -133,6 +135,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     constants.put("PERFORM_CHATACTION", EVENT_PERFORM_CHATACTION);         // No I18N
     constants.put("CUSTOMTRIGGER", EVENT_CUSTOMTRIGGER);         // No I18N
     constants.put("CHAT_QUEUE_POSITION_CHANGED", EVENT_CHAT_QUEUE_POSITION_CHANGED);         // No I18N
+    constants.put("CHAT_UNREAD_COUNT_CHANGED", EVENT_CHAT_UNREAD_COUNT_CHANGED);         // No I18N
 
     constants.put("ARTICLE_LIKED", EVENT_ARTICLE_LIKED);         // No I18N
     constants.put("ARTICLE_DISLIKED", EVENT_ARTICLE_DISLIKED);         // No I18N
@@ -422,6 +425,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
           ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.FAQ.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.ChatActions.setListener(new RNZohoSalesIQListener());
+          ZohoSalesIQ.Notification.setListener(new RNZohoSalesIQListener());
         }
       });
     }
@@ -439,6 +443,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
           ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.FAQ.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.ChatActions.setListener(new RNZohoSalesIQListener());
+          ZohoSalesIQ.Notification.setListener(new RNZohoSalesIQListener());
         }
       });
     }
@@ -962,6 +967,16 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void getChatUnreadCount(@NonNull final Callback callback){
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(new Runnable() {
+      public void run() {
+        callback.invoke(ZohoSalesIQ.Notification.getBadgeCount());
+      }
+    });
+  }
+
+  @ReactMethod
   public void addListener(String eventName) {
     // Keep: Required for RN built in Event Emitter Calls.
   }
@@ -1178,7 +1193,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     return infoMap;
   }
 
-  public class RNZohoSalesIQListener implements SalesIQListener, SalesIQChatListener, SalesIQFAQListener, SalesIQActionListener {
+  public class RNZohoSalesIQListener implements SalesIQListener, SalesIQChatListener, SalesIQFAQListener, SalesIQActionListener, NotificationListener {
 
     @Override
     public void handleFeedback(VisitorChat visitorChat) {
@@ -1304,8 +1319,12 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
       actionDetailsMap.putString("clientActionName", salesIQCustomAction.clientActionName);         // No I18N
 
       actionsList.put(uuid.toString(), salesIQCustomActionListener);
-
       eventEmitter(EVENT_PERFORM_CHATACTION, actionDetailsMap);
+    }
+
+    @Override
+    public void onBadgeChange(int count) {
+      eventEmitter(EVENT_CHAT_UNREAD_COUNT_CHANGED, count);
     }
   }
 }

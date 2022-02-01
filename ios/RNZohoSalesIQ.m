@@ -86,9 +86,9 @@ NSString *CHAT_OPENED = @"CHAT_OPENED";
 NSString *RATING_RECEIVED = @"RATING_RECEIVED";
 NSString *CHAT_REOPENED = @"CHAT_REOPENED";
 NSString *CHAT_QUEUE_POSITION_CHANGED = @"CHAT_QUEUE_POSITION_CHANGED";
+NSString *CHAT_UNREAD_COUNT_CHANGED = @"CHAT_UNREAD_COUNT_CHANGED";
 NSString *PERFORM_CHATACTION = @"PERFORM_CHATACTION";
 
-NSString *UNREAD_COUNT_CHANGED = @"UNREAD_COUNT_CHANGED";
 NSString *VISITOR_IPBLOCKED = @"VISITOR_IPBLOCKED";
 NSString *CUSTOMTRIGGER = @"CUSTOMTRIGGER";
 
@@ -122,11 +122,11 @@ NSString *TYPE_ENDED = @"ENDED";
              CHAT_OPENED,
              RATING_RECEIVED,
              CHAT_REOPENED,
-             UNREAD_COUNT_CHANGED,
              VISITOR_IPBLOCKED,
              PERFORM_CHATACTION,
              CUSTOMTRIGGER,
-             CHAT_QUEUE_POSITION_CHANGED];
+             CHAT_QUEUE_POSITION_CHANGED,
+             CHAT_UNREAD_COUNT_CHANGED];
 }
 
 - (NSDictionary *) constantsToExport {
@@ -151,7 +151,7 @@ NSString *TYPE_ENDED = @"ENDED";
         @"CHAT_OPENED": CHAT_OPENED,
         @"RATING_RECEIVED": RATING_RECEIVED,
         @"CHAT_REOPENED": CHAT_REOPENED,
-        @"UNREAD_COUNT_CHANGED": UNREAD_COUNT_CHANGED,
+        @"CHAT_UNREAD_COUNT_CHANGED": CHAT_UNREAD_COUNT_CHANGED,
         @"VISITOR_IPBLOCKED": VISITOR_IPBLOCKED,
         @"TYPE_OPEN": TYPE_OPEN,
         @"TYPE_WAITING": TYPE_WAITING,
@@ -788,6 +788,12 @@ RCT_EXPORT_METHOD(isChatEnabled:(RCTResponseSenderBlock)callback)
     callback(@[chatEnabled]);
 }
 
+RCT_EXPORT_METHOD(getChatUnreadCount:(RCTResponseSenderBlock)callback)
+{
+    NSNumber *unreadCount = [NSNumber numberWithInteger: [[ZohoSalesIQ Chat] getUnreadMessageCount]];
+    callback(@[unreadCount]);
+}
+
 //MARK:- CHAT GET LIST API
 RCT_EXPORT_METHOD(getChats:(RCTResponseSenderBlock)callback)
 {
@@ -1108,7 +1114,7 @@ RCT_EXPORT_METHOD(unregisterAllChatActions){
 
 - (void)unreadCountChanged:(NSInteger)count {
     if (hasListeners)
-        [self sendEventWithName:UNREAD_COUNT_CHANGED body: @(count)];
+        [self sendEventWithName:CHAT_UNREAD_COUNT_CHANGED body: @(count)];
 }
 
 - (void)visitorIPBlocked {

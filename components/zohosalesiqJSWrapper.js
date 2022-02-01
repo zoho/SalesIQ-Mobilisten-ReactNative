@@ -25,6 +25,7 @@ module.exports = {
     EVENT_CHAT_ATTENDED : RNZohoSalesIQ.CHAT_ATTENDED,
     EVENT_CHAT_MISSED : RNZohoSalesIQ.CHAT_MISSED,
     EVENT_CHAT_QUEUE_POSITION_CHANGED : RNZohoSalesIQ.CHAT_QUEUE_POSITION_CHANGED,
+    EVENT_CHAT_UNREAD_COUNT_CHANGED : RNZohoSalesIQ.CHAT_UNREAD_COUNT_CHANGED,
     EVENT_FEEDBACK_RECEIVED : RNZohoSalesIQ.FEEDBACK_RECEIVED,
     EVENT_RATING_RECEIVED : RNZohoSalesIQ.RATING_RECEIVED,
 
@@ -202,5 +203,11 @@ module.exports = {
     },
     isMultipleOpenChatRestricted: function(callback){
       RNZohoSalesIQ.isMultipleOpenChatRestricted(callback);
+    },
+    isChatEnabled: function(callback){
+      RNZohoSalesIQ.isChatEnabled(callback);
+    },
+    getChatUnreadCount: function(callback){
+      RNZohoSalesIQ.getChatUnreadCount(callback);
     }
 }
