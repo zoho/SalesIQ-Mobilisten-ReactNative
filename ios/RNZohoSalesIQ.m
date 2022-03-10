@@ -603,6 +603,18 @@ RCT_EXPORT_METHOD(setLanguage: (NSString *)language_code){
         [[ZohoSalesIQ Chat] setLanguage:LanguageSlovenian];
     }else if([language_code isEqualToString:@"hr"]){
         [[ZohoSalesIQ Chat] setLanguage:LanguageCroatian];
+    }else if([language_code isEqualToString:@"br"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageBulgarian];
+    }else if([language_code isEqualToString:@"vi"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageVietnamese];
+    }else if([language_code isEqualToString:@"fil"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageFilipino];
+    }else if([language_code isEqualToString:@"fi"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageFinnish];
+    }else if([language_code isEqualToString:@"zh_TW"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageChineseTraditional];
+    }else if([language_code isEqualToString:@"in"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageIndonesian];
     }else{
         [[ZohoSalesIQ Chat] setLanguage:LanguageEnglish];
     }
