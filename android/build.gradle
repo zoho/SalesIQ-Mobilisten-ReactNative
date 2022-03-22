@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         jcenter()
+        google()
     }
 
     dependencies {
@@ -9,6 +10,7 @@ buildscript {
 }
 
 apply plugin: 'com.android.library'
+
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
@@ -31,6 +33,7 @@ android {
 
 repositories {
     mavenCentral()
+    google()
 }
 
 dependencies {

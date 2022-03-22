@@ -443,6 +443,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
           ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.FAQ.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.ChatActions.setListener(new RNZohoSalesIQListener());
+          ZohoSalesIQ.Notification.setListener(new RNZohoSalesIQListener());
         }
       });
     }
