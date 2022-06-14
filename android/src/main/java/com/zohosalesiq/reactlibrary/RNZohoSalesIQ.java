@@ -102,6 +102,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   private static Hashtable<String, SalesIQCustomActionListener> actionsList = new Hashtable<>();
 
+  private static final Handler HANDLER = new Handler(Looper.getMainLooper());
+
   public RNZohoSalesIQ(ReactApplicationContext reactContext) {
     super(reactContext);
     this.reactContext = reactContext;
@@ -179,9 +181,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void getChats(@NonNull final Callback listCallback){
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable(){
+  public void getChats(@NonNull final Callback listCallback){  
+    HANDLER.post(new Runnable(){
       public void run(){
         ZohoSalesIQ.Chat.getList(new ConversationListener(){
           @Override
@@ -211,8 +212,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getChatsWithFilter(@NonNull final String filter, @NonNull final Callback listCallback) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         try {
           if (isValidFilterName(filter)) {
@@ -257,8 +257,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getDepartments(@NonNull final Callback departmentCallback){
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable(){
+    HANDLER.post(new Runnable(){
       public void run(){
         ZohoSalesIQ.Chat.getDepartments(new DepartmentListener() {
           @Override
@@ -293,8 +292,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getArticles(@NonNull final Callback articlesCallback) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.FAQ.getArticles(new FAQListener() {
           @Override
@@ -324,8 +322,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getArticlesWithCategoryID(@NonNull final String categoryId, @NonNull final Callback articlesCallback) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.FAQ.getArticles(categoryId, new FAQListener() {
           @Override
@@ -355,8 +352,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getCategories(@NonNull final Callback categoryCallback) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.FAQ.getCategories(new FAQCategoryListener() {
           @Override
@@ -392,8 +388,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void openArticle(final String id, @NonNull final Callback articlesCallback) {
-    final Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.FAQ.openArticle(id, new OpenArticleListener() {
           @Override
@@ -417,9 +412,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   public void init(final String appKey, final String accessKey) {
     final Activity activity = getCurrentActivity();
     if (activity != null) {
-      Handler handler = new Handler(Looper.getMainLooper());
-      handler.post(new Runnable() {
-        public void run() {
+      HANDLER.post(new Runnable() {
+        public void run() {        
           initSalesIQ(activity.getApplication(), activity, appKey, accessKey, null);
           ZohoSalesIQ.setListener(new RNZohoSalesIQListener());
           ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
@@ -434,9 +428,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   @ReactMethod
   public void initWithCallback(final String appKey, final String accessKey, final Callback initCallback ) {
     final Activity activity = getCurrentActivity();
-    if (activity != null) {
-      Handler handler = new Handler(Looper.getMainLooper());
-      handler.post(new Runnable() {
+    if (activity != null) {  
+      HANDLER.post(new Runnable() {
         public void run() {
           initSalesIQ(activity.getApplication(), activity, appKey, accessKey, initCallback);
           ZohoSalesIQ.setListener(new RNZohoSalesIQListener());
@@ -451,8 +444,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setChatTitle(final String title) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setTitle(title);
       }
@@ -461,8 +453,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setLanguage(final String code) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setLanguage(code);
       }
@@ -471,8 +462,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setDepartment(final String department) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setDepartment(department);
       }
@@ -481,8 +471,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setDepartments(final ArrayList department) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setDepartments(department);
       }
@@ -491,8 +480,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setOperatorEmail(final String email) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         try {
           ZohoSalesIQ.Chat.setOperatorEmail(email);
@@ -505,8 +493,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void showOperatorImageInChat(final Boolean visible) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setVisibility(ChatComponent.operatorImage, visible);
       }
@@ -515,8 +502,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setFeedbackVisibility(final Boolean visible) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setVisibility(ChatComponent.feedback, visible);
       }
@@ -525,8 +511,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setRatingVisibility(final Boolean visible) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setVisibility(ChatComponent.rating, visible);
       }
@@ -535,8 +520,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void showOperatorImageInLauncher(final Boolean show) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         Activity activity = getCurrentActivity();
         if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
@@ -549,8 +533,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void openChat() {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.show();
       }
@@ -559,8 +542,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void openChatWithID(final String chat_id) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.open(chat_id);
       }
@@ -569,8 +551,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void showOfflineMessage(final Boolean show) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.showOfflineMessage(show);
       }
@@ -579,8 +560,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void endChat(final String chat_id) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.endChat(chat_id);
       }
@@ -590,8 +570,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   @ReactMethod
   public void setLauncherVisibility(Boolean visible) {
     ZohoSalesIQ.Chat.showLauncher(visible);
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         Activity activity = getCurrentActivity();
         if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
@@ -604,8 +583,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setVisitorName(final String name) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Visitor.setName(name);
       }
@@ -614,8 +592,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setVisitorEmail(final String email) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Visitor.setEmail(email);
       }
@@ -624,8 +601,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setVisitorContactNumber(final String number) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Visitor.setContactNumber(number);
       }
@@ -634,8 +610,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setVisitorAddInfo(final String key, final String value) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Visitor.addInfo(key, value);
       }
@@ -644,8 +619,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setQuestion(final String question) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Visitor.setQuestion(question);
       }
@@ -654,8 +628,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void startChat(final String question) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Visitor.startChat(question);
       }
@@ -664,8 +637,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setConversationVisibility(final Boolean visible) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Conversation.setVisibility(visible);
       }
@@ -674,8 +646,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setConversationListTitle(final String title) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Conversation.setTitle(title);
       }
@@ -684,8 +655,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setFAQVisibility(final Boolean visible) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.FAQ.setVisibility(visible);
       }
@@ -694,8 +664,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void registerVisitor(final String uniqueid){
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         try {
           ZohoSalesIQ.registerVisitor(uniqueid);
@@ -708,8 +677,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void unregisterVisitor(){
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.unregisterVisitor(getCurrentActivity());
       }
@@ -718,8 +686,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setPageTitle(final String title) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Tracking.setPageTitle(title);
       }
@@ -728,8 +695,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setCustomAction(final String actionName) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Tracking.setCustomAction(actionName);
       }
@@ -738,8 +704,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void performCustomAction(final String actionName) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Tracking.setCustomAction(actionName);
       }
@@ -748,8 +713,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void enableInAppNotification() {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Notification.enableInApp();
       }
@@ -758,8 +722,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void disableInAppNotification() {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Notification.disableInApp();
       }
@@ -782,8 +745,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setVisitorNameVisibility(final boolean visibility){
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setVisibility(ChatComponent.visitorName, visibility);
       }
@@ -792,8 +754,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void enablePreChatForms() {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setVisibility(ChatComponent.prechatForm, true);
       }
@@ -801,9 +762,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void disablePreChatForms() {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+  public void disablePreChatForms() {  
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setVisibility(ChatComponent.prechatForm, false);
       }
@@ -812,8 +772,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void enableScreenshotOption() {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setVisibility(ChatComponent.screenshot, true);
       }
@@ -822,8 +781,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void disableScreenshotOption() {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.setVisibility(ChatComponent.screenshot, false);
       }
@@ -832,8 +790,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void registerChatAction(final String actionName) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.ChatActions.register(actionName);
       }
@@ -842,8 +799,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void unregisterChatAction(final String actionName) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.ChatActions.unregister(actionName);
       }
@@ -852,8 +808,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void unregisterAllChatActions() {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.ChatActions.unregisterAll();
       }
@@ -862,8 +817,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setChatActionTimeout(final double timeout) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.ChatActions.setTimeout((long)timeout*1000);
       }
@@ -872,8 +826,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void completeChatAction(final String uuid) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         SalesIQCustomActionListener listener;
         listener = actionsList.get(uuid);
@@ -889,8 +842,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void completeChatActionWithMessage(final String uuid, final boolean success, final String message) {
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         SalesIQCustomActionListener listener = actionsList.get(uuid);
         if (listener != null){
@@ -948,8 +900,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void syncThemeWithOS(final boolean sync){
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.syncThemeWithOS(sync);
       }
@@ -958,8 +909,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void isChatEnabled(@NonNull final Callback callback){
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         callback.invoke(ZohoSalesIQ.isSDKEnabled());
       }
@@ -968,8 +918,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getChatUnreadCount(@NonNull final Callback callback){
-    Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(new Runnable() {
+    HANDLER.post(new Runnable() {
       public void run() {
         callback.invoke(ZohoSalesIQ.Notification.getBadgeCount());
       }
@@ -991,8 +940,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     final String appKey = sharedPreferences.getString("salesiq_appkey", null);         // No I18N
     final String accessKey = sharedPreferences.getString("salesiq_accesskey", null);         // No I18N
     if (appKey != null && accessKey != null) {
-      Handler handler = new Handler(Looper.getMainLooper());
-      handler.post(new Runnable() {
+      HANDLER.post(new Runnable() {
         public void run() {
           initSalesIQ(application, null, appKey, accessKey, null);
           ZohoSalesIQ.Notification.handle(application, extras, 0);
@@ -1015,8 +963,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             ZohoSalesIQ.Notification.enablePush(fcmtoken, istestdevice);
           }
           if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
+            HANDLER.post(new Runnable() {
               public void run() {
                 ZohoSalesIQ.getApplicationManager().refreshChatBubble();
               }
