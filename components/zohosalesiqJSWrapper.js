@@ -1,4 +1,4 @@
-const {NativeModules} = require('react-native');    //No I18N
+const {NativeModules, Dimensions, PixelRatio} = require('react-native');    //No I18N
 const {RNZohoSalesIQ} = NativeModules;
 import {NativeEventEmitter} from 'react-native';    //No I18N
 const emitter = new NativeEventEmitter(RNZohoSalesIQ);
@@ -10,6 +10,9 @@ module.exports = {
     TYPE_ENDED : RNZohoSalesIQ.TYPE_ENDED,
     TYPE_CLOSED : RNZohoSalesIQ.TYPE_CLOSED,
     TYPE_MISSED : RNZohoSalesIQ.TYPE_MISSED,
+
+    LAUNCHER_MODE_STATIC : RNZohoSalesIQ.LAUNCHER_MODE_STATIC,
+    LAUNCHER_MODE_FLOATING : RNZohoSalesIQ.LAUNCHER_MODE_FLOATING,
 
     EVENT_SUPPORT_OPENED : RNZohoSalesIQ.SUPPORT_OPENED,
     EVENT_SUPPORT_CLOSED : RNZohoSalesIQ.SUPPORT_CLOSED,
@@ -195,8 +198,8 @@ module.exports = {
     addEventListener: function (type, listener){
         listener = emitter.addListener(type, listener);
     },
-    syncThemeWithOS: function(sync){
-      RNZohoSalesIQ.syncThemeWithOS(sync);
+    syncThemeWithOsForAndroid: function(sync){
+      RNZohoSalesIQ.syncThemeWithOsForAndroid(sync);
     },
     getDepartments : function(callback){
         RNZohoSalesIQ.getDepartments(callback);
@@ -209,5 +212,17 @@ module.exports = {
     },
     getChatUnreadCount: function(callback){
       RNZohoSalesIQ.getChatUnreadCount(callback);
+    },
+    setLauncherPropertiesForAndroid: function(launcherPropertiesMap){
+      RNZohoSalesIQ.setLauncherPropertiesForAndroid(launcherPropertiesMap);
     }
+}
+
+if (Platform.OS === 'android') {
+  var devicePixelRatio = PixelRatio.get();
+  Dimensions.addEventListener('change',  ({window:{width,height}})=> {
+    var windowWidth = Dimensions.get('window').width;
+    var windowHeight = Dimensions.get('window').height;    
+    RNZohoSalesIQ.refreshLauncherPropertiesForAndroid(windowWidth * devicePixelRatio, windowHeight * devicePixelRatio);//width, height);
+  });
 }

@@ -641,6 +641,12 @@ RCT_EXPORT_METHOD(setThemeColorforiOS: (NSString *)color_code){
         [[ZohoSalesIQ Theme] setThemeWithTheme:theme];
     }
 }
+RCT_EXPORT_METHOD(setLauncherPropertiesForAndroid: (NSDictionary *)launcherProperties){
+    
+}
+RCT_EXPORT_METHOD(syncThemeWithOsForAndroid: (BOOL)sync){
+    
+}
 RCT_EXPORT_METHOD(showOperatorImageInLauncher: (BOOL)show){
     [[ZohoSalesIQ Chat] setVisibility:ChatComponentAttenderImageOnLauncher visible:show];
 }

@@ -50,6 +50,10 @@ import com.zoho.livechat.android.models.SalesIQArticle;
 import com.zoho.livechat.android.models.SalesIQArticleCategory;
 import com.zoho.livechat.android.utils.LiveChatUtil;
 import com.zoho.salesiqembed.ZohoSalesIQ;
+import com.zoho.commons.LauncherProperties;
+import com.zoho.commons.LauncherModes;
+import android.util.DisplayMetrics;
+import android.graphics.Canvas;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -58,6 +62,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.UUID;
+import com.zoho.livechat.android.utils.SalesIQCache;
 
 import com.zoho.commons.ChatComponent;
 
@@ -99,6 +104,12 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   private static final int INVALID_FILTER_CODE = 604;         // No I18N
   private static final String INVALID_FILTER_TYPE = "invalid filter type";         // No I18N
+
+  private static final int LAUNCHER_MODE_STATIC = 1;
+  private static final int LAUNCHER_MODE_FLOATING = 2;
+
+  private static LauncherProperties fabLauncherProperties = null;
+  private static Boolean isLauncherInRightSide;
 
   private static Hashtable<String, SalesIQCustomActionListener> actionsList = new Hashtable<>();
 
@@ -143,6 +154,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     constants.put("ARTICLE_DISLIKED", EVENT_ARTICLE_DISLIKED);         // No I18N
     constants.put("ARTICLE_OPENED", EVENT_ARTICLE_OPENED);         // No I18N
     constants.put("ARTICLE_CLOSED", EVENT_ARTICLE_CLOSED);         // No I18N
+    constants.put("LAUNCHER_MODE_STATIC", LAUNCHER_MODE_STATIC);         // No I18N
+    constants.put("LAUNCHER_MODE_FLOATING", LAUNCHER_MODE_FLOATING);         // No I18N
 
     return constants;
   }
@@ -152,12 +165,34 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     return "RNZohoSalesIQ";         // No I18N
   }
 
+  private Bitmap convertToBitmap(Drawable drawable) {
+    Bitmap bitmap = null;
+
+    if (drawable instanceof BitmapDrawable) {
+        BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+        if(bitmapDrawable.getBitmap() != null) {
+            return bitmapDrawable.getBitmap();
+        }
+    }
+
+    if(drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+        bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+    } else {
+        bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+    }
+
+    Canvas canvas = new Canvas(bitmap);
+    drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+    drawable.draw(canvas);
+    return bitmap;
+}
+
   @ReactMethod
   public void fetchAttenderImage(@NonNull String attenderId, @NonNull Boolean defaultImage, @NonNull final Callback imageCallback) {
     ZohoSalesIQ.Chat.fetchAttenderImage(attenderId, defaultImage, new OperatorImageListener() {
       @Override
       public void onSuccess(Drawable drawable) {
-        Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
+        Bitmap bitmap = convertToBitmap(drawable);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
@@ -568,15 +603,10 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void setLauncherVisibility(Boolean visible) {
-    ZohoSalesIQ.Chat.showLauncher(visible);
+  public void setLauncherVisibility(Boolean visible) {    
     HANDLER.post(new Runnable() {
       public void run() {
-        Activity activity = getCurrentActivity();
-        if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
-          ZohoSalesIQ.getApplicationManager().setCurrentActivity(activity);
-          ZohoSalesIQ.getApplicationManager().refreshChatBubble();
-        }
+        ZohoSalesIQ.Chat.showLauncher(visible);        
       }
     });
   }
@@ -899,7 +929,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void syncThemeWithOS(final boolean sync){
+  public void syncThemeWithOsForAndroid(final boolean sync){
     HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.syncThemeWithOS(sync);
@@ -921,6 +951,73 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     HANDLER.post(new Runnable() {
       public void run() {
         callback.invoke(ZohoSalesIQ.Notification.getBadgeCount());
+      }
+    });
+  }
+
+  private DisplayMetrics getDisplayMetrics() {
+    Activity activity = getCurrentActivity();
+    DisplayMetrics displayMetrics = new DisplayMetrics();
+    activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+    return displayMetrics;
+  }
+
+  @ReactMethod
+  public void setLauncherPropertiesForAndroid(final ReadableMap launcherPropertiesMap) {
+    HANDLER.post(new Runnable() {
+      public void run() {   
+        DisplayMetrics displayMetrics = getDisplayMetrics();   
+        int screenHeight = displayMetrics.heightPixels;
+        int screenWidth = displayMetrics.widthPixels;
+        float seventyEightDpInPixel = 78 * displayMetrics.density;
+        int x = screenWidth - (int) seventyEightDpInPixel, y = screenHeight - (int) seventyEightDpInPixel;
+        if (launcherPropertiesMap.hasKey("x")){
+          x = launcherPropertiesMap.getInt("x");
+        }
+        if (launcherPropertiesMap.hasKey("y")){
+          y = launcherPropertiesMap.getInt("y");
+        }
+
+        if (x >= (screenWidth/2)) {
+          isLauncherInRightSide = true;
+        } else {
+          isLauncherInRightSide = false;
+        }
+
+        int mode = LauncherModes.STATIC;
+        if (launcherPropertiesMap.hasKey("mode")){
+          mode = launcherPropertiesMap.getInt("mode");
+        }
+        LauncherProperties launcherProperties = new LauncherProperties(mode);        
+        launcherProperties.setX(x);
+        launcherProperties.setY(y <= screenHeight ? y : screenHeight);      
+        fabLauncherProperties = launcherProperties;
+        ZohoSalesIQ.setLauncherProperties(launcherProperties);
+      }    
+    });   
+  }
+
+  @ReactMethod
+  public static void refreshLauncherPropertiesForAndroid(int screenWidth, int screenHeight) {
+    HANDLER.post(new Runnable() {
+      public void run() {
+          if (fabLauncherProperties != null && isLauncherInRightSide != null) {                    
+            if (isLauncherInRightSide) {
+              if (fabLauncherProperties.getX() < (screenWidth/2)) {
+                fabLauncherProperties.setX(screenWidth/2);
+              }
+            } else {
+              fabLauncherProperties.setX((screenWidth/2) - 1);
+            } 
+            float y = fabLauncherProperties.getY();   
+            double heightInPoints = (y / screenWidth);        
+            y = (int) (screenHeight * heightInPoints);
+            fabLauncherProperties.setY((int) y);        
+            ZohoSalesIQ.setLauncherProperties(fabLauncherProperties);
+        } else {
+          fabLauncherProperties = new LauncherProperties(LauncherModes.STATIC);
+          ZohoSalesIQ.setLauncherProperties(fabLauncherProperties);
+        }
       }
     });
   }
