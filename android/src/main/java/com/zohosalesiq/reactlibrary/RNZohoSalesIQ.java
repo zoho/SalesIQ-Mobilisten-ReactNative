@@ -603,7 +603,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void setLauncherVisibility(Boolean visible) {    
+  public void setLauncherVisibility(final Boolean visible) {    
     HANDLER.post(new Runnable() {
       public void run() {
         ZohoSalesIQ.Chat.showLauncher(visible);        
@@ -998,7 +998,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public static void refreshLauncherPropertiesForAndroid(int screenWidth, int screenHeight) {
+  public static void refreshLauncherPropertiesForAndroid(final int screenWidth, final int screenHeight) {
     HANDLER.post(new Runnable() {
       public void run() {
           if (fabLauncherProperties != null && isLauncherInRightSide != null) {                    
