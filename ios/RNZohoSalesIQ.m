@@ -420,12 +420,6 @@ NSString *TYPE_ENDED = @"ENDED";
         
         [chatDict setObject: [NSNumber numberWithBool: [chat isBotAttender]]   forKey: @"isBotAttender"];
         
-        if([chat lastMessage] != nil){
-            [chatDict setObject: [chat lastMessage]  forKey: @"lastMessage"];
-        }
-        if([chat lastMessageSender] != nil){
-            [chatDict setObject: [chat lastMessageSender]  forKey: @"lastMessageSender"];
-        }
         if([chat question] != nil){
             [chatDict setObject: [chat question]  forKey: @"question"];
         }
@@ -454,10 +448,31 @@ NSString *TYPE_ENDED = @"ENDED";
             [chatDict setObject: TYPE_CLOSED  forKey: @"status"];
         }
         
-        if([chat lastMessageTime] != nil){
-            NSDate *messageTime = [chat lastMessageTime];
-            int time = (int)[messageTime timeIntervalSince1970];
-            [chatDict setObject: @(time) forKey: @"lastMessageTime"];
+        if ([chat lastMessage] != nil){
+            if ([[chat lastMessage] file] != nil){
+                NSString *fileContent = [[[chat lastMessage] file] contentType];
+                NSString *comment = [[[chat lastMessage] file] comment];
+
+                if (fileContent != nil){
+                    if (comment != nil){
+                        [chatDict setObject:[NSString stringWithFormat:@"%@:%@",fileContent,comment]  forKey: @"lastMessage"];
+                    }else{
+                        [chatDict setObject:fileContent  forKey: @"lastMessage"];
+                    }
+                }
+            } else if ([[chat lastMessage] text] != nil){
+                [chatDict setObject: [[chat lastMessage] text]  forKey: @"lastMessage"];
+            }
+            NSString *sender = [[chat lastMessage] sender];
+            if( sender != nil){
+                [chatDict setObject: sender  forKey: @"lastMessageSender"];
+            }
+            
+            NSDate *messageTime = [[chat lastMessage] time];
+            if (messageTime != nil){
+                int time = (int)[messageTime timeIntervalSince1970];
+                [chatDict setObject: @(time) forKey: @"lastMessageTime"];
+            }
         }
         
         [chatDict setObject: @([chat unreadCount])  forKey: @"unreadCount"];
@@ -645,6 +660,9 @@ RCT_EXPORT_METHOD(setLauncherPropertiesForAndroid: (NSDictionary *)launcherPrope
     
 }
 RCT_EXPORT_METHOD(syncThemeWithOsForAndroid: (BOOL)sync){
+    
+}
+RCT_EXPORT_METHOD(printDebugLogsForAndroid: (BOOL)sync){
     
 }
 RCT_EXPORT_METHOD(showOperatorImageInLauncher: (BOOL)show){
@@ -909,7 +927,7 @@ RCT_EXPORT_METHOD(endChat: (NSString *)ref_id){
 //MARK:- GET CATEGORIES LIST API
 RCT_EXPORT_METHOD(getCategories:(RCTResponseSenderBlock)callback)
 {
-    [[ZohoSalesIQ FAQ] getCategories:^(NSError * _Nullable error, NSArray<SIQFAQCategory *> * _Nullable categories) {
+    [[ZohoSalesIQ FAQ] getCategoriesWithDepartmentIDS:nil :^(NSError * _Nullable error, NSArray<SIQFAQCategory *> * _Nullable categories) {
         if(error != nil){
             NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getErrorObject:error];
             callback(@[errorDictionary, @""]);

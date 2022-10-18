@@ -1,4 +1,4 @@
-[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-4.2.12-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
+[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-4.2.13-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
 
 # React Native module for SalesIQ Mobilisten SDK
 
@@ -8,7 +8,7 @@ Connect with customers at every step of their journey. Give them the best in-app
 [**Mobilisten**](https://mobilisten.io/) is a support chat SDK that comes with a set of highly configurable APIs to suit your needs. Get started by generating an `App` and `Access` keys for your bundle ID from the SalesIQ console.
 
 ## Requirements
-**iOS**: Minimum deployment target should be set to iOS 10.
+**iOS**: Minimum deployment target should be set to iOS 11.
 
 **Android**: Android API level 16 and above is required.
 

@@ -1,7 +1,6 @@
-
 Pod::Spec.new do |s|
   s.name          = "RNZohoSalesIQ"
-  s.version       = "4.2.8"
+  s.version       = "4.2.9"
   s.summary       = "A React-Native module for the SalesIQ Mobilisten SDK"
   s.description   = "A React-Native module for the SalesIQ Mobilisten SDK"
   s.homepage      = "https://zoho.com"
@@ -26,7 +25,7 @@ Pod::Spec.new do |s|
                           LICENSE
                   }
   s.author        = { "Rishabh Raghunath" => "rishabh.r@zohocorp.com" }
-  s.platform      = :ios, "10.0"
+  s.platform      = :ios, "11.0"
   s.source        = { :git => "https://github.com/zoho/SalesIQ-Mobilisten-iOS", :tag => "v#{s.version}" }
   s.source_files  = "*.{h,m}"
   s.requires_arc  = true

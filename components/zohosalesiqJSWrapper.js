@@ -1,4 +1,4 @@
-const {NativeModules, Dimensions, PixelRatio} = require('react-native');    //No I18N
+const {NativeModules, Dimensions} = require('react-native');    //No I18N
 const {RNZohoSalesIQ} = NativeModules;
 import {NativeEventEmitter} from 'react-native';    //No I18N
 const emitter = new NativeEventEmitter(RNZohoSalesIQ);
@@ -215,14 +215,14 @@ module.exports = {
     },
     setLauncherPropertiesForAndroid: function(launcherPropertiesMap){
       RNZohoSalesIQ.setLauncherPropertiesForAndroid(launcherPropertiesMap);
+    },
+    printDebugLogsForAndroid: function(value) {
+      RNZohoSalesIQ.printDebugLogsForAndroid(value)
     }
 }
 
 if (Platform.OS === 'android') {
-  var devicePixelRatio = PixelRatio.get();
-  Dimensions.addEventListener('change',  ({window:{width,height}})=> {
-    var windowWidth = Dimensions.get('window').width;
-    var windowHeight = Dimensions.get('window').height;    
-    RNZohoSalesIQ.refreshLauncherPropertiesForAndroid(windowWidth * devicePixelRatio, windowHeight * devicePixelRatio);//width, height);
+  Dimensions.addEventListener('change',  ({window:{width,height}})=> {  
+    RNZohoSalesIQ.refreshLauncherPropertiesForAndroid();
   });
 }

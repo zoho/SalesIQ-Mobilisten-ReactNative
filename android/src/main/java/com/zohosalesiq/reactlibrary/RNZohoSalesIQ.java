@@ -52,8 +52,8 @@ import com.zoho.livechat.android.utils.LiveChatUtil;
 import com.zoho.salesiqembed.ZohoSalesIQ;
 import com.zoho.commons.LauncherProperties;
 import com.zoho.commons.LauncherModes;
-import android.util.DisplayMetrics;
 import android.graphics.Canvas;
+import com.zoho.livechat.android.operation.SalesIQApplicationManager;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -107,9 +107,6 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
   private static final int LAUNCHER_MODE_STATIC = 1;
   private static final int LAUNCHER_MODE_FLOATING = 2;
-
-  private static LauncherProperties fabLauncherProperties = null;
-  private static Boolean isLauncherInRightSide;
 
   private static Hashtable<String, SalesIQCustomActionListener> actionsList = new Hashtable<>();
 
@@ -399,8 +396,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                 SalesIQArticleCategory category = categoryList.get(i);
 
                 WritableMap categoryMap = new WritableNativeMap();
-                categoryMap.putString("id", category.getCategoryid());         // No I18N
-                categoryMap.putString("name", category.getCategoryname());         // No I18N
+                categoryMap.putString("id", category.getCategoryId());         // No I18N
+                categoryMap.putString("name", category.getCategoryName());         // No I18N
                 categoryMap.putInt("articleCount", category.getCount());         // No I18N
 
                 array.pushMap(categoryMap);
@@ -955,68 +952,39 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     });
   }
 
-  private DisplayMetrics getDisplayMetrics() {
-    Activity activity = getCurrentActivity();
-    DisplayMetrics displayMetrics = new DisplayMetrics();
-    activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-    return displayMetrics;
-  }
-
   @ReactMethod
   public void setLauncherPropertiesForAndroid(final ReadableMap launcherPropertiesMap) {
     HANDLER.post(new Runnable() {
-      public void run() {   
-        DisplayMetrics displayMetrics = getDisplayMetrics();   
-        int screenHeight = displayMetrics.heightPixels;
-        int screenWidth = displayMetrics.widthPixels;
-        float seventyEightDpInPixel = 78 * displayMetrics.density;
-        int x = screenWidth - (int) seventyEightDpInPixel, y = screenHeight - (int) seventyEightDpInPixel;
-        if (launcherPropertiesMap.hasKey("x")){
-          x = launcherPropertiesMap.getInt("x");
-        }
-        if (launcherPropertiesMap.hasKey("y")){
-          y = launcherPropertiesMap.getInt("y");
-        }
-
-        if (x >= (screenWidth/2)) {
-          isLauncherInRightSide = true;
-        } else {
-          isLauncherInRightSide = false;
-        }
-
-        int mode = LauncherModes.STATIC;
+      public void run() {               
+        int mode = LauncherModes.FLOATING;
         if (launcherPropertiesMap.hasKey("mode")){
           mode = launcherPropertiesMap.getInt("mode");
         }
-        LauncherProperties launcherProperties = new LauncherProperties(mode);        
-        launcherProperties.setX(x);
-        launcherProperties.setY(y <= screenHeight ? y : screenHeight);      
-        fabLauncherProperties = launcherProperties;
+        LauncherProperties launcherProperties = new LauncherProperties(mode);      
+        if (launcherPropertiesMap.hasKey("x")) {
+          int x = launcherPropertiesMap.getInt("x");
+          if (x > 0) {
+            launcherProperties.setX(x);
+          }        
+        }
+        if (launcherPropertiesMap.hasKey("y")) {
+          int y = launcherPropertiesMap.getInt("y");
+          if (y > 0) {
+            launcherProperties.setY(y);      
+          }        
+        }       
         ZohoSalesIQ.setLauncherProperties(launcherProperties);
       }    
     });   
   }
 
   @ReactMethod
-  public static void refreshLauncherPropertiesForAndroid(final int screenWidth, final int screenHeight) {
+  public static void refreshLauncherPropertiesForAndroid() {
     HANDLER.post(new Runnable() {
-      public void run() {
-          if (fabLauncherProperties != null && isLauncherInRightSide != null) {                    
-            if (isLauncherInRightSide) {
-              if (fabLauncherProperties.getX() < (screenWidth/2)) {
-                fabLauncherProperties.setX(screenWidth/2);
-              }
-            } else {
-              fabLauncherProperties.setX((screenWidth/2) - 1);
-            } 
-            float y = fabLauncherProperties.getY();   
-            double heightInPoints = (y / screenWidth);        
-            y = (int) (screenHeight * heightInPoints);
-            fabLauncherProperties.setY((int) y);        
-            ZohoSalesIQ.setLauncherProperties(fabLauncherProperties);
-        } else {
-          fabLauncherProperties = new LauncherProperties(LauncherModes.STATIC);
-          ZohoSalesIQ.setLauncherProperties(fabLauncherProperties);
+      public void run() {      
+        SalesIQApplicationManager salesIQApplicationManager = ZohoSalesIQ.getApplicationManager();
+        if (salesIQApplicationManager != null && salesIQApplicationManager.canShowBubble(salesIQApplicationManager.getCurrentActivity())) {
+          salesIQApplicationManager.showChatBubble(salesIQApplicationManager.getCurrentActivity());
         }
       }
     });
@@ -1040,7 +1008,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
       HANDLER.post(new Runnable() {
         public void run() {
           initSalesIQ(application, null, appKey, accessKey, null);
-          ZohoSalesIQ.Notification.handle(application, extras, 0);
+          ZohoSalesIQ.Notification.handle(application, extras);
         }
       });
     }
@@ -1165,8 +1133,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     articleMap.putInt("likeCount", article.getLiked());         // No I18N
     articleMap.putInt("dislikeCount", article.getDisliked());         // No I18N
     articleMap.putInt("viewCount", article.getViewed());         // No I18N
-    if (article.getCategory_id() != null) {
-      articleMap.putString("categoryID", article.getCategory_id());         // No I18N
+    if (article.getCategoryId() != null) {
+      articleMap.putString("categoryID", article.getCategoryId());         // No I18N
     }
     if (article.getCategoryName() != null) {
       articleMap.putString("categoryName", article.getCategoryName());         // No I18N
@@ -1370,5 +1338,10 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     public void onBadgeChange(int count) {
       eventEmitter(EVENT_CHAT_UNREAD_COUNT_CHANGED, count);
     }
+  }
+
+  @ReactMethod
+  public void printDebugLogsForAndroid(final Boolean value) {    
+    ZohoSalesIQ.printDebugLogs(value);        
   }
 }
