@@ -52,6 +52,7 @@ RCT_EXPORT_METHOD(initWithCallback:(NSString *)appKey accessKey:(NSString *)acce
 }
 
 bool hasListeners;
+bool handleURI = YES;
 
 -(void)startObserving {
     hasListeners = YES;
@@ -102,6 +103,17 @@ NSString *TYPE_MISSED = @"MISSED";
 NSString *TYPE_CLOSED = @"CLOSED";
 NSString *TYPE_ENDED = @"ENDED";
 
+NSString *INFO_LOG = @"INFO_LOG";
+NSString *WARNING_LOG = @"WARNING_LOG";
+NSString *ERROR_LOG = @"ERROR_LOG";
+
+NSString *TAB_CONVERSATIONS = @"TAB_CONVERSATIONS";
+NSString *TAB_FAQ = @"TAB_FAQ";
+
+NSString *EVENT_HANDLE_URL = @"EVENT_HANDLE_URL";
+NSString *EVENT_OPEN_URL = @"EVENT_OPEN_URL";
+NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
+
 - (NSArray<NSString *> *)supportedEvents {
     return @[OPERATORS_OFFLINE,
              OPERATORS_ONLINE,
@@ -126,7 +138,15 @@ NSString *TYPE_ENDED = @"ENDED";
              PERFORM_CHATACTION,
              CUSTOMTRIGGER,
              CHAT_QUEUE_POSITION_CHANGED,
-             CHAT_UNREAD_COUNT_CHANGED];
+             CHAT_UNREAD_COUNT_CHANGED,
+             INFO_LOG,
+             WARNING_LOG,
+             ERROR_LOG,
+             TAB_CONVERSATIONS,
+             TAB_FAQ,
+             EVENT_HANDLE_URL,
+             EVENT_OPEN_URL,
+             EVENT_COMPLETE_CHAT_ACTION];
 }
 
 - (NSDictionary *) constantsToExport {
@@ -162,7 +182,15 @@ NSString *TYPE_ENDED = @"ENDED";
         @"TYPE_TRIGGERED": TYPE_TRIGGERED,
         @"TYPE_PROACTIVE": TYPE_PROACTIVE,
         @"CUSTOMTRIGGER": CUSTOMTRIGGER,
-        @"CHAT_QUEUE_POSITION_CHANGED": CHAT_QUEUE_POSITION_CHANGED
+        @"CHAT_QUEUE_POSITION_CHANGED": CHAT_QUEUE_POSITION_CHANGED,
+        @"INFO_LOG": INFO_LOG,
+        @"WARNING_LOG": WARNING_LOG,
+        @"ERROR_LOG": ERROR_LOG,
+        @"TAB_CONVERSATIONS": TAB_CONVERSATIONS,
+        @"TAB_FAQ": TAB_FAQ,
+        @"EVENT_HANDLE_URL": EVENT_HANDLE_URL,
+        @"EVENT_OPEN_URL": EVENT_OPEN_URL,
+        @"EVENT_COMPLETE_CHAT_ACTION": EVENT_COMPLETE_CHAT_ACTION,
     };
 }
 
@@ -1047,6 +1075,108 @@ RCT_EXPORT_METHOD(unregisterAllChatActions){
     [[ZohoSalesIQ ChatActions] unregisterAll];
 }
 
+RCT_EXPORT_METHOD(setLoggerEnabled : (BOOL)enable){
+    [[ZohoSalesIQ Logger] setEnabled:enable];
+}
+
+RCT_EXPORT_METHOD(clearLogsForiOS){
+    [[ZohoSalesIQ Logger] clear];
+}
+
+RCT_EXPORT_METHOD(shouldOpenUrl : (BOOL)shouldOpen){
+    handleURI = shouldOpen;
+}
+
+RCT_EXPORT_METHOD(setNotificationIconForAndroid:(NSString *)icon) {
+    
+}
+
+RCT_EXPORT_METHOD(writeLogForiOS: (NSString *)log level:(NSString *)level callback:(RCTResponseSenderBlock)callback) {
+    SIQDebugLogLevel debugLogLevel = SIQDebugLogLevelInfo;
+    if([level isEqual: INFO_LOG]){
+        debugLogLevel = SIQDebugLogLevelInfo;
+    }else if ([level  isEqual: WARNING_LOG]){
+        debugLogLevel = SIQDebugLogLevelWarning;
+    }else if ([level  isEqual: ERROR_LOG]){
+        debugLogLevel = SIQDebugLogLevelError;
+    }
+    [[ZohoSalesIQ Logger] write: log logLevel: debugLogLevel success:^(BOOL success) {
+        NSNumber *complete = [NSNumber numberWithBool:success];
+        callback(@[complete]);
+    }];
+}
+
+RCT_EXPORT_METHOD(isLoggerEnabled:(RCTResponseSenderBlock)callback)
+{
+    NSNumber *logEnabled = [NSNumber numberWithBool:ZohoSalesIQ.Logger.isEnabled];
+    callback(@[logEnabled]);
+}
+
+RCT_EXPORT_METHOD(setLoggerPathForiOS : (NSURL * _Nonnull)url){
+    [[ZohoSalesIQ Logger] setPath:url];
+}
+
+RCT_EXPORT_METHOD(setTabOrder:(NSArray *)orders) {
+    NSMutableArray *sendOrders = [[NSMutableArray alloc]init];
+    for (int i = 0; i < orders.count; i++)
+    {
+        NSString  *currentObject = [orders objectAtIndex:i];
+        if ([currentObject  isEqual: TAB_CONVERSATIONS]){
+            [sendOrders addObject:[NSNumber numberWithInteger:0]];
+        } else if ([currentObject  isEqual: TAB_FAQ]){
+            [sendOrders addObject:[NSNumber numberWithInteger:1]];
+        }
+        
+    }
+    [ZohoSalesIQ setTabOrder: sendOrders];
+}
+
+RCT_EXPORT_METHOD(sendEvent: (NSString *)eventName values:(NSArray *)values){
+    if ([eventName  isEqual: EVENT_OPEN_URL]) {
+        if (handleURI == NO) {
+            for (int i = 0; i < values.count; i++)
+            {
+                NSString *currentObject = [values objectAtIndex:i];
+                NSMutableURLRequest *url = [[NSURL alloc] initWithString:currentObject];
+                [ZohoSalesIQ openURL: url];
+                break;
+            }
+        }
+    } else if ([eventName  isEqual: EVENT_COMPLETE_CHAT_ACTION]) {
+        NSString *uuid;
+        BOOL complete;
+        NSString *message;
+        
+        for (int i = 0; i < values.count; i++)
+        {
+            switch (i) {
+                case 0:
+                    uuid = [values objectAtIndex: 0];
+                    break;
+                case 1:
+                    complete = [[values objectAtIndex:1] boolValue];
+                case 2:
+                    message = [values objectAtIndex: 2];
+                default:
+                    break;
+            }
+        }
+        if (([actionDictionary valueForKey:uuid] != nil) && (uuid != nil)) {
+            SIQActionHandler *handler = [actionDictionary valueForKey:uuid];
+            if (message != nil) {
+                if (complete == YES){
+                    [handler successWithMessage:message];
+                }else{
+                    [handler faliureWithMessage:message];
+                }
+            }else {
+                [handler successWithMessage:nil];
+            }
+            [actionDictionary removeObjectForKey:uuid];
+        }
+    }
+}
+
 //MARK:- DELEGATE METHODS - EVENTS
 - (void)agentsOffline {
     if (hasListeners)
@@ -1156,6 +1286,14 @@ RCT_EXPORT_METHOD(unregisterAllChatActions){
 - (void)visitorIPBlocked {
     if (hasListeners)
         [self sendEventWithName:VISITOR_IPBLOCKED body:[NSNull null]];
+}
+
+- (BOOL)shouldOpenURL:(NSURL *)url in:(SIQVisitorChat * _Nullable)chat {
+    NSMutableDictionary *chatDict = [NSMutableDictionary dictionary];
+    chatDict = [RNZohoSalesIQ getChatObject:chat];
+    [chatDict setObject:url.absoluteString forKey:@"url"];
+    [self sendEventWithName:EVENT_HANDLE_URL body: chatDict];
+    return handleURI;
 }
 
 - (void) handleTriggerWithName:(NSString *)name visitorInformation:(SIQVisitor *)visitorInformation{
