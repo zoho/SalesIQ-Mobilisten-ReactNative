@@ -1100,10 +1100,12 @@ RCT_EXPORT_METHOD(writeLogForiOS: (NSString *)log level:(NSString *)level callba
     }else if ([level  isEqual: ERROR_LOG]){
         debugLogLevel = SIQDebugLogLevelError;
     }
-    [[ZohoSalesIQ Logger] write: log logLevel: debugLogLevel success:^(BOOL success) {
+
+    [[ZohoSalesIQ Logger] write: log logLevel: debugLogLevel file:nil line:nil function:nil fileID:nil filePath:nil column:nil success:^(BOOL success) {
         NSNumber *complete = [NSNumber numberWithBool:success];
         callback(@[complete]);
     }];
+    
 }
 
 RCT_EXPORT_METHOD(isLoggerEnabled:(RCTResponseSenderBlock)callback)
