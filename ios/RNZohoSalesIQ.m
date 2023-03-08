@@ -658,6 +658,12 @@ RCT_EXPORT_METHOD(setLanguage: (NSString *)language_code){
         [[ZohoSalesIQ Chat] setLanguage:LanguageChineseTraditional];
     }else if([language_code isEqualToString:@"in"]){
         [[ZohoSalesIQ Chat] setLanguage:LanguageIndonesian];
+    }else if([language_code isEqualToString:@"ka"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageGeorgian];
+    }else if([language_code isEqualToString:@"hy"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageArmenian];
+    }else if([language_code isEqualToString:@"fa"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguagePersian];
     }else{
         [[ZohoSalesIQ Chat] setLanguage:LanguageEnglish];
     }
