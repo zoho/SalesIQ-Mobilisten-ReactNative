@@ -92,6 +92,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     private static final String EVENT_RATING_RECEIVED = "EVENT_RATING_RECEIVED";  // No I18N
     private static final String EVENT_PERFORM_CHATACTION = "EVENT_PERFORM_CHATACTION";  // No I18N
     private static final String EVENT_CUSTOMTRIGGER = "EVENT_CUSTOMTRIGGER";  // No I18N
+    private static final String EVENT_BOT_TRIGGER = "EVENT_BOT_TRIGGER";  // No I18N
     private static final String EVENT_HANDLE_URL = "EVENT_HANDLE_URL";  // No I18N
     private static final String EVENT_OPEN_URL = "EVENT_OPEN_URL";  // No I18N
     private static final String EVENT_COMPLETE_CHAT_ACTION = "EVENT_COMPLETE_CHAT_ACTION";// No I18N
@@ -110,6 +111,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     private static final String INFO_LOG = "INFO_LOG";         // No I18N
     private static final String WARNING_LOG = "WARNING_LOG";         // No I18N
     private static final String ERROR_LOG = "ERROR_LOG";         // No I18N
+
+    private static final String SENDING = "SENDING";         // No I18N
+    private static final String UPLOADING = "UPLOADING";         // No I18N
+    private static final String SENT = "SENT";         // No I18N
+    private static final String FAILURE = "FAILURE";         // No I18N
 
     private static final int INVALID_FILTER_CODE = 604;         // No I18N
     private static final String INVALID_FILTER_TYPE = "Invalid filter type";         // No I18N
@@ -174,6 +180,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         constants.put("RATING_RECEIVED", EVENT_RATING_RECEIVED);         // No I18N
         constants.put("PERFORM_CHATACTION", EVENT_PERFORM_CHATACTION);         // No I18N
         constants.put("CUSTOMTRIGGER", EVENT_CUSTOMTRIGGER);         // No I18N
+        constants.put("BOT_TRIGGER", EVENT_BOT_TRIGGER);         // No I18N
         constants.put("EVENT_HANDLE_URL", EVENT_HANDLE_URL);         // No I18N
         constants.put("EVENT_OPEN_URL", EVENT_OPEN_URL);         // No I18N
         constants.put("EVENT_COMPLETE_CHAT_ACTION", EVENT_COMPLETE_CHAT_ACTION);         // No I18N
@@ -652,8 +659,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void performCustomAction(final String actionName) {
-        HANDLER.post(() -> ZohoSalesIQ.Tracking.setCustomAction(actionName));
+    public void performCustomAction(final String actionName, final boolean shouldOpenChatWindow) {
+        HANDLER.post(() -> ZohoSalesIQ.Tracking.setCustomAction(actionName, shouldOpenChatWindow));
     }
 
     @ReactMethod
@@ -886,17 +893,9 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     public static void handleNotification(final Application application, final Map extras) {
-        SharedPreferences sharedPreferences = application.getSharedPreferences("siq_session", 0);         // No I18N
-        final String appKey = sharedPreferences
-                .getString("salesiq_appkey", null); // No I18N
-        final String accessKey = sharedPreferences
-                .getString("salesiq_accesskey", null);  // No I18N
-        if (appKey != null && accessKey != null) {
-            HANDLER.post(() -> {
-                initSalesIQ(application, null, appKey, accessKey, null);
-                ZohoSalesIQ.Notification.handle(application, extras);
-            });
-        }
+        HANDLER.post(() -> {
+            ZohoSalesIQ.Notification.handle(application, extras);
+        });
     }
 
     public static void enablePush(String token, Boolean testDevice) {
@@ -913,6 +912,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     ) {
         if (application != null) {
             final boolean[] canInvokeCallBack = {true};
+            ZohoSalesIQ.setPlatformName(SalesIQConstants.Platform.REACT_NATIVE);
             ZohoSalesIQ.init(application, appKey, accessKey, null, new OnInitCompleteListener() {
                 @Override
                 public void onInitComplete() {
@@ -939,13 +939,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                         initCallback.invoke(false);
                     }
                 }
-            });
-            ZohoSalesIQ.setPlatformName(SalesIQConstants.Platform.REACT_NATIVE);
+            });        
             if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
                 ZohoSalesIQ.getApplicationManager().setCurrentActivity(activity);
                 ZohoSalesIQ.getApplicationManager().setAppActivity(activity);
-            }
-            ZohoSalesIQ.forceInitialiseSDK();
+            }        
         }
     }
 
@@ -981,7 +979,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     public WritableMap getChatMapObject(VisitorChat chat) {
-        WritableMap visitorMap = new WritableNativeMap();
+        WritableMap visitorMap = new WritableNativeMap();        
         visitorMap.putString("id", chat.getChatID());         // No I18N
         visitorMap.putInt("unreadCount", chat.getUnreadCount());         // No I18N
         visitorMap.putBoolean("isBotAttender", chat.isBotAttender());         // No I18N
@@ -997,16 +995,56 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         if (chat.getChatStatus() != null) {
             visitorMap.putString("status", chat.getChatStatus());         // No I18N
         }
-        if (chat.getLastMessage() != null) {
-            visitorMap.putString("lastMessage", chat.getLastMessage());         // No I18N
+
+        VisitorChat.SalesIQMessage lastMessage = chat.getLastMessage();
+        if (lastMessage != null) {
+            WritableMap lastMessageMap = new WritableNativeMap();
+            if (lastMessage.getText() != null) {
+                visitorMap.putString("lastMessage", lastMessage.getText());         // No I18N
+                lastMessageMap.putString("text", lastMessage.getText());         // No I18N
+            }
+            if (lastMessage.getSender() != null) {
+                visitorMap.putString("lastMessageSender", lastMessage.getSender());         // No I18N
+                lastMessageMap.putString("sender", lastMessage.getSender());    // No I18N
+            }
+            if (lastMessage.getTime() != null && lastMessage.getTime() > 0) {
+                visitorMap.putString("lastMessageTime", LiveChatUtil.getString(lastMessage.getTime()));         // No I18N
+                lastMessageMap.putString("time", LiveChatUtil.getString(lastMessage.getTime()));         // No I18N
+            }
+            // lastMessageMap.putString("sender_id", lastMessage.getSenderId());   // No I18N
+            // lastMessageMap.putString("type", lastMessage.getType());    // No I18N
+            lastMessageMap.putBoolean("is_read", lastMessage.isRead()); // No I18N
+            // lastMessageMap.putBoolean("sent_by_visitor", lastMessage.getSentByVisitor());   // No I18N
+            // if (lastMessage.getStatus() != null) {
+            //     String status = null;
+            //     switch (lastMessage.getStatus()) {
+            //         case Sending:
+            //             status = SENDING;
+            //             break;
+            //         case Uploading:
+            //             status = UPLOADING;
+            //             break;
+            //         case Sent:
+            //             status = SENT;
+            //             break;
+            //         case Failure:
+            //             status = FAILURE;
+            //             break;
+            //     }
+            //     lastMessageMap.putString("status", status); // No I18N
+            // }
+            VisitorChat.SalesIQMessage.SalesIQFile salesIQFile = lastMessage.getFile();
+            WritableMap fileMap = new WritableNativeMap();
+            if (salesIQFile != null) {
+                fileMap.putString("name", salesIQFile.getName());   // No I18N
+                fileMap.putString("content_type", salesIQFile.getContentType());    // No I18N
+                fileMap.putString("comment", salesIQFile.getComment()); // No I18N
+                fileMap.putDouble("size", LiveChatUtil.getDouble(salesIQFile.getSize())); // No I18N
+                lastMessageMap.putMap("file", fileMap);    // No I18N
+            }
+            visitorMap.putMap("recentMessage", lastMessageMap);         // No I18N
         }
-        if (chat.getLastMessageSender() != null) {
-            visitorMap.putString("lastMessageSender", chat.getLastMessageSender()); // No I18N
-        }
-        if (chat.getLastMessageTime() > 0) {
-            visitorMap.putString("lastMessageTime",
-                    LiveChatUtil.getString(chat.getLastMessageTime()));         // No I18N
-        }
+
         if (chat.getAttenderName() != null) {
             visitorMap.putString("attenderName", chat.getAttenderName());         // No I18N
         }
@@ -1190,6 +1228,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             triggerMap.putString("triggerName", triggerName);         // No I18N
             triggerMap.putMap("visitorInformation", visitorInfoMap);         // No I18N
             eventEmitter(EVENT_CUSTOMTRIGGER, triggerMap);
+        }
+
+        @Override
+        public void handleBotTrigger() {        
+            eventEmitter(EVENT_BOT_TRIGGER, null);
         }
 
         @Override

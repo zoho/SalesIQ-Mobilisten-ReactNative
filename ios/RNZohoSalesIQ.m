@@ -92,6 +92,7 @@ NSString *PERFORM_CHATACTION = @"PERFORM_CHATACTION";
 
 NSString *VISITOR_IPBLOCKED = @"VISITOR_IPBLOCKED";
 NSString *CUSTOMTRIGGER = @"CUSTOMTRIGGER";
+NSString *BOT_TRIGGER = @"BOT_TRIGGER";
 
 //MARK:- CHAT TYPES
 NSString *TYPE_OPEN = @"OPEN";
@@ -135,6 +136,7 @@ NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
              RATING_RECEIVED,
              CHAT_REOPENED,
              VISITOR_IPBLOCKED,
+             BOT_TRIGGER,
              PERFORM_CHATACTION,
              CUSTOMTRIGGER,
              CHAT_QUEUE_POSITION_CHANGED,
@@ -173,6 +175,7 @@ NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
         @"CHAT_REOPENED": CHAT_REOPENED,
         @"CHAT_UNREAD_COUNT_CHANGED": CHAT_UNREAD_COUNT_CHANGED,
         @"VISITOR_IPBLOCKED": VISITOR_IPBLOCKED,
+        @"BOT_TRIGGER": BOT_TRIGGER,
         @"TYPE_OPEN": TYPE_OPEN,
         @"TYPE_WAITING": TYPE_WAITING,
         @"TYPE_MISSED": TYPE_MISSED,
@@ -477,9 +480,27 @@ NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
         }
         
         if ([chat lastMessage] != nil){
-            if ([[chat lastMessage] file] != nil){
+            NSMutableDictionary *recentMessageDict = [NSMutableDictionary dictionary];
+            NSMutableDictionary *fileMessageDict = [NSMutableDictionary dictionary];
+            if ([[chat lastMessage] file] != nil) {
                 NSString *fileContent = [[[chat lastMessage] file] contentType];
                 NSString *comment = [[[chat lastMessage] file] comment];
+                NSString *fileName = [[[chat lastMessage] file] name];
+                NSInteger fileSize = [[[chat lastMessage] file] size];
+                
+                
+                if (fileName != nil) {
+                    [fileMessageDict setObject: fileName  forKey: @"name"];
+                }
+                if (fileContent != nil) {
+                    [fileMessageDict setObject: fileContent  forKey: @"content_type"];
+                }
+                if (comment != nil) {
+                    [fileMessageDict setObject: comment  forKey: @"comment"];
+                }
+                if (fileSize != nil) {
+                    [fileMessageDict setObject: @(fileSize)   forKey: @"size"];
+                }
 
                 if (fileContent != nil){
                     if (comment != nil){
@@ -488,19 +509,29 @@ NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
                         [chatDict setObject:fileContent  forKey: @"lastMessage"];
                     }
                 }
-            } else if ([[chat lastMessage] text] != nil){
-                [chatDict setObject: [[chat lastMessage] text]  forKey: @"lastMessage"];
+            } else if ([[chat lastMessage] text] != nil) {
+                NSString *text = [[chat lastMessage] text];
+                [chatDict setObject: text  forKey: @"lastMessage"];
+                [recentMessageDict setObject: text  forKey: @"text"];
             }
+            [recentMessageDict setObject: fileMessageDict  forKey: @"file"];
             NSString *sender = [[chat lastMessage] sender];
             if( sender != nil){
                 [chatDict setObject: sender  forKey: @"lastMessageSender"];
+                [recentMessageDict setObject: sender  forKey: @"sender"];
             }
             
             NSDate *messageTime = [[chat lastMessage] time];
             if (messageTime != nil){
                 int time = (int)[messageTime timeIntervalSince1970];
                 [chatDict setObject: @(time) forKey: @"lastMessageTime"];
+                [recentMessageDict setObject: @(time)  forKey: @"time"];
             }
+            
+            BOOL isRead = [[chat lastMessage] isRead];
+            [recentMessageDict setObject: [NSNumber numberWithBool: isRead]  forKey: @"is_read"];
+            
+            [chatDict setObject: recentMessageDict  forKey: @"recentMessage"];
         }
         
         [chatDict setObject: @([chat unreadCount])  forKey: @"unreadCount"];
@@ -808,10 +839,10 @@ RCT_EXPORT_METHOD(setPageTitle: (NSString *)pagetitle){
     [[ZohoSalesIQ Tracking] setPageTitle:pagetitle];
 }
 RCT_EXPORT_METHOD(setCustomAction: (NSString *)action_name){
-    [[ZohoSalesIQ Tracking] setCustomAction:action_name];
+    [[ZohoSalesIQ Tracking] setCustomAction:action_name shouldOpenChatWindow:NO];
 }
-RCT_EXPORT_METHOD(performCustomAction: (NSString *)action_name){
-    [[ZohoSalesIQ Visitor] performCustomAction:action_name];
+RCT_EXPORT_METHOD(performCustomAction: (NSString *)action_name shouldOpenChatWindow:(BOOL)openChatWindow){
+    [[ZohoSalesIQ Visitor] performCustomAction:action_name shouldOpenChatWindow:openChatWindow];
 }
 RCT_EXPORT_METHOD(enableInAppNotification){
     [[ZohoSalesIQ Chat] setVisibility:ChatComponentInAppNotifications visible:YES];
@@ -1322,6 +1353,11 @@ RCT_EXPORT_METHOD(sendEvent: (NSString *)eventName values:(NSArray *)values){
         [self sendEventWithName:CUSTOMTRIGGER body: triggerInformation];
         
     }
+}
+
+- (void)handleBotTrigger {
+    if (hasListeners)
+        [self sendEventWithName:BOT_TRIGGER body:[NSNull null]];
 }
 
 @end

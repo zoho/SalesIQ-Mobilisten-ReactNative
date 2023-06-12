@@ -43,6 +43,7 @@ module.exports = {
   EVENT_ARTICLE_CLOSED: RNZohoSalesIQ.ARTICLE_CLOSED,
   EVENT_PERFORM_CHATACTION: RNZohoSalesIQ.PERFORM_CHATACTION,
   EVENT_CUSTOMTRIGGER: RNZohoSalesIQ.CUSTOMTRIGGER,
+  EVENT_BOT_TRIGGER: RNZohoSalesIQ.BOT_TRIGGER,
   EVENT_HANDLE_URL: RNZohoSalesIQ.EVENT_HANDLE_URL,
 
   Event: {
@@ -191,8 +192,8 @@ module.exports = {
   setCustomAction: function (actionName) {
     RNZohoSalesIQ.setCustomAction(actionName);
   },
-  performCustomAction: function (actionName) {
-    RNZohoSalesIQ.performCustomAction(actionName);
+  performCustomAction: function (actionName, shouldOpenChatWindow = false) {
+    RNZohoSalesIQ.performCustomAction(actionName, shouldOpenChatWindow);
   },
   registerChatAction: function (chatActionName) {
     RNZohoSalesIQ.registerChatAction(chatActionName);
@@ -289,6 +290,13 @@ module.exports = {
       RNZohoSalesIQ.writeLogForiOS(log, level, callback);
     }
   }
+
+//  MessageStatus: {
+//    SENDING: RNZohoSalesIQ.SENDING,
+//    UPLOADING: RNZohoSalesIQ.UPLOADING,
+//    SENT: RNZohoSalesIQ.SENT,
+//    FAILURE: RNZohoSalesIQ.FAILURE
+//  }
 }
 
 if (Platform.OS === 'android') {
