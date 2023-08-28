@@ -242,6 +242,9 @@ module.exports = {
   printDebugLogsForAndroid: function (value) {
     RNZohoSalesIQ.printDebugLogsForAndroid(value)
   },
+  setThemeForAndroid: function (value) {
+    RNZohoSalesIQ.setThemeForAndroid(value)
+  },
 
   Chat: {
     shouldOpenUrl: function (value) {

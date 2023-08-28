@@ -2,7 +2,6 @@ package com.zohosalesiq.reactlibrary;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,6 +13,7 @@ import android.os.Looper;
 import android.util.Base64;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.facebook.react.bridge.Callback;
@@ -45,15 +45,17 @@ import com.zoho.livechat.android.listeners.ConversationListener;
 import com.zoho.livechat.android.listeners.DepartmentListener;
 import com.zoho.livechat.android.listeners.FAQCategoryListener;
 import com.zoho.livechat.android.listeners.FAQListener;
-import com.zoho.livechat.android.listeners.OpenArticleListener;
 import com.zoho.livechat.android.listeners.OperatorImageListener;
 import com.zoho.livechat.android.listeners.SalesIQActionListener;
 import com.zoho.livechat.android.listeners.SalesIQChatListener;
 import com.zoho.livechat.android.listeners.SalesIQCustomActionListener;
-import com.zoho.livechat.android.listeners.SalesIQFAQListener;
 import com.zoho.livechat.android.listeners.SalesIQListener;
 import com.zoho.livechat.android.models.SalesIQArticle;
 import com.zoho.livechat.android.models.SalesIQArticleCategory;
+import com.zoho.livechat.android.modules.knowledgebase.ui.entities.Resource;
+import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.OpenResourceListener;
+import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.ResourcesListener;
+import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.SalesIQKnowledgeBaseListener;
 import com.zoho.livechat.android.operation.SalesIQApplicationManager;
 import com.zoho.livechat.android.utils.LiveChatUtil;
 import com.zoho.salesiqembed.ZohoSalesIQ;
@@ -63,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -136,7 +139,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     enum Tab {
         CONVERSATIONS("TAB_CONVERSATIONS"),
-        FAQ("TAB_FAQ");
+        @Deprecated FAQ("TAB_FAQ"),
+        KNOWLEDGE_BASE("TAB_KNOWLEDGE_BASE");
 
         final String name;
 
@@ -162,6 +166,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
         constants.put("TAB_CONVERSATIONS", Tab.CONVERSATIONS.name);         // No I18N
         constants.put("TAB_FAQ", Tab.FAQ.name);         // No I18N
+        constants.put("TAB_KNOWLEDGE_BASE", Tab.KNOWLEDGE_BASE.name);         // No I18N
 
         constants.put("SUPPORT_OPENED", EVENT_SUPPORT_OPENED);         // No I18N
         constants.put("SUPPORT_CLOSED", EVENT_SUPPORT_CLOSED);         // No I18N
@@ -393,22 +398,18 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             @NonNull final String categoryId,
             @NonNull final Callback articlesCallback
     ) {
-        HANDLER.post(() -> ZohoSalesIQ.FAQ.getArticles(categoryId, new FAQListener() {
+        HANDLER.post(() -> ZohoSalesIQ.KnowledgeBase.getResources(ZohoSalesIQ.ResourceType.Articles, null, categoryId, null, new ResourcesListener() {
             @Override
-            public void onSuccess(ArrayList<SalesIQArticle> articlesList) {
-                if (articlesList != null) {
-                    WritableArray array = new WritableNativeArray();
-                    for (int i = 0; i < articlesList.size(); i++) {
-                        SalesIQArticle article = articlesList.get(i);
-                        WritableMap articleMap = getArticleMapObject(article);
-                        array.pushMap(articleMap);
-                    }
-                    articlesCallback.invoke(null, array);
+            public void onSuccess(@NonNull List<Resource> resources, boolean moreDataAvailable) {
+                WritableArray array = new WritableNativeArray();
+                for (int i = 0; i < resources.size(); i++) {
+                    array.pushMap(getArticleMapObject(resources.get(i)));
                 }
+                articlesCallback.invoke(null, array);
             }
 
             @Override
-            public void onFailure(int code, String message) {
+            public void onFailure(int code, @Nullable String message) {
                 WritableMap errorMap = new WritableNativeMap();
                 errorMap.putInt("code", code);         // No I18N
                 errorMap.putString("message", message);         // No I18N
@@ -454,20 +455,22 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void openArticle(final String id, @NonNull final Callback articlesCallback) {
-        HANDLER.post(() -> ZohoSalesIQ.FAQ.openArticle(id, new OpenArticleListener() {
-            @Override
-            public void onSuccess() {
-                articlesCallback.invoke("null");
-            }
+        HANDLER.post(() -> ZohoSalesIQ.KnowledgeBase.open(ZohoSalesIQ.ResourceType.Articles, id,
+                new OpenResourceListener() {
+                    @Override
+                    public void onSuccess() {
+                        articlesCallback.invoke("null");
+                    }
 
-            @Override
-            public void onFailure(int code, String message) {
-                WritableMap errorMap = new WritableNativeMap();
-                errorMap.putInt("code", code);         // No I18N
-                errorMap.putString("message", message);         // No I18N
-                articlesCallback.invoke(errorMap);
-            }
-        }));
+                    @Override
+                    public void onFailure(int code, @Nullable String message) {
+                        WritableMap errorMap = new WritableNativeMap();
+                        errorMap.putInt("code", code);         // No I18N
+                        errorMap.putString("message", message);         // No I18N
+                        articlesCallback.invoke(errorMap);
+                    }
+                }
+        ));
     }
 
     @ReactMethod
@@ -478,7 +481,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                 initSalesIQ(activity.getApplication(), activity, appKey, accessKey, null);
                 ZohoSalesIQ.setListener(new RNZohoSalesIQListener());
                 ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
-                ZohoSalesIQ.FAQ.setListener(new RNZohoSalesIQListener());
+                ZohoSalesIQ.KnowledgeBase.setListener(new RNZohoSalesIQListener());
                 ZohoSalesIQ.ChatActions.setListener(new RNZohoSalesIQListener());
                 ZohoSalesIQ.Notification.setListener(new RNZohoSalesIQListener());
             });
@@ -498,7 +501,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                         initCallback);
                 ZohoSalesIQ.setListener(new RNZohoSalesIQListener());
                 ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
-                ZohoSalesIQ.FAQ.setListener(new RNZohoSalesIQListener());
+                ZohoSalesIQ.KnowledgeBase.setListener(new RNZohoSalesIQListener());
                 ZohoSalesIQ.ChatActions.setListener(new RNZohoSalesIQListener());
                 ZohoSalesIQ.Notification.setListener(new RNZohoSalesIQListener());
             });
@@ -629,7 +632,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setFAQVisibility(final Boolean visible) {
-        HANDLER.post(() -> ZohoSalesIQ.FAQ.setVisibility(visible));
+        HANDLER.post(() -> ZohoSalesIQ.KnowledgeBase.setVisibility(ZohoSalesIQ.ResourceType.Articles, visible));
     }
 
     @ReactMethod
@@ -860,7 +863,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                     ZohoSalesIQ.getApplicationManager() != null &&
                     ZohoSalesIQ.getApplicationManager().getApplication() != null
             ) {
-                int resourceId = getResourceId(launcherPropertiesMap.getString("icon"));
+                int resourceId = getDrawableResourceId(launcherPropertiesMap.getString("icon"));
                 Drawable drawable =
                         AppCompatResources.getDrawable(ZohoSalesIQ.getApplicationManager().getApplication(), resourceId);
                 if (resourceId > 0) {
@@ -939,11 +942,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                         initCallback.invoke(false);
                     }
                 }
-            });        
+            });
             if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
                 ZohoSalesIQ.getApplicationManager().setCurrentActivity(activity);
                 ZohoSalesIQ.getApplicationManager().setAppActivity(activity);
-            }        
+            }
         }
     }
 
@@ -979,7 +982,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     public WritableMap getChatMapObject(VisitorChat chat) {
-        WritableMap visitorMap = new WritableNativeMap();        
+        WritableMap visitorMap = new WritableNativeMap();
         visitorMap.putString("id", chat.getChatID());         // No I18N
         visitorMap.putInt("unreadCount", chat.getUnreadCount());         // No I18N
         visitorMap.putBoolean("isBotAttender", chat.isBotAttender());         // No I18N
@@ -1064,6 +1067,28 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         return visitorMap;
     }
 
+    public WritableMap getArticleMapObject(Resource resource) {
+        WritableMap articleMap = new WritableNativeMap();
+        if (resource != null) {
+            articleMap.putString("id", resource.getId());   // No I18N
+            articleMap.putString("name", resource.getTitle());  // No I18N
+            if (resource.getStats() != null) {
+                articleMap.putInt("likeCount", resource.getStats().getLiked()); // No I18N
+                articleMap.putInt("dislikeCount", resource.getStats().getDisliked());   // No I18N
+                articleMap.putInt("viewCount", resource.getStats().getViewed());    // No I18N
+            }
+            if (resource.getCategory() != null) {
+                if (resource.getCategory().getId() != null) {
+                    articleMap.putString("categoryID", resource.getCategory().getId()); // No I18N
+                }
+                if (resource.getCategory().getName() != null) {
+                    articleMap.putString("categoryName", resource.getCategory().getName()); // No I18N
+                }
+            }
+        }
+        return articleMap;
+    }
+
     public WritableMap getArticleMapObject(SalesIQArticle article) {
         WritableMap articleMap = new WritableNativeMap();
         articleMap.putString("id", article.getId());         // No I18N
@@ -1145,8 +1170,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         return infoMap;
     }
 
-    public class RNZohoSalesIQListener implements SalesIQListener, SalesIQChatListener,
-            SalesIQFAQListener, SalesIQActionListener, NotificationListener {
+    public class RNZohoSalesIQListener implements SalesIQListener, SalesIQChatListener, SalesIQKnowledgeBaseListener, SalesIQActionListener, NotificationListener {
 
         @Override
         public void handleFeedback(VisitorChat visitorChat) {
@@ -1177,23 +1201,23 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         }
 
         @Override
-        public void handleArticleOpened(String id) {
-            eventEmitter(EVENT_ARTICLE_OPENED, id);
+        public void handleResourceOpened(@NonNull ZohoSalesIQ.ResourceType resourceType, @Nullable Resource resource) {
+            eventEmitter(EVENT_ARTICLE_OPENED, resource != null ? resource.getId() : null);
         }
 
         @Override
-        public void handleArticleClosed(String id) {
-            eventEmitter(EVENT_ARTICLE_CLOSED, id);
+        public void handleResourceClosed(@NonNull ZohoSalesIQ.ResourceType resourceType, @Nullable Resource resource) {
+            eventEmitter(EVENT_ARTICLE_CLOSED, resource != null ? resource.getId() : null);
         }
 
         @Override
-        public void handleArticleLiked(String id) {
-            eventEmitter(EVENT_ARTICLE_LIKED, id);
+        public void handleResourceLiked(@NonNull ZohoSalesIQ.ResourceType resourceType, @Nullable Resource resource) {
+            eventEmitter(EVENT_ARTICLE_LIKED, resource != null ? resource.getId() : null);
         }
 
         @Override
-        public void handleArticleDisliked(String id) {
-            eventEmitter(EVENT_ARTICLE_DISLIKED, id);
+        public void handleResourceDisliked(@NonNull ZohoSalesIQ.ResourceType resourceType, @Nullable Resource resource) {
+            eventEmitter(EVENT_ARTICLE_DISLIKED, resource != null ? resource.getId() : null);
         }
 
         @Override
@@ -1231,7 +1255,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         }
 
         @Override
-        public void handleBotTrigger() {        
+        public void handleBotTrigger() {
             eventEmitter(EVENT_BOT_TRIGGER, null);
         }
 
@@ -1345,15 +1369,16 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setTabOrder(final ReadableArray tabNames) {
-        int minimumTabOrdersSize = Math.min(tabNames.size(), ZohoSalesIQ.Tab.values().length);
+        /** @apiNote Please remove the -1 below when the {@link ZohoSalesIQ.Tab.FAQ} is removed */
+        int minimumTabOrdersSize = Math.min(tabNames.size(), ZohoSalesIQ.Tab.values().length - 1);
         ZohoSalesIQ.Tab[] tabOrder = new ZohoSalesIQ.Tab[minimumTabOrdersSize];
         int insertIndex = 0;
         for (int index = 0; index < minimumTabOrdersSize; index++) {
             String tabName = tabNames.getString(index);
             if (Tab.CONVERSATIONS.name.equals(tabName)) {
                 tabOrder[insertIndex++] = ZohoSalesIQ.Tab.Conversations;
-            } else if (Tab.FAQ.name.equals(tabName)) {
-                tabOrder[insertIndex++] = ZohoSalesIQ.Tab.FAQ;
+            } else if (Tab.FAQ.name.equals(tabName) || Tab.KNOWLEDGE_BASE.name.equals(tabName)) {
+                tabOrder[insertIndex++] = ZohoSalesIQ.Tab.KnowledgeBase;
             }
         }
         ZohoSalesIQ.setTabOrder(tabOrder);
@@ -1366,16 +1391,37 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     @ReactMethod
     void setNotificationIconForAndroid(final String drawableName) {
-        int resourceId = getResourceId(drawableName);
+        int resourceId = getDrawableResourceId(drawableName);
         if (resourceId > 0) {
             ZohoSalesIQ.Notification.setIcon(resourceId);
         }
     }
 
-    private int getResourceId(String drawableName) {
+    @ReactMethod
+    void setThemeForAndroid(final String name) {
+        int resourceId = getStyleResourceId(name);
+        if (resourceId > 0) {
+            ZohoSalesIQ.setTheme(resourceId);
+        }
+    }
+
+
+    private int getStyleResourceId(String id) {
         SalesIQApplicationManager salesIQApplicationManager = ZohoSalesIQ.getApplicationManager();
         int resourceId = 0;
-        if (salesIQApplicationManager != null) {
+        if (salesIQApplicationManager != null && salesIQApplicationManager.getApplication() != null) {
+            resourceId = salesIQApplicationManager.getApplication().getResources().getIdentifier(
+                    id, "style",   // No I18N
+                    ZohoSalesIQ.getApplicationManager().getApplication().getPackageName());
+
+        }
+        return resourceId;
+    }
+
+    private int getDrawableResourceId(String drawableName) {
+        SalesIQApplicationManager salesIQApplicationManager = ZohoSalesIQ.getApplicationManager();
+        int resourceId = 0;
+        if (salesIQApplicationManager != null && salesIQApplicationManager.getApplication() != null) {
             resourceId = salesIQApplicationManager.getApplication().getResources().getIdentifier(
                     drawableName, "drawable",   // No I18N
                     ZohoSalesIQ.getApplicationManager().getApplication().getPackageName());

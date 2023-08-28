@@ -709,6 +709,10 @@ RCT_EXPORT_METHOD(setOperatorEmail: (NSString *)email){
 RCT_EXPORT_METHOD(setThemeColorforAndroid: (NSString *)attribute color_code:(NSString *)color_code){
     // No Implementation
 }
+
+RCT_EXPORT_METHOD(setThemeForAndroid: (NSString *)attribute){
+    // No Implementation
+}
 RCT_EXPORT_METHOD(setThemeColorforiOS: (NSString *)color_code){
     unsigned rgbValue = 0;
     NSScanner *scanner = [NSScanner scannerWithString:color_code];
