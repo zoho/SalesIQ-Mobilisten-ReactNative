@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -27,6 +28,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.google.gson.reflect.TypeToken;
 import com.zoho.commons.ChatComponent;
 import com.zoho.commons.LauncherModes;
 import com.zoho.commons.LauncherProperties;
@@ -52,19 +54,28 @@ import com.zoho.livechat.android.listeners.SalesIQCustomActionListener;
 import com.zoho.livechat.android.listeners.SalesIQListener;
 import com.zoho.livechat.android.models.SalesIQArticle;
 import com.zoho.livechat.android.models.SalesIQArticleCategory;
+import com.zoho.livechat.android.modules.common.DataModule;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.Resource;
+import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceCategory;
+import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceDepartment;
 import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.OpenResourceListener;
+import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.ResourceCategoryListener;
+import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.ResourceDepartmentsListener;
+import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.ResourceListener;
 import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.ResourcesListener;
 import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.SalesIQKnowledgeBaseListener;
 import com.zoho.livechat.android.operation.SalesIQApplicationManager;
 import com.zoho.livechat.android.utils.LiveChatUtil;
 import com.zoho.salesiqembed.ZohoSalesIQ;
+import com.zoho.salesiqembed.ktx.GsonExtensionsKt;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -137,6 +148,12 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     private static final Handler HANDLER = new Handler(Looper.getMainLooper());
 
+    private static final String EVENT_RESOURCE_LIKED = "EVENT_RESOURCE_LIKED";  // No I18N
+    private static final String EVENT_RESOURCE_DISLIKED = "EVENT_RESOURCE_DISLIKED";  // No I18N
+    private static final String EVENT_RESOURCE_OPENED = "EVENT_RESOURCE_OPENED";  // No I18N
+    private static final String EVENT_RESOURCE_CLOSED = "EVENT_RESOURCE_CLOSED";  // No I18N
+
+
     enum Tab {
         CONVERSATIONS("TAB_CONVERSATIONS"),
         @Deprecated FAQ("TAB_FAQ"),
@@ -192,16 +209,24 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         constants.put("CHAT_QUEUE_POSITION_CHANGED", EVENT_CHAT_QUEUE_POSITION_CHANGED);  // No I18N
         constants.put("CHAT_UNREAD_COUNT_CHANGED", EVENT_CHAT_UNREAD_COUNT_CHANGED);  // No I18N
 
+        constants.put("EVENT_RESOURCE_LIKED", EVENT_RESOURCE_LIKED);         // No I18N
+        constants.put("EVENT_RESOURCE_DISLIKED", EVENT_RESOURCE_DISLIKED);         // No I18N
+        constants.put("EVENT_RESOURCE_OPENED", EVENT_RESOURCE_OPENED);         // No I18N
+        constants.put("EVENT_RESOURCE_CLOSED", EVENT_RESOURCE_CLOSED);         // No I18N
+
         constants.put("ARTICLE_LIKED", EVENT_ARTICLE_LIKED);         // No I18N
         constants.put("ARTICLE_DISLIKED", EVENT_ARTICLE_DISLIKED);         // No I18N
         constants.put("ARTICLE_OPENED", EVENT_ARTICLE_OPENED);         // No I18N
-        constants.put("ARTICLE_CLOSED", EVENT_ARTICLE_CLOSED);         // No I18N
+        constants.put("ARTICLE_CLOSED", EVENT_ARTICLE_CLOSED);
+
         constants.put("LAUNCHER_MODE_STATIC", LAUNCHER_MODE_STATIC);         // No I18N
         constants.put("LAUNCHER_MODE_FLOATING", LAUNCHER_MODE_FLOATING);         // No I18N
         constants.put("LAUNCHER_HORIZONTAL_RIGHT", LAUNCHER_HORIZONTAL_RIGHT);         // No I18N
         constants.put("LAUNCHER_HORIZONTAL_LEFT", LAUNCHER_HORIZONTAL_LEFT);         // No I18N
         constants.put("LAUNCHER_VERTICAL_TOP", LAUNCHER_VERTICAL_TOP);         // No I18N
         constants.put("LAUNCHER_VERTICAL_BOTTOM", LAUNCHER_VERTICAL_BOTTOM);         // No I18N            
+
+        constants.put("RESOURCE_ARTICLES", RESOURCE_ARTICLES);         // No I18N                
         return constants;
     }
 
@@ -1202,21 +1227,37 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
         @Override
         public void handleResourceOpened(@NonNull ZohoSalesIQ.ResourceType resourceType, @Nullable Resource resource) {
+            WritableMap resourceMap = new WritableNativeMap();
+            resourceMap.putString("type", RESOURCE_ARTICLES);       // No I18N
+            resourceMap.putMap("resource", getWritableMap(resource));       // No I18N
+            eventEmitter(EVENT_RESOURCE_OPENED, resourceMap);
             eventEmitter(EVENT_ARTICLE_OPENED, resource != null ? resource.getId() : null);
         }
 
         @Override
         public void handleResourceClosed(@NonNull ZohoSalesIQ.ResourceType resourceType, @Nullable Resource resource) {
+            WritableMap resourceMap = new WritableNativeMap();
+            resourceMap.putString("type", RESOURCE_ARTICLES);       // No I18N
+            resourceMap.putMap("resource", getWritableMap(resource));       // No I18N
+            eventEmitter(EVENT_RESOURCE_CLOSED, resourceMap);
             eventEmitter(EVENT_ARTICLE_CLOSED, resource != null ? resource.getId() : null);
         }
 
         @Override
         public void handleResourceLiked(@NonNull ZohoSalesIQ.ResourceType resourceType, @Nullable Resource resource) {
+            WritableMap resourceMap = new WritableNativeMap();
+            resourceMap.putString("type", RESOURCE_ARTICLES);       // No I18N
+            resourceMap.putMap("resource", getWritableMap(resource));       // No I18N
+            eventEmitter(EVENT_RESOURCE_LIKED, resourceMap);
             eventEmitter(EVENT_ARTICLE_LIKED, resource != null ? resource.getId() : null);
         }
 
         @Override
         public void handleResourceDisliked(@NonNull ZohoSalesIQ.ResourceType resourceType, @Nullable Resource resource) {
+            WritableMap resourceMap = new WritableNativeMap();
+            resourceMap.putString("type", RESOURCE_ARTICLES);       // No I18N
+            resourceMap.putMap("resource", getWritableMap(resource));       // No I18N
+            eventEmitter(EVENT_RESOURCE_DISLIKED, resourceMap);
             eventEmitter(EVENT_ARTICLE_DISLIKED, resource != null ? resource.getId() : null);
         }
 
@@ -1448,4 +1489,202 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     @ReactMethod
     void writeLogForiOS(final String message, final String logLevel, final Callback callback) {}
+
+    public static final String RESOURCE_ARTICLES = "RESOURCE_ARTICLES";    // No I18N
+
+    private @Nullable ZohoSalesIQ.ResourceType getResourceType(String value) {
+        ZohoSalesIQ.ResourceType resourceType;
+        if (RESOURCE_ARTICLES.equals(value)) {
+            resourceType = ZohoSalesIQ.ResourceType.Articles;
+        } else {
+            resourceType = null;
+        }
+        return resourceType;
+    }
+
+    @ReactMethod
+    public void setKnowledgeBaseVisibility(final String type, final boolean shouldShow) {
+        executeIfResourceTypeIsValid(type, null, () -> ZohoSalesIQ.KnowledgeBase.setVisibility(getResourceType(type), shouldShow));
+    }
+
+    @ReactMethod
+    public void categorizeKnowledgeBase(final String type, final boolean shouldCategorize) {
+        executeIfResourceTypeIsValid(type, null, () -> ZohoSalesIQ.KnowledgeBase.categorize(getResourceType(type), shouldCategorize));
+    }
+
+    @ReactMethod
+    public void combineKnowledgeBaseDepartments(final String type, final boolean merge) {
+        executeIfResourceTypeIsValid(type, null, () -> ZohoSalesIQ.KnowledgeBase.combineDepartments(getResourceType(type), merge));
+    }
+
+    //void  setRecentShowLimit(String type) {
+    //   ZohoSalesIQ.KnowledgeBase.setRecentShowLimit(value)
+    // }
+
+    @ReactMethod
+    public void getKnowledgeBaseResourceDepartments(final Callback callback) {
+        ZohoSalesIQ.KnowledgeBase.getResourceDepartments(new ResourceDepartmentsListener() {
+            @Override
+            public void onSuccess(@NonNull List<ResourceDepartment> resourceDepartments) {
+                callback.invoke(null, getWritableArray(resourceDepartments));
+            }
+
+            @Override
+            public void onFailure(int code, @Nullable String message) {
+                callback.invoke(getErrorMap(code, message), null);
+            }
+        });
+    }
+
+    @ReactMethod
+    public void openKnowledgeBase(final String type, final String id, final Callback callback) {
+        executeIfResourceTypeIsValid(type, callback, () -> ZohoSalesIQ.KnowledgeBase.open(getResourceType(type), id, new OpenResourceListener() {
+            @Override
+            public void onSuccess() {
+                callback.invoke(null, Boolean.TRUE);
+            }
+
+            @Override
+            public void onFailure(int code, @Nullable String message) {
+                callback.invoke(getErrorMap(code, message), null);
+            }
+        }));
+    }
+
+    @ReactMethod
+    public void getKnowledgeBaseSingleResource(final String type, final String id, final Callback callback) {
+        executeIfResourceTypeIsValid(type, callback, () -> ZohoSalesIQ.KnowledgeBase.getSingleResource(getResourceType(type), id, new ResourceListener() {
+            @Override
+            public void onSuccess(@Nullable Resource resource) {
+                callback.invoke(null, getWritableMap(resource));
+            }
+
+            @Override
+            public void onFailure(int code, @Nullable String message) {
+                callback.invoke(getErrorMap(code, message), null);
+            }
+        }));
+    }
+
+    @ReactMethod
+    public void getKnowledgeBaseResources(final String type, final String departmentID, final String parentCategoryID, final int page, final int limit, final String searchKey, final Callback callback) {
+        executeIfResourceTypeIsValid(type, callback, () -> ZohoSalesIQ.KnowledgeBase.getResources(getResourceType(type), departmentID, parentCategoryID, searchKey, page, limit, new ResourcesListener() {
+            @Override
+            public void onSuccess(@NonNull List<Resource> resources, boolean moreDataAvailable) {
+                callback.invoke(null, getWritableArray(resources), moreDataAvailable);
+            }
+
+            @Override
+            public void onFailure(int code, @Nullable String message) {
+                callback.invoke(getErrorMap(code, message), null);
+            }
+        }));
+    }
+
+    @ReactMethod
+    public void getKnowledgeBaseCategories(final String type, final String departmentID, final String parentCategoryID, final Callback callback) {
+        executeIfResourceTypeIsValid(type, callback, () -> ZohoSalesIQ.KnowledgeBase.getCategories(getResourceType(type), departmentID, parentCategoryID, new ResourceCategoryListener() {
+            @Override
+            public void onSuccess(@NonNull List<ResourceCategory> resourceCategories) {
+                callback.invoke(null, getWritableArray(resourceCategories));
+            }
+
+            @Override
+            public void onFailure(int code, @Nullable String message) {
+                callback.invoke(getErrorMap(code, message), null);
+            }
+        }));
+    }
+
+    static WritableArray getWritableArray(Object object) {
+        WritableNativeArray finalWritableNativeArray = new WritableNativeArray();
+        if (object != null) {
+            Type mapType = new TypeToken<List<Map<String, Object>>>() {}.getType();
+            List<Map<String, Object>> mapList = GsonExtensionsKt.fromJsonSafe(DataModule.getGson(), DataModule.getGson().toJson(object), mapType);
+            WritableNativeArray writableNativeArray = Arguments.makeNativeArray(mapList);
+            int size = writableNativeArray.size();
+            for (int index = 0; index < size; index++) {
+                finalWritableNativeArray.pushMap(getWritableMap(writableNativeArray.getMap(index)));
+            }
+        }
+        return finalWritableNativeArray;
+    }
+
+    static WritableMap getWritableMap(Object object) {
+        WritableNativeMap writableNativeMap = new WritableNativeMap();
+        if (object != null) {
+            Map<String, Object> map = null;
+            if (!(object instanceof ReadableMap)) {
+                Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
+                map = GsonExtensionsKt.fromJsonSafe(DataModule.getGson(), DataModule.getGson().toJson(object), mapType);
+            }
+            ReadableMap readableMap = object instanceof ReadableMap ? (ReadableMap) object : Arguments.makeNativeMap(map);
+            for (Iterator<Map.Entry<String, Object>> it = (readableMap).getEntryIterator(); it.hasNext(); ) {
+                Map.Entry<String, Object> entry = it.next();
+                String key = convertToCamelCase(entry.getKey());
+                Object value = entry.getValue();
+                if (value == null) {
+                    writableNativeMap.putNull(key);
+                } else if (value instanceof ReadableArray) {
+                    writableNativeMap.putArray(key, (ReadableArray) value);
+                } else if (value instanceof String) {
+                    writableNativeMap.putString(key, (String) value);
+                } else if (value instanceof Number) {
+                    if (value instanceof Integer) {
+                        writableNativeMap.putInt(key, (Integer) value);
+                    } else {
+                        writableNativeMap.putDouble(key, ((Number) value).doubleValue());
+                    }
+                } else if (value instanceof Boolean) {
+                    writableNativeMap.putBoolean(key, (Boolean) value);
+                } else if (value instanceof ReadableMap) {
+                    writableNativeMap.putMap(key, getWritableMap(value));
+                }
+            }
+        }
+        return writableNativeMap;
+    }
+
+    static String convertToCamelCase(String input) {
+        StringBuilder camelCase = new StringBuilder(30);
+        boolean capitalizeNext = false;
+
+        if (input != null) {
+            for (char c : input.toCharArray()) {
+                if (c == '_') {
+                    capitalizeNext = true;
+                } else {
+                    camelCase.append(capitalizeNext ? Character.toUpperCase(c) : c);
+                    capitalizeNext = false;
+                }
+            }
+        }
+
+        return camelCase.toString();
+    }
+
+    WritableMap getErrorMap(int code, String message) {
+        WritableMap errorMap = new WritableNativeMap();
+        errorMap.putInt("code", code);         // No I18N
+        errorMap.putString("message", message);         // No I18N
+        return errorMap;
+    }
+
+    private void executeIfResourceTypeIsValid(String type, Callback callback, Runnable runnable) {
+        ZohoSalesIQ.ResourceType resourceType = getResourceType(type);
+        if (resourceType != null) {
+            runnable.run();
+        } else {
+            if (callback != null) {
+                callback.invoke(getResourceTypeErrorMap());
+            }
+        }
+    }
+
+    static WritableMap getResourceTypeErrorMap() {
+        WritableMap errorMap = new WritableNativeMap();
+        errorMap.putInt("code", 100);         // No I18N
+        errorMap.putString("message", "Invalid resource type");         // No I18N
+        return errorMap;
+    }
 }

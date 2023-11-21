@@ -4,8 +4,12 @@ import { NativeEventEmitter } from 'react-native';    //No I18N
 const emitter = new NativeEventEmitter(RNZohoSalesIQ);
 
 module.exports = {
+
   Tab: {
-    CONVERSATIONS: 'TAB_CONVERSATIONS', FAQ: 'TAB_FAQ'
+    CONVERSATIONS: 'TAB_CONVERSATIONS', //No I18N
+    KNOWLEDGE_BASE: 'TAB_KNOWLEDGE_BASE',   //No I18N
+    // DEPRECATED
+    FAQ: 'TAB_FAQ'  //No I18N
   },
   TYPE_OPEN: RNZohoSalesIQ.TYPE_OPEN,
   TYPE_WAITING: RNZohoSalesIQ.TYPE_WAITING,
@@ -46,9 +50,18 @@ module.exports = {
   EVENT_BOT_TRIGGER: RNZohoSalesIQ.BOT_TRIGGER,
   EVENT_HANDLE_URL: RNZohoSalesIQ.EVENT_HANDLE_URL,
 
+  EVENT_RESOURCE_OPENED: RNZohoSalesIQ.EVENT_RESOURCE_OPENED,
+  EVENT_RESOURCE_CLOSED: RNZohoSalesIQ.EVENT_RESOURCE_CLOSED,
+  EVENT_RESOURCE_LIKED: RNZohoSalesIQ.EVENT_RESOURCE_LIKED,
+  EVENT_RESOURCE_DISLIKED: RNZohoSalesIQ.EVENT_RESOURCE_DISLIKED,
+
   Event: {
     OPEN_URL: RNZohoSalesIQ.EVENT_OPEN_URL,
     COMPLETE_CHAT_ACTION: RNZohoSalesIQ.EVENT_COMPLETE_CHAT_ACTION
+  },
+
+  Resource: {
+    ARTICLES: RNZohoSalesIQ.RESOURCE_ARTICLES
   },
 
   Launcher: {
@@ -291,6 +304,39 @@ module.exports = {
     },
     writeLogForiOS: function (log, level, callback) {
       RNZohoSalesIQ.writeLogForiOS(log, level, callback);
+    }
+  },
+
+  KnowledgeBase: {
+//    isEnabled: function (type, callback) {
+//      RNZohoSalesIQ.isKnowledgeBaseEnabled(type, callback);
+//    },
+    setVisibility: function (type, shouldShow) {
+      RNZohoSalesIQ.setKnowledgeBaseVisibility(type, shouldShow)
+    },
+    categorize: function (type, shouldCategorize) {
+      RNZohoSalesIQ.categorizeKnowledgeBase(type, shouldCategorize)
+    },
+    combineDepartments: function (type, merge) {
+      RNZohoSalesIQ.combineKnowledgeBaseDepartments(type, merge)
+    },
+    // setRecentShowLimit: function (value) {
+    //   RNZohoSalesIQ.setKnowledgeBaseRecentShowLimit(value)
+    // },
+    getResourceDepartments: function (callback) {  
+      RNZohoSalesIQ.getKnowledgeBaseResourceDepartments(callback);
+    },
+    open: function (type, id, callback) {
+      RNZohoSalesIQ.openKnowledgeBase(type, id, callback);
+    },
+    getSingleResource: function (type, id, callback) {
+      RNZohoSalesIQ.getKnowledgeBaseSingleResource(type, id, callback);
+    },
+    getResources: function (type, departmentId = null, parentCategoryId = null, page = 1, limit = 99, searchKey = null, callback) {
+      RNZohoSalesIQ.getKnowledgeBaseResources(type, departmentId, parentCategoryId, page, limit, searchKey, callback);
+    },
+    getCategories: function (type, departmentId = null, parentCategoryId = null, callback) {
+      RNZohoSalesIQ.getKnowledgeBaseCategories(type, departmentId, parentCategoryId, callback);
     }
   }
 

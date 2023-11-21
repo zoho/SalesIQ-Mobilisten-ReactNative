@@ -21,6 +21,7 @@ RCT_EXPORT_METHOD(init:(NSString *)appKey accessKey:(NSString *)accessKey){
     ZohoSalesIQ.delegate = self;
     [ZohoSalesIQ Chat].delegate = self;
     [ZohoSalesIQ FAQ].delegate = self;
+    [ZohoSalesIQ KnowledgeBase].delegate = self;
     if(actionDictionary == nil){
         actionDictionary = [[NSMutableDictionary<NSString *, SIQActionHandler *> alloc] init];
     }
@@ -45,6 +46,8 @@ RCT_EXPORT_METHOD(initWithCallback:(NSString *)appKey accessKey:(NSString *)acce
     ZohoSalesIQ.delegate = self;
     [ZohoSalesIQ Chat].delegate = self;
     [ZohoSalesIQ FAQ].delegate = self;
+    [ZohoSalesIQ KnowledgeBase].delegate = self;
+    
     if(actionDictionary == nil){
         actionDictionary = [[NSMutableDictionary<NSString *, SIQActionHandler *> alloc] init];
     }
@@ -110,10 +113,18 @@ NSString *ERROR_LOG = @"ERROR_LOG";
 
 NSString *TAB_CONVERSATIONS = @"TAB_CONVERSATIONS";
 NSString *TAB_FAQ = @"TAB_FAQ";
+NSString *TAB_KNOWLEDGE_BASE = @"TAB_KNOWLEDGE_BASE";
 
 NSString *EVENT_HANDLE_URL = @"EVENT_HANDLE_URL";
 NSString *EVENT_OPEN_URL = @"EVENT_OPEN_URL";
 NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
+NSString *RESOURCE_ARTICLES = @"RESOURCE_ARTICLES";
+
+// ---------------------------------------------------------
+NSString *EVENT_RESOURCE_OPENED = @"EVENT_RESOURCE_OPENED";
+NSString *EVENT_RESOURCE_CLOSED = @"EVENT_RESOURCE_CLOSED";
+NSString *EVENT_RESOURCE_LIKED = @"EVENT_RESOURCE_LIKED";
+NSString *EVENT_RESOURCE_DISLIKED = @"EVENT_RESOURCE_DISLIKED";
 
 - (NSArray<NSString *> *)supportedEvents {
     return @[OPERATORS_OFFLINE,
@@ -146,9 +157,15 @@ NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
              ERROR_LOG,
              TAB_CONVERSATIONS,
              TAB_FAQ,
+             TAB_KNOWLEDGE_BASE,
              EVENT_HANDLE_URL,
              EVENT_OPEN_URL,
-             EVENT_COMPLETE_CHAT_ACTION];
+             EVENT_COMPLETE_CHAT_ACTION,
+             RESOURCE_ARTICLES,
+             EVENT_RESOURCE_OPENED,
+             EVENT_RESOURCE_CLOSED,
+             EVENT_RESOURCE_LIKED,
+             EVENT_RESOURCE_DISLIKED];
 }
 
 - (NSDictionary *) constantsToExport {
@@ -190,10 +207,16 @@ NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
         @"WARNING_LOG": WARNING_LOG,
         @"ERROR_LOG": ERROR_LOG,
         @"TAB_CONVERSATIONS": TAB_CONVERSATIONS,
+        @"TAB_KNOWLEDGE_BASE": TAB_KNOWLEDGE_BASE,
         @"TAB_FAQ": TAB_FAQ,
         @"EVENT_HANDLE_URL": EVENT_HANDLE_URL,
         @"EVENT_OPEN_URL": EVENT_OPEN_URL,
         @"EVENT_COMPLETE_CHAT_ACTION": EVENT_COMPLETE_CHAT_ACTION,
+        @"RESOURCE_ARTICLES": RESOURCE_ARTICLES,
+        @"EVENT_RESOURCE_OPENED": EVENT_RESOURCE_OPENED,
+        @"EVENT_RESOURCE_CLOSED": EVENT_RESOURCE_CLOSED,
+        @"EVENT_RESOURCE_LIKED": EVENT_RESOURCE_LIKED,
+        @"EVENT_RESOURCE_DISLIKED": EVENT_RESOURCE_DISLIKED,
     };
 }
 
@@ -205,6 +228,21 @@ NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();
+}
+
+- (NSMutableDictionary *)prepareResourceInformation:(enum SIQResourceType)type resource:(SIQKnowledgeBaseResource * _Nullable)resource {
+    NSMutableDictionary *resourceInformation = [NSMutableDictionary dictionary];
+    NSMutableDictionary *resourceObject = [RNZohoSalesIQ getResourceObject:resource];
+    
+    if (resourceObject != nil) {
+        [resourceInformation setObject:resourceObject forKey:@"resource"];
+    }
+    
+    if (type == SIQResourceTypeArticles) {
+        [resourceInformation setObject:RESOURCE_ARTICLES forKey:@"type"];
+    }
+    
+    return resourceInformation;
 }
 
 + (NSMutableDictionary *)getVisitorObject: (SIQVisitor*)arguments {
@@ -356,6 +394,13 @@ NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
     return errorDict;
 }
 
++ (NSMutableDictionary *)getSIQErrorObject:(id<SIQError>)siqError {
+    NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
+    [errorDictionary setObject:@(siqError.code) forKey:@"code"];
+    [errorDictionary setObject:siqError.message forKey:@"message"];
+    return errorDictionary;
+}
+
 + (NSMutableArray *)getFAQCategoryList: (NSArray<SIQFAQCategory *> *) categories
 {
     NSMutableArray *categoryArray = [NSMutableArray array];
@@ -501,7 +546,7 @@ NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
                 if (fileSize != nil) {
                     [fileMessageDict setObject: @(fileSize)   forKey: @"size"];
                 }
-
+                
                 if (fileContent != nil){
                     if (comment != nil){
                         [chatDict setObject:[NSString stringWithFormat:@"%@:%@",fileContent,comment]  forKey: @"lastMessage"];
@@ -543,6 +588,192 @@ NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
         
     }
     return chatDict;
+}
+
++ (NSMutableDictionary *)getResourceObject: (SIQKnowledgeBaseResource*)resource {
+    NSMutableDictionary *resourceDictionary = [NSMutableDictionary dictionary];
+    if([resource id] != nil){
+        NSString *articleID = [resource id];
+        [resourceDictionary setObject: articleID  forKey: @"id"];
+        
+        if ([resource category] != nil) {
+            NSMutableDictionary *resourceCategory = [NSMutableDictionary dictionary];
+            if ([[resource category] id] != nil) {
+                [resourceCategory setObject: [[resource category] id]  forKey: @"id"];
+            }
+            if ([[resource category] name] != nil) {
+                [resourceCategory setObject: [[resource category] name]  forKey: @"name"];
+            }
+            [resourceDictionary setObject: resourceCategory  forKey: @"category"];
+        }
+        
+        if ([resource title] != nil) {
+            [resourceDictionary setObject: [resource title]  forKey: @"title"];
+        }
+        
+        if ([resource departmentId] != nil) {
+            [resourceDictionary setObject: [resource departmentId]  forKey: @"departmentId"];
+        }
+        
+        if ([resource language] != nil) {
+            NSMutableDictionary *resourceLanguage = [NSMutableDictionary dictionary];
+            if ([[resource language] id] != nil) {
+                [resourceLanguage setObject: [[resource language] id]  forKey: @"id"];
+            }
+            if ([[resource language] code] != nil) {
+                [resourceLanguage setObject: [[resource language] code]  forKey: @"code"];
+            }
+            [resourceDictionary setObject: resourceLanguage  forKey: @"language"];
+        }
+        
+        if ([resource creator] != nil) {
+            NSMutableDictionary *resourceCreator = [NSMutableDictionary dictionary];
+            if ([[resource creator] id] != nil) {
+                [resourceCreator setObject: [[resource creator] id]  forKey: @"id"];
+            }
+            if ([[resource creator] name] != nil) {
+                [resourceCreator setObject: [[resource creator] name]  forKey: @"name"];
+            }
+            if ([[resource creator] email] != nil) {
+                [resourceCreator setObject: [[resource creator] email]  forKey: @"email"];
+            }
+            if ([[resource creator] displayName] != nil) {
+                [resourceCreator setObject: [[resource creator] displayName]  forKey: @"displayName"];
+            }
+            if ([[resource creator] imageUrl] != nil) {
+                [resourceCreator setObject: [[resource creator] imageUrl]  forKey: @"imageUrl"];
+            }
+            [resourceDictionary setObject: resourceCreator  forKey: @"creator"];
+        }
+        
+        if ([resource modifier] != nil) {
+            NSMutableDictionary *resourceModifier = [NSMutableDictionary dictionary];
+            if ([[resource modifier] id] != nil) {
+                [resourceModifier setObject: [[resource modifier] id]  forKey: @"id"];
+            }
+            if ([[resource modifier] name] != nil) {
+                [resourceModifier setObject: [[resource modifier] name]  forKey: @"name"];
+            }
+            if ([[resource modifier] email] != nil) {
+                [resourceModifier setObject: [[resource modifier] email]  forKey: @"email"];
+            }
+            if ([[resource modifier] displayName] != nil) {
+                [resourceModifier setObject: [[resource modifier] displayName]  forKey: @"displayName"];
+            }
+            if ([[resource modifier] imageUrl] != nil) {
+                [resourceModifier setObject: [[resource modifier] imageUrl]  forKey: @"imageUrl"];
+            }
+            [resourceDictionary setObject: resourceModifier  forKey: @"modifier"];
+        }
+        
+        if ([resource createdTime] != nil) {
+            NSDate *createdTime = [resource createdTime];
+            int time = (int)[createdTime timeIntervalSince1970];
+            [resourceDictionary setObject: @(time) forKey: @"createdTime"];
+        }
+        
+        if ([resource modifiedTime] != nil) {
+            NSDate *createdTime = [resource modifiedTime];
+            int time = (int)[createdTime timeIntervalSince1970];
+            [resourceDictionary setObject: @(time) forKey: @"modifiedTime"];
+        }
+        
+        if ([resource publicUrl] != nil) {
+            [resourceDictionary setObject: [resource publicUrl]  forKey: @"publicUrl"];
+        }
+        
+        if ([resource stats] != nil) {
+            NSMutableDictionary *resourceStats = [NSMutableDictionary dictionary];
+            if ([[resource stats] liked] != nil) {
+                [resourceStats setObject: [[resource stats] liked]  forKey: @"liked"];
+            }
+            if ([[resource stats] disliked] != nil) {
+                [resourceStats setObject: [[resource stats] disliked]  forKey: @"disliked"];
+            }
+            if ([[resource stats] used] != nil) {
+                [resourceStats setObject: [[resource stats] used]  forKey: @"used"];
+            }
+            if ([[resource stats] viewed] != nil) {
+                [resourceStats setObject: [[resource stats] viewed]  forKey: @"viewed"];
+            }
+            [resourceDictionary setObject: resourceStats  forKey: @"stats"];
+        }
+        
+        if ([resource content] != nil) {
+            [resourceDictionary setObject: [resource content]  forKey: @"content"];
+        }
+        
+        SIQArticleRatedType ratedType = [resource ratedType];
+        if (ratedType == SIQArticleRatedTypeLiked) {
+            [resourceDictionary setObject: @"liked" forKey:@"ratedType"];
+        }
+        if (ratedType == SIQArticleRatedTypeDisliked) {
+            [resourceDictionary setObject: @"disliked" forKey:@"ratedType"];
+        }
+        
+    }
+    return resourceDictionary;
+}
+
++ (NSMutableDictionary *)getCategoryObject: (SIQKnowledgeBaseCategory*)category {
+    NSMutableDictionary *categoryDictionary = [NSMutableDictionary dictionary];
+    if([category id] != nil) {
+        NSString *categoryID = [category id];
+        [categoryDictionary setObject: categoryID  forKey: @"id"];
+        
+        if ([category name] != nil) {
+            [categoryDictionary setObject: [category name]  forKey: @"name"];
+        }
+        if ([category departmentId] != nil) {
+            [categoryDictionary setObject: [category departmentId]  forKey: @"departmentId"];
+        }
+        if ([category count] != nil) {
+            [categoryDictionary setObject: [category count]  forKey: @"count"];
+        }
+        if ([category childrenCount] != nil) {
+            [categoryDictionary setObject: [category childrenCount]  forKey: @"childrenCount"];
+        }
+        if ([category order] != nil) {
+            [categoryDictionary setObject: [category order]  forKey: @"order"];
+        }
+        if ([category parentCategoryId] != nil) {
+            [categoryDictionary setObject: [category parentCategoryId]  forKey: @"parentCategoryId"];
+        }
+        if ([category resourceModifiedTime] != nil) {
+            NSDate *modifiedTime = [category resourceModifiedTime];
+            int time = (int)[modifiedTime timeIntervalSince1970];
+            [categoryDictionary setObject: @(time) forKey: @"resourceModifiedTime"];
+        }
+    }
+    return categoryDictionary;
+}
+
++ (NSMutableArray *)getResourceList: (NSArray<SIQKnowledgeBaseResource *> *) resources
+{
+    NSMutableArray *resourceArray = [NSMutableArray array];
+    
+    NSInteger i = 0;
+    for (SIQKnowledgeBaseResource *resource in resources){
+        NSMutableDictionary *resourceDict = [NSMutableDictionary dictionary];
+        resourceDict = [RNZohoSalesIQ getResourceObject:resource];
+        [resourceArray insertObject:resourceDict atIndex:i];
+        i = i + 1;
+    }
+    return resourceArray;
+}
+
++ (NSMutableArray *)getCategoryList: (NSArray<SIQKnowledgeBaseCategory *> *) categories
+{
+    NSMutableArray *categoryArray = [NSMutableArray array];
+    
+    NSInteger i = 0;
+    for (SIQKnowledgeBaseCategory *category in categories){
+        NSMutableDictionary *categoryDict = [NSMutableDictionary dictionary];
+        categoryDict = [RNZohoSalesIQ getCategoryObject:category];
+        [categoryArray insertObject:categoryDict atIndex:i];
+        i = i + 1;
+    }
+    return categoryArray;
 }
 
 + (NSMutableDictionary *)getDepartmentObject: (SIQDepartment*)argument {
@@ -1141,7 +1372,7 @@ RCT_EXPORT_METHOD(writeLogForiOS: (NSString *)log level:(NSString *)level callba
     }else if ([level  isEqual: ERROR_LOG]){
         debugLogLevel = SIQDebugLogLevelError;
     }
-
+    
     [[ZohoSalesIQ Logger] write: log logLevel: debugLogLevel file:nil line:nil function:nil fileID:nil filePath:nil column:nil success:^(BOOL success) {
         NSNumber *complete = [NSNumber numberWithBool:success];
         callback(@[complete]);
@@ -1166,7 +1397,7 @@ RCT_EXPORT_METHOD(setTabOrder:(NSArray *)orders) {
         NSString  *currentObject = [orders objectAtIndex:i];
         if ([currentObject  isEqual: TAB_CONVERSATIONS]){
             [sendOrders addObject:[NSNumber numberWithInteger:0]];
-        } else if ([currentObject  isEqual: TAB_FAQ]){
+        } else if ([currentObject isEqual:TAB_FAQ] || [currentObject isEqual:TAB_KNOWLEDGE_BASE]){
             [sendOrders addObject:[NSNumber numberWithInteger:1]];
         }
         
@@ -1217,6 +1448,121 @@ RCT_EXPORT_METHOD(sendEvent: (NSString *)eventName values:(NSArray *)values){
             }
             [actionDictionary removeObjectForKey:uuid];
         }
+    }
+}
+
+//KnowledgeBase
+RCT_EXPORT_METHOD(isKnowledgeBaseEnabled: (NSString*)type callback:(RCTResponseSenderBlock)callback)
+{
+    if ([type isEqualToString: RESOURCE_ARTICLES]) {
+        NSNumber *chatEnabled = [NSNumber numberWithBool:[[ZohoSalesIQ KnowledgeBase] isEnabled:SIQResourceTypeArticles]];
+        callback(@[chatEnabled]);
+    }
+}
+
+RCT_EXPORT_METHOD(setKnowledgeBaseVisibility: (NSString*)type enable:(BOOL)enable)
+{
+    if ([type isEqualToString: RESOURCE_ARTICLES]) {
+        [[ZohoSalesIQ KnowledgeBase] setVisibility:SIQResourceTypeArticles enable: enable];
+    }
+}
+
+RCT_EXPORT_METHOD(categorizeKnowledgeBase: (NSString*)type enable:(BOOL)enable)
+{
+    if ([type isEqualToString: RESOURCE_ARTICLES]) {
+        [[ZohoSalesIQ KnowledgeBase] categorize:SIQResourceTypeArticles enable:enable];
+    }
+}
+
+RCT_EXPORT_METHOD(combineKnowledgeBaseDepartments: (NSString*)type enable:(BOOL)enable)
+{
+    if ([type isEqualToString: RESOURCE_ARTICLES]) {
+        [[ZohoSalesIQ KnowledgeBase] combineDepartments:SIQResourceTypeArticles enable:enable];
+    }
+}
+
+RCT_EXPORT_METHOD(setKnowledgeBaseRecentShowLimit:(NSInteger)limit) {
+    [[ZohoSalesIQ KnowledgeBase] setRecentShowLimit:limit];
+}
+
+RCT_EXPORT_METHOD(getKnowledgeBaseResourceDepartments: (RCTResponseSenderBlock)callback) {
+    [[ZohoSalesIQ KnowledgeBase] getResourceDepartmentsWithCompletion:^(id<SIQError> _Nullable error, NSArray<SIQResourceDepartment *> * _Nullable departments) {
+        
+        if (departments != nil) {
+            NSMutableArray *departmentsArray = [NSMutableArray array];
+            for (SIQResourceDepartment *department in departments) {
+                NSMutableDictionary *departmentDict = [NSMutableDictionary dictionary];
+                departmentDict[@"id"] = department.id;
+                departmentDict[@"name"] = department.name;
+                [departmentsArray addObject:departmentDict];
+            }
+            callback(@[[NSNull null], departmentsArray]);
+        } else {
+            NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getSIQErrorObject:error];
+            callback(@[errorDictionary, [NSNull null]]);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(openKnowledgeBase:(NSString *)type articleID:(NSString *)articleID callback:(RCTResponseSenderBlock)callback) {
+    if ([type isEqualToString: RESOURCE_ARTICLES]) {
+        [[ZohoSalesIQ KnowledgeBase] open:SIQResourceTypeArticles id:articleID completion:^(BOOL success, id<SIQError> _Nullable error) {
+            NSNumber *succeeded = [NSNumber numberWithBool:success];
+            if (error != nil) {
+                NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getSIQErrorObject:error];
+                callback(@[succeeded, errorDictionary]);
+            } else {
+                callback(@[succeeded, [NSNull null]]);
+            }
+        }];
+    }
+}
+
+RCT_EXPORT_METHOD(getKnowledgeBaseSingleResource:(NSString *)type articleID:(NSString *)articleID callback:(RCTResponseSenderBlock)callback) {
+    if ([type isEqualToString: RESOURCE_ARTICLES]) {
+        [[ZohoSalesIQ KnowledgeBase]getSingleResource:SIQResourceTypeArticles id:articleID completion:^(BOOL success, id<SIQError> _Nullable error, SIQKnowledgeBaseResource * _Nullable resource) {
+            if (error != nil) {
+                NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getSIQErrorObject:error];
+                callback(@[errorDictionary, [NSNull null]]);
+            } else {
+                NSMutableDictionary *resourceObject = [NSMutableDictionary dictionary];
+                resourceObject = [RNZohoSalesIQ getResourceObject:resource];
+                callback(@[[NSNull null], resourceObject]);
+            }
+        }];
+    }
+}
+
+RCT_EXPORT_METHOD(getKnowledgeBaseResources:(NSString *)type departmentId:(NSString * _Nullable)departmentId parentCategoryId:(NSString * _Nullable)parentCategoryId page:(NSInteger)page limit:(NSInteger)limit searchKey:(NSString * _Nullable)searchKey callback:(RCTResponseSenderBlock)callback) {
+    if ([type isEqualToString: RESOURCE_ARTICLES]) {
+        NSInteger limitValue = limit;
+        NSInteger pageValue = page;
+        [[ZohoSalesIQ KnowledgeBase] getResources:SIQResourceTypeArticles departmentId:departmentId parentCategoryId:parentCategoryId searchKey:searchKey page:pageValue limit:limitValue completion:^(BOOL success, id<SIQError> _Nullable error, NSArray<SIQKnowledgeBaseResource *> * _Nullable resources, BOOL moreDataAvailable) {
+            NSNumber *available = [NSNumber numberWithBool:moreDataAvailable];
+            if (error != nil) {
+                NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getSIQErrorObject:error];
+                callback(@[errorDictionary, [NSNull null], available]);
+            } else {
+                NSMutableArray *resourceArray = [NSMutableArray array];
+                resourceArray = [RNZohoSalesIQ getResourceList:resources];
+                callback(@[[NSNull null], resourceArray, available]);
+            }
+        }];
+    }
+}
+
+RCT_EXPORT_METHOD(getKnowledgeBaseCategories:(NSString *)type departmentId:(NSString * _Nullable)departmentId parentCategoryId:(NSString * _Nullable)parentCategoryId callback:(RCTResponseSenderBlock)callback) {
+    if ([type isEqualToString: RESOURCE_ARTICLES]) {
+        [[ZohoSalesIQ KnowledgeBase] getCategories:SIQResourceTypeArticles departmentId:departmentId parentCategoryId:parentCategoryId completion:^(BOOL success, id<SIQError> _Nullable error, NSArray<SIQKnowledgeBaseCategory *> * _Nullable categories) {
+            if (error != nil) {
+                NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getSIQErrorObject:error];
+                callback(@[errorDictionary, [NSNull null]]);
+            } else {
+                NSMutableArray *categoryArray = [NSMutableArray array];
+                categoryArray = [RNZohoSalesIQ getCategoryList:categories];
+                callback(@[[NSNull null], categoryArray]);
+            }
+        }];
     }
 }
 
@@ -1362,6 +1708,36 @@ RCT_EXPORT_METHOD(sendEvent: (NSString *)eventName values:(NSArray *)values){
 - (void)handleBotTrigger {
     if (hasListeners)
         [self sendEventWithName:BOT_TRIGGER body:[NSNull null]];
+}
+
+- (void)handleResourceOpened:(enum SIQResourceType)type resource:(SIQKnowledgeBaseResource * _Nullable)resource {
+    if (hasListeners) {
+        NSMutableDictionary *resourceInformation = [self prepareResourceInformation:type resource:resource];
+        [self sendEventWithName:EVENT_RESOURCE_OPENED body: resourceInformation];
+    }
+}
+
+- (void)handleResourceClosed:(enum SIQResourceType)type resource:(SIQKnowledgeBaseResource * _Nullable)resource {
+    if (hasListeners) {
+        NSMutableDictionary *resourceInformation = [self prepareResourceInformation:type resource:resource];
+        [self sendEventWithName:EVENT_RESOURCE_CLOSED body: resourceInformation];
+    }
+}
+
+
+- (void)handleResourceLiked:(enum SIQResourceType)type resource:(SIQKnowledgeBaseResource * _Nullable)resource {
+    if (hasListeners) {
+        NSMutableDictionary *resourceInformation = [self prepareResourceInformation:type resource:resource];
+        [self sendEventWithName:EVENT_RESOURCE_LIKED body: resourceInformation];
+    }
+}
+
+
+- (void)handleResourceDisliked:(enum SIQResourceType)type resource:(SIQKnowledgeBaseResource * _Nullable)resource {
+    if (hasListeners) {
+        NSMutableDictionary *resourceInformation = [self prepareResourceInformation:type resource:resource];
+        [self sendEventWithName:EVENT_RESOURCE_DISLIKED body: resourceInformation];
+    }
 }
 
 @end
