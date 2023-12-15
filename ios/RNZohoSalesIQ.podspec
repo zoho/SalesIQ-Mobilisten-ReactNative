@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name          = "RNZohoSalesIQ"
-  s.version       = "7.0.0"
+  s.version       = "8.0.0"
   s.summary       = "A React-Native module for the SalesIQ Mobilisten SDK"
   s.description   = "A React-Native module for the SalesIQ Mobilisten SDK"
   s.homepage      = "https://zoho.com"

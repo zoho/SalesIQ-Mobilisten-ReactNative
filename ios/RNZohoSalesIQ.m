@@ -120,11 +120,16 @@ NSString *EVENT_OPEN_URL = @"EVENT_OPEN_URL";
 NSString *EVENT_COMPLETE_CHAT_ACTION = @"EVENT_COMPLETE_CHAT_ACTION";
 NSString *RESOURCE_ARTICLES = @"RESOURCE_ARTICLES";
 
-// ---------------------------------------------------------
 NSString *EVENT_RESOURCE_OPENED = @"EVENT_RESOURCE_OPENED";
 NSString *EVENT_RESOURCE_CLOSED = @"EVENT_RESOURCE_CLOSED";
 NSString *EVENT_RESOURCE_LIKED = @"EVENT_RESOURCE_LIKED";
 NSString *EVENT_RESOURCE_DISLIKED = @"EVENT_RESOURCE_DISLIKED";
+
+NSString *LAUNCHER_VISIBILITY_MODE_ALWAYS = @"LAUNCHER_VISIBILITY_MODE_ALWAYS";
+NSString *LAUNCHER_VISIBILITY_MODE_NEVER = @"LAUNCHER_VISIBILITY_MODE_NEVER";
+NSString *LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT = @"LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT";
+
+NSString *EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY = @"EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY";
 
 - (NSArray<NSString *> *)supportedEvents {
     return @[OPERATORS_OFFLINE,
@@ -165,7 +170,11 @@ NSString *EVENT_RESOURCE_DISLIKED = @"EVENT_RESOURCE_DISLIKED";
              EVENT_RESOURCE_OPENED,
              EVENT_RESOURCE_CLOSED,
              EVENT_RESOURCE_LIKED,
-             EVENT_RESOURCE_DISLIKED];
+             EVENT_RESOURCE_DISLIKED,
+             LAUNCHER_VISIBILITY_MODE_ALWAYS,
+             LAUNCHER_VISIBILITY_MODE_NEVER,
+             LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT,
+             EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY];
 }
 
 - (NSDictionary *) constantsToExport {
@@ -217,6 +226,10 @@ NSString *EVENT_RESOURCE_DISLIKED = @"EVENT_RESOURCE_DISLIKED";
         @"EVENT_RESOURCE_CLOSED": EVENT_RESOURCE_CLOSED,
         @"EVENT_RESOURCE_LIKED": EVENT_RESOURCE_LIKED,
         @"EVENT_RESOURCE_DISLIKED": EVENT_RESOURCE_DISLIKED,
+        @"LAUNCHER_VISIBILITY_MODE_ALWAYS": LAUNCHER_VISIBILITY_MODE_ALWAYS,
+        @"LAUNCHER_VISIBILITY_MODE_NEVER": LAUNCHER_VISIBILITY_MODE_NEVER,
+        @"LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT": LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT,
+        @"EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY" : EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY
     };
 }
 
@@ -926,6 +939,26 @@ RCT_EXPORT_METHOD(setLanguage: (NSString *)language_code){
         [[ZohoSalesIQ Chat] setLanguage:LanguageArmenian];
     }else if([language_code isEqualToString:@"fa"]){
         [[ZohoSalesIQ Chat] setLanguage:LanguagePersian];
+    }else if([language_code isEqualToString:@"ta"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageTamil];
+    }else if([language_code isEqualToString:@"kn"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageKannada];
+    }else if([language_code isEqualToString:@"bn"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageBengali];
+    }else if([language_code isEqualToString:@"hi"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageHindi];
+    }else if([language_code isEqualToString:@"gu"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageGujarati];
+    }else if([language_code isEqualToString:@"mr"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageMarathi];
+    }else if([language_code isEqualToString:@"te"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageTelugu];
+    }else if([language_code isEqualToString:@"pa"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguagePunjabi];
+    }else if([language_code isEqualToString:@"or"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageOriya];
+    }else if([language_code isEqualToString:@"ml"]){
+        [[ZohoSalesIQ Chat] setLanguage:LanguageMalayalam];
     }else{
         [[ZohoSalesIQ Chat] setLanguage:LanguageEnglish];
     }
@@ -1451,7 +1484,51 @@ RCT_EXPORT_METHOD(sendEvent: (NSString *)eventName values:(NSArray *)values){
     }
 }
 
-//KnowledgeBase
+
+RCT_EXPORT_METHOD(showFeedbackUpToDuration:(NSInteger)limit)
+{
+    [[ZohoSalesIQ Chat] showFeedbackWithUptoDuration:limit];
+}
+
+RCT_EXPORT_METHOD(showFeedbackAfterSkip: (BOOL*)enable)
+{
+    [[ZohoSalesIQ Chat] showFeedbackAfterSkip:enable];
+}
+
+RCT_EXPORT_METHOD(dismissUI){
+    [ZohoSalesIQ dismissUI];
+}
+
+// MARK: - Show launcher API'S
+RCT_EXPORT_METHOD(showLauncher: (NSString*)mode)
+{
+    if ([mode isEqualToString: LAUNCHER_VISIBILITY_MODE_ALWAYS]) {
+        [[ZohoSalesIQ Launcher] show:VisibilityModeAlways];
+    } else if ([mode isEqualToString: LAUNCHER_VISIBILITY_MODE_NEVER]) {
+        [[ZohoSalesIQ Launcher] show:VisibilityModeNever];
+    } else if ([mode isEqualToString: LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT]) {
+        [[ZohoSalesIQ Launcher] show:VisibilityModeWhenActiveChat];
+    }
+}
+
+RCT_EXPORT_METHOD(setVisibilityModeToCustomLauncher: (NSString*)mode)
+{
+    if ([mode isEqualToString: LAUNCHER_VISIBILITY_MODE_ALWAYS]) {
+        [[ZohoSalesIQ Launcher] setVisibilityModeToCustomLauncher:VisibilityModeAlways];
+    } else if ([mode isEqualToString: LAUNCHER_VISIBILITY_MODE_NEVER]) {
+        [[ZohoSalesIQ Launcher] setVisibilityModeToCustomLauncher:VisibilityModeNever];
+    } else if ([mode isEqualToString: LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT]) {
+        [[ZohoSalesIQ Launcher] setVisibilityModeToCustomLauncher:VisibilityModeWhenActiveChat];
+    }
+}
+
+RCT_EXPORT_METHOD(enableDragToDismiss: (BOOL*)enable)
+{
+    [[ZohoSalesIQ Launcher] enableDragToDismiss:enable];
+}
+
+
+// MARK: - Knowledgebase
 RCT_EXPORT_METHOD(isKnowledgeBaseEnabled: (NSString*)type callback:(RCTResponseSenderBlock)callback)
 {
     if ([type isEqualToString: RESOURCE_ARTICLES]) {
@@ -1481,7 +1558,7 @@ RCT_EXPORT_METHOD(combineKnowledgeBaseDepartments: (NSString*)type enable:(BOOL)
     }
 }
 
-RCT_EXPORT_METHOD(setKnowledgeBaseRecentShowLimit:(NSInteger)limit) {
+RCT_EXPORT_METHOD(setKnowledgeBaseRecentlyViewedCount:(NSInteger)limit) {
     [[ZohoSalesIQ KnowledgeBase] setRecentShowLimit:limit];
 }
 
@@ -1737,6 +1814,13 @@ RCT_EXPORT_METHOD(getKnowledgeBaseCategories:(NSString *)type departmentId:(NSSt
     if (hasListeners) {
         NSMutableDictionary *resourceInformation = [self prepareResourceInformation:type resource:resource];
         [self sendEventWithName:EVENT_RESOURCE_DISLIKED body: resourceInformation];
+    }
+}
+
+- (void)handleCustomLauncherVisibility:(BOOL)visible {
+    if (hasListeners) {
+        NSNumber *visibleLauncher = [NSNumber numberWithBool:visible];
+        [self sendEventWithName:EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY body: visibleLauncher];
     }
 }
 

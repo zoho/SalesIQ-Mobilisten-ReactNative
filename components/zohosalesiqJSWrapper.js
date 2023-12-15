@@ -55,6 +55,8 @@ module.exports = {
   EVENT_RESOURCE_LIKED: RNZohoSalesIQ.EVENT_RESOURCE_LIKED,
   EVENT_RESOURCE_DISLIKED: RNZohoSalesIQ.EVENT_RESOURCE_DISLIKED,
 
+  EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY: RNZohoSalesIQ.EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY,
+
   Event: {
     OPEN_URL: RNZohoSalesIQ.EVENT_OPEN_URL,
     COMPLETE_CHAT_ACTION: RNZohoSalesIQ.EVENT_COMPLETE_CHAT_ACTION
@@ -262,6 +264,12 @@ module.exports = {
   Chat: {
     shouldOpenUrl: function (value) {
       RNZohoSalesIQ.shouldOpenUrl(value)
+    },
+    showFeedbackAfterSkip: function (enable) {
+      RNZohoSalesIQ.showFeedbackAfterSkip(enable)
+    },
+    showFeedback: function (UpToDuration) {
+      RNZohoSalesIQ.showFeedbackUpToDuration(UpToDuration)
     }
   },
   sendEvent: function (eventName, ...values) {
@@ -269,13 +277,16 @@ module.exports = {
   },
 
   /**
-   * 
-   * @param  {...Tab} tabNames 
+   *
+   * @param  {...Tab} tabNames
    */
   setTabOrder: function (...tabNames) {
     RNZohoSalesIQ.setTabOrder(tabNames)
   },
 
+  dismissUI: function () {
+    RNZohoSalesIQ.dismissUI()
+  },
 
   Notification: {
     setIconForAndroid: function (resourceName) {
@@ -307,10 +318,27 @@ module.exports = {
     }
   },
 
+  Launcher: {
+    VisibilityMode: {
+      ALWAYS: RNZohoSalesIQ.LAUNCHER_VISIBILITY_MODE_ALWAYS,
+      NEVER: RNZohoSalesIQ.LAUNCHER_VISIBILITY_MODE_NEVER,
+      WHEN_ACTIVE_CHAT: RNZohoSalesIQ.LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT
+    },
+    show: function (mode) {
+      RNZohoSalesIQ.showLauncher(mode)
+    },
+    setVisibilityModeToCustomLauncher: function (mode) {
+      RNZohoSalesIQ.setVisibilityModeToCustomLauncher(mode)
+    },
+    enableDragToDismiss: function (enabled) {
+      RNZohoSalesIQ.enableDragToDismiss(enabled)
+    }
+  },
+
   KnowledgeBase: {
-//    isEnabled: function (type, callback) {
-//      RNZohoSalesIQ.isKnowledgeBaseEnabled(type, callback);
-//    },
+    isEnabled: function (type, callback) {
+      RNZohoSalesIQ.isKnowledgeBaseEnabled(type, callback);
+    },
     setVisibility: function (type, shouldShow) {
       RNZohoSalesIQ.setKnowledgeBaseVisibility(type, shouldShow)
     },
@@ -320,10 +348,10 @@ module.exports = {
     combineDepartments: function (type, merge) {
       RNZohoSalesIQ.combineKnowledgeBaseDepartments(type, merge)
     },
-    // setRecentShowLimit: function (value) {
-    //   RNZohoSalesIQ.setKnowledgeBaseRecentShowLimit(value)
-    // },
-    getResourceDepartments: function (callback) {  
+    setRecentlyViewedCount: function (limit) {
+      RNZohoSalesIQ.setKnowledgeBaseRecentlyViewedCount(limit)
+    },
+    getResourceDepartments: function (callback) {
       RNZohoSalesIQ.getKnowledgeBaseResourceDepartments(callback);
     },
     open: function (type, id, callback) {

@@ -55,6 +55,7 @@ import com.zoho.livechat.android.listeners.SalesIQListener;
 import com.zoho.livechat.android.models.SalesIQArticle;
 import com.zoho.livechat.android.models.SalesIQArticleCategory;
 import com.zoho.livechat.android.modules.common.DataModule;
+import com.zoho.livechat.android.modules.common.ui.LauncherUtil;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.Resource;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceCategory;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceDepartment;
@@ -137,10 +138,16 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     private static final int LAUNCHER_MODE_STATIC = 1;
     private static final int LAUNCHER_MODE_FLOATING = 2;
 
-    private static final String LAUNCHER_HORIZONTAL_LEFT = "LAUNCHER_HORIZONTAL_LEFT";
-    private static final String LAUNCHER_HORIZONTAL_RIGHT = "LAUNCHER_HORIZONTAL_RIGHT";
-    private static final String LAUNCHER_VERTICAL_TOP = "LAUNCHER_VERTICAL_TOP";
-    private static final String LAUNCHER_VERTICAL_BOTTOM = "LAUNCHER_VERTICAL_BOTTOM";
+    private static final String EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY = "EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY";    // No I18N
+
+    private static final String LAUNCHER_VISIBILITY_MODE_ALWAYS = "LAUNCHER_VISIBILITY_MODE_ALWAYS";    // No I18N
+    private static final String LAUNCHER_VISIBILITY_MODE_NEVER = "LAUNCHER_VISIBILITY_MODE_NEVER";  // No I18N
+    private static final String LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT = "LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT";    // No I18N
+
+    private static final String LAUNCHER_HORIZONTAL_LEFT = "LAUNCHER_HORIZONTAL_LEFT";  // No I18N
+    private static final String LAUNCHER_HORIZONTAL_RIGHT = "LAUNCHER_HORIZONTAL_RIGHT";    // No I18N
+    private static final String LAUNCHER_VERTICAL_TOP = "LAUNCHER_VERTICAL_TOP";    // No I18N
+    private static final String LAUNCHER_VERTICAL_BOTTOM = "LAUNCHER_VERTICAL_BOTTOM";  // No I18N
 
     private static boolean shouldOpenUrl = true;
 
@@ -221,12 +228,16 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
         constants.put("LAUNCHER_MODE_STATIC", LAUNCHER_MODE_STATIC);         // No I18N
         constants.put("LAUNCHER_MODE_FLOATING", LAUNCHER_MODE_FLOATING);         // No I18N
+        constants.put("EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY", EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY);         // No I18N
+        constants.put("LAUNCHER_VISIBILITY_MODE_ALWAYS", LAUNCHER_VISIBILITY_MODE_ALWAYS);         // No I18N
+        constants.put("LAUNCHER_VISIBILITY_MODE_NEVER", LAUNCHER_VISIBILITY_MODE_NEVER);         // No I18N
+        constants.put("LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT", LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT);         // No I18N
         constants.put("LAUNCHER_HORIZONTAL_RIGHT", LAUNCHER_HORIZONTAL_RIGHT);         // No I18N
         constants.put("LAUNCHER_HORIZONTAL_LEFT", LAUNCHER_HORIZONTAL_LEFT);         // No I18N
         constants.put("LAUNCHER_VERTICAL_TOP", LAUNCHER_VERTICAL_TOP);         // No I18N
-        constants.put("LAUNCHER_VERTICAL_BOTTOM", LAUNCHER_VERTICAL_BOTTOM);         // No I18N            
+        constants.put("LAUNCHER_VERTICAL_BOTTOM", LAUNCHER_VERTICAL_BOTTOM);         // No I18N
 
-        constants.put("RESOURCE_ARTICLES", RESOURCE_ARTICLES);         // No I18N                
+        constants.put("RESOURCE_ARTICLES", RESOURCE_ARTICLES);         // No I18N
         return constants;
     }
 
@@ -423,7 +434,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             @NonNull final String categoryId,
             @NonNull final Callback articlesCallback
     ) {
-        HANDLER.post(() -> ZohoSalesIQ.KnowledgeBase.getResources(ZohoSalesIQ.ResourceType.Articles, null, categoryId, null, new ResourcesListener() {
+        HANDLER.post(() -> ZohoSalesIQ.KnowledgeBase.getResources(ZohoSalesIQ.ResourceType.Articles, null, categoryId, null, false, new ResourcesListener() {
             @Override
             public void onSuccess(@NonNull List<Resource> resources, boolean moreDataAvailable) {
                 WritableArray array = new WritableNativeArray();
@@ -531,6 +542,31 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                 ZohoSalesIQ.Notification.setListener(new RNZohoSalesIQListener());
             });
         }
+    }
+
+    private static ZohoSalesIQ.Launcher.VisibilityMode getVisibilityMode(final String mode) {
+        ZohoSalesIQ.Launcher.VisibilityMode visibilityMode = ZohoSalesIQ.Launcher.VisibilityMode.NEVER;
+        if (LAUNCHER_VISIBILITY_MODE_ALWAYS.equals(mode)) {
+            visibilityMode = ZohoSalesIQ.Launcher.VisibilityMode.ALWAYS;
+        } else if (LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT.equals(mode)) {
+            visibilityMode = ZohoSalesIQ.Launcher.VisibilityMode.WHEN_ACTIVE_CHAT;
+        }
+        return visibilityMode;
+    }
+
+    @ReactMethod
+    public static void showLauncher(final String mode) {
+        ZohoSalesIQ.Launcher.show(getVisibilityMode(mode));
+    }
+
+    @ReactMethod
+    public static void setVisibilityModeToCustomLauncher(final String mode) {
+        ZohoSalesIQ.Launcher.setVisibilityModeToCustomLauncher(getVisibilityMode(mode));
+    }
+
+    @ReactMethod
+    public static void enableDragToDismiss(final boolean enabled) {
+        ZohoSalesIQ.Launcher.enableDragToDismiss(enabled);
     }
 
     @ReactMethod
@@ -904,8 +940,9 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         HANDLER.post(() -> {
             SalesIQApplicationManager salesIQApplicationManager =
                     ZohoSalesIQ.getApplicationManager();
-            if (salesIQApplicationManager != null && salesIQApplicationManager.canShowBubble(salesIQApplicationManager.getCurrentActivity())) {
-                salesIQApplicationManager.showChatBubble(salesIQApplicationManager.getCurrentActivity());
+            if (salesIQApplicationManager != null && salesIQApplicationManager.getCurrentActivity() != null
+                    && LauncherUtil.isAllowedToShow(salesIQApplicationManager.getCurrentActivity())) {
+                LauncherUtil.showChatBubble(salesIQApplicationManager.getCurrentActivity());
             }
         });
     }
@@ -948,11 +985,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                         ZohoSalesIQ.Notification.enablePush(fcmToken, isTestDevice);
                     }
                     if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
-                        HANDLER.post(new Runnable() {
-                            public void run() {
-                                ZohoSalesIQ.getApplicationManager().refreshChatBubble();
-                            }
-                        });
+                        LauncherUtil.refreshLauncher();
                     }
                     if (initCallback != null && canInvokeCallBack[0]) {
                         canInvokeCallBack[0] = false;
@@ -1196,7 +1229,6 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     public class RNZohoSalesIQListener implements SalesIQListener, SalesIQChatListener, SalesIQKnowledgeBaseListener, SalesIQActionListener, NotificationListener {
-
         @Override
         public void handleFeedback(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
@@ -1298,6 +1330,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         @Override
         public void handleBotTrigger() {
             eventEmitter(EVENT_BOT_TRIGGER, null);
+        }
+
+        @Override
+        public void handleCustomLauncherVisibility(boolean visible) {
+            eventEmitter(EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY, visible);
         }
 
         @Override
@@ -1490,6 +1527,21 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     @ReactMethod
     void writeLogForiOS(final String message, final String logLevel, final Callback callback) {}
 
+    @ReactMethod
+    static void dismissUI() {
+        ZohoSalesIQ.dismissUI();
+    }
+
+    @ReactMethod
+    static void showFeedbackAfterSkip(final boolean enable) {
+        ZohoSalesIQ.Chat.showFeedbackAfterSkip(enable);
+    }
+
+    @ReactMethod
+    static void showFeedbackUpToDuration(final int duration) {
+        ZohoSalesIQ.Chat.showFeedback(duration);
+    }
+
     public static final String RESOURCE_ARTICLES = "RESOURCE_ARTICLES";    // No I18N
 
     private @Nullable ZohoSalesIQ.ResourceType getResourceType(String value) {
@@ -1500,6 +1552,16 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             resourceType = null;
         }
         return resourceType;
+    }
+
+    @ReactMethod
+    public void isKnowledgeBaseEnabled(final String type, final Callback callback) {
+        executeIfResourceTypeIsValid(type, callback, () -> callback.invoke(ZohoSalesIQ.KnowledgeBase.isEnabled(getResourceType(type))));
+    }
+
+    @ReactMethod
+    public static void setKnowledgeBaseRecentlyViewedCount(final int limit) {
+        ZohoSalesIQ.KnowledgeBase.setRecentlyViewedCount(limit);
     }
 
     @ReactMethod
