@@ -1630,7 +1630,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getKnowledgeBaseResources(final String type, final String departmentID, final String parentCategoryID, final int page, final int limit, final String searchKey, final Callback callback) {
-        executeIfResourceTypeIsValid(type, callback, () -> ZohoSalesIQ.KnowledgeBase.getResources(getResourceType(type), departmentID, parentCategoryID, searchKey, page, limit, new ResourcesListener() {
+        executeIfResourceTypeIsValid(type, callback, () -> ZohoSalesIQ.KnowledgeBase.getResources(getResourceType(type), departmentID, parentCategoryID, searchKey, page, limit, false, new ResourcesListener() {
             @Override
             public void onSuccess(@NonNull List<Resource> resources, boolean moreDataAvailable) {
                 callback.invoke(null, getWritableArray(resources), moreDataAvailable);
