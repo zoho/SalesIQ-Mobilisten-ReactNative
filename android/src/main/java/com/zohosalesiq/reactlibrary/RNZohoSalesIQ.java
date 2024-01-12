@@ -948,6 +948,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public static void refreshLauncher() {
+
+    }
+
+    @ReactMethod
     public void addListener(String eventName) {
         // Keep: Required for RN built in Event Emitter Calls.
     }

@@ -1643,6 +1643,10 @@ RCT_EXPORT_METHOD(getKnowledgeBaseCategories:(NSString *)type departmentId:(NSSt
     }
 }
 
+RCT_EXPORT_METHOD(refreshLauncher) {
+    [ZohoSalesIQ refreshLauncher];
+}
+
 //MARK:- DELEGATE METHODS - EVENTS
 - (void)agentsOffline {
     if (hasListeners)

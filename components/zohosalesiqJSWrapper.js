@@ -260,6 +260,9 @@ module.exports = {
   setThemeForAndroid: function (value) {
     RNZohoSalesIQ.setThemeForAndroid(value)
   },
+  refreshLauncher: function () {
+    RNZohoSalesIQ.refreshLauncher();
+  },
 
   Chat: {
     shouldOpenUrl: function (value) {
