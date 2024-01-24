@@ -570,6 +570,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public static void setMinimumPressDuration(final int duration) {
+        ZohoSalesIQ.Launcher.setMinimumPressDuration(duration);
+    }
+
+    @ReactMethod
     public void setChatTitle(final String title) {
         HANDLER.post(() -> ZohoSalesIQ.Chat.setTitle(title));
     }

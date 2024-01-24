@@ -335,6 +335,9 @@ module.exports = {
     },
     enableDragToDismiss: function (enabled) {
       RNZohoSalesIQ.enableDragToDismiss(enabled)
+    },
+    setMinimumPressDuration: function (duration) {
+      RNZohoSalesIQ.setMinimumPressDuration(duration)
     }
   },
 

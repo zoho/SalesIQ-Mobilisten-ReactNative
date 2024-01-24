@@ -1527,6 +1527,14 @@ RCT_EXPORT_METHOD(enableDragToDismiss: (BOOL*)enable)
     [[ZohoSalesIQ Launcher] enableDragToDismiss:enable];
 }
 
+RCT_EXPORT_METHOD(setMinimumPressDuration: (NSInteger)duration)
+{
+    if (duration < 0) {
+        return;
+    }
+    CGFloat seconds = (CGFloat)duration / 1000.0;
+    [[ZohoSalesIQ Launcher] minimumPressDuration:seconds];
+}
 
 // MARK: - Knowledgebase
 RCT_EXPORT_METHOD(isKnowledgeBaseEnabled: (NSString*)type callback:(RCTResponseSenderBlock)callback)
