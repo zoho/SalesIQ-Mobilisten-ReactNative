@@ -1,0 +1,13 @@
+current directory: /Users/kasi-9410/Documents/ReactNativeProjects/mobilistensampleapp/mobilistensampleapp/vendor/bundle/ruby/2.6.0/gems/json-2.7.1/ext/json
+/System/Library/Frameworks/Ruby.framework/Versions/2.6/usr/bin/ruby -I /System/Library/Frameworks/Ruby.framework/Versions/2.6/usr/lib/ruby/2.6.0 -r ./siteconf20240110-61802-jdi0c.rb extconf.rb
+creating Makefile
+
+current directory: /Users/kasi-9410/Documents/ReactNativeProjects/mobilistensampleapp/mobilistensampleapp/vendor/bundle/ruby/2.6.0/gems/json-2.7.1/ext/json
+make "DESTDIR=" clean
+
+current directory: /Users/kasi-9410/Documents/ReactNativeProjects/mobilistensampleapp/mobilistensampleapp/vendor/bundle/ruby/2.6.0/gems/json-2.7.1/ext/json
+make "DESTDIR="
+make: Nothing to be done for `all'.
+
+current directory: /Users/kasi-9410/Documents/ReactNativeProjects/mobilistensampleapp/mobilistensampleapp/vendor/bundle/ruby/2.6.0/gems/json-2.7.1/ext/json
+make "DESTDIR=" install
