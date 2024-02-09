@@ -28,14 +28,14 @@ react-native link react-native-zohosalesiq-mobilisten
 
 #### Installation steps for iOS
 
-1. Navigate to the **ios** folder in the project directory and open **Podfile**.
-Add the "**/ios**" to the path for the **RNZohoSalesIQ** pod as shown below.
+1. Navigate to the `ios` folder in the project directory and open **Podfile**.
+Add the "**/ios**" to the path for the `RNZohoSalesIQ` pod as shown below.
 ```diff
 - pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten'
 + pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten/ios'
 ```
 
-2. Run the `pod repo update && pod install` command from the **ios** directory.
+2. Run the `pod repo update && pod install` command from the `ios` directory.
 
 #### Installation steps for Android
 
@@ -80,7 +80,7 @@ public ReactNativeHost getReactNativeHost() {
 }
 ```
 
-2. Navigate to the **android** folder within the project directory using Android Studio or any other platform of choice for Android development.
+2. Navigate to the `android` folder within the project directory using Android Studio or any other platform of choice for Android development.
 Add the following maven repository to the **build.gradle** file.
 ```Gradle
 allprojects {
@@ -91,11 +91,11 @@ allprojects {
 }
 ```
  
-3. Click **Sync Now** from the toolbar on the IDE.
+3. Click `Sync Now` from the toolbar on the IDE.
 
 ## Initializing Mobilisten
 1. Generate `App` and `Access` keys for iOS and Android platforms by providing your bundle id.
-2. Use the **ZohoSalesIQ.initWithCallback** API with keys for each platform as shown below.
+2. Use the `ZohoSalesIQ.initWithCallback` API with keys for each platform as shown below.
 ```js
 import { ZohoSalesIQ } from 'react-native-zohosalesiq-mobilisten';
 
