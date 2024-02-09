@@ -1,4 +1,4 @@
-const { NativeModules, Dimensions } = require('react-native');    //No I18N
+const { NativeModules, Dimensions, Platform } = require('react-native');    //No I18N
 const { RNZohoSalesIQ } = NativeModules;
 import { NativeEventEmitter } from 'react-native';    //No I18N
 const emitter = new NativeEventEmitter(RNZohoSalesIQ);
