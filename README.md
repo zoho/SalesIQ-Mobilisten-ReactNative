@@ -49,7 +49,7 @@ $ react-native link react-native-zohosalesiq-mobilisten
 
 #### Android: Manual linking with React Native v0.59 and below
 
-- Add the below code to the`android/settings.gradle`
+- Add the below code to the `android/settings.gradle`
 
 ```Gradle
 include ':react-native-zohosalesiq-mobilisten'
@@ -81,7 +81,7 @@ public ReactNativeHost getReactNativeHost() {
 ```
 
 2. Navigate to the `android` folder within the project directory using Android Studio or any other platform of choice for Android development.
-Add the following maven repository to the **build.gradle** file.
+Add the following maven repository to the `build.gradle` file.
 ```Gradle
 allprojects {
       repositories {
