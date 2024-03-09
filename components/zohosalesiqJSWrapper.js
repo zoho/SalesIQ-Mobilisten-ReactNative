@@ -57,6 +57,13 @@ module.exports = {
 
   EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY: RNZohoSalesIQ.EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY,
 
+  EVENT_NOTIFICATION_CLICKED: RNZohoSalesIQ.EVENT_NOTIFICATION_CLICKED,
+
+  ActionSource: {
+    APP: RNZohoSalesIQ.ACTION_SOURCE_APP,
+    SDK: RNZohoSalesIQ.ACTION_SOURCE_SDK,
+  },
+
   Event: {
     OPEN_URL: RNZohoSalesIQ.EVENT_OPEN_URL,
     COMPLETE_CHAT_ACTION: RNZohoSalesIQ.EVENT_COMPLETE_CHAT_ACTION
@@ -260,7 +267,10 @@ module.exports = {
   setThemeForAndroid: function (value) {
     RNZohoSalesIQ.setThemeForAndroid(value)
   },
-  refreshLauncher: function () {
+  registerLocalizationFileForiOS: function (value) {
+    RNZohoSalesIQ.registerLocalizationFile(value)
+  },
+  refreshLauncher: function() {
     RNZohoSalesIQ.refreshLauncher();
   },
 
@@ -273,6 +283,12 @@ module.exports = {
     },
     showFeedback: function (UpToDuration) {
       RNZohoSalesIQ.showFeedbackUpToDuration(UpToDuration)
+    },
+    hideQueueTime: function (value) {
+      RNZohoSalesIQ.hideQueueTime(value)
+    },
+    open: function (map) {
+      RNZohoSalesIQ.showPayloadChat(map);
     }
   },
   sendEvent: function (eventName, ...values) {
@@ -292,11 +308,25 @@ module.exports = {
   },
 
   Notification: {
-    setIconForAndroid: function (resourceName) {
+    setIconForAndroid: function(resourceName) {
       RNZohoSalesIQ.setNotificationIconForAndroid(resourceName)
+    },
+    registerPush: function(token, isTestDevice) {
+      RNZohoSalesIQ.registerPush(token, isTestDevice)
+    },
+    isSDKMessage: function(map, callback) {
+      RNZohoSalesIQ.isSDKMessage(map, callback)
+    },
+    process: function(map) {
+      RNZohoSalesIQ.processNotificationMessage(map)
+    },
+    getPayload: function(map, callback) {
+      RNZohoSalesIQ.getNotificationPayload(map, callback)
+    },
+    setActionSource: function(actionSource) {
+        RNZohoSalesIQ.setNotificationActionSource(actionSource)
     }
   },
-
 
   Logger: {
 

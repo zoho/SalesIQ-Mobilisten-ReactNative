@@ -5,12 +5,20 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  appBar: {
+    headerStyle: {
+        backgroundColor: '#007AFF',
+    },
+    headerTintColor: 'white'
+  },
   containerTopSpacing: {
-    paddingTop: 10,
-    paddingHorizontal: 15
+    paddingTop: 10
   },
   containerBottomSpacing: {
     marginBottom:100
+  },
+  formInputsContainer: {
+    marginHorizontal: 15,
   },
   logoContainer: {
     marginTop: 25, 
@@ -29,6 +37,7 @@ export const styles = StyleSheet.create({
   },
   visitorInfoContainer: {
     marginTop: 5,
+    marginHorizontal: 15,
     flexDirection:'row',
     alignItems: "center",
     justifyContent: 'space-between',
@@ -47,10 +56,12 @@ export const styles = StyleSheet.create({
     borderColor: '#D9D9D9',
     borderRadius: 5,
     marginTop: 5,
+    marginHorizontal: 15,
   },
   spaceBetweenButtonsContainer: {
     flexDirection: 'row', 
     justifyContent: 'space-between', 
+    marginHorizontal: 15, 
     marginTop: 20,
   },
   spaceBetweenSingleButtonContainer:
@@ -70,6 +81,7 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     marginTop: 20,
+    marginHorizontal: 15,
     paddingVertical:10,
     paddingHorizontal:24,
   },
@@ -99,6 +111,7 @@ export const styles = StyleSheet.create({
   },
   attenderImageContainer: {
     marginTop: 5,
+    marginHorizontal: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',   
@@ -125,13 +138,21 @@ export const styles = StyleSheet.create({
     height: 24,
     width: 24,
   },
-  horizontalLine:{
+  horizontalLine:
+  {
     height: 1.2,
     backgroundColor: '#EFEFEF',
+    marginHorizontal: 15,
     marginTop: 20,
   },
-  dropdownBox: {
+  dropdownContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 20,
+    marginHorizontal: 15,
+  },
+  dropdownBox: {
     borderColor: "#D9D9D9",
     height: 60,
     borderRadius: 6,
@@ -143,7 +164,6 @@ export const styles = StyleSheet.create({
     height: 45
   },
   dropDownContainerStyle: {
-    marginTop: 20,
     borderColor: "#D9D9D9",
   },
   dropdownPlaceholderStyle:
@@ -155,6 +175,8 @@ export const styles = StyleSheet.create({
   },
   launcherVisibilityContainer: {
     marginTop: 15,
+    marginLeft: 20,
+    marginRight: 10,
     flexDirection:'row',
     alignItems: "center",
     justifyContent: 'space-between', 
@@ -165,6 +187,7 @@ export const styles = StyleSheet.create({
     fontFamily: 'Roboto-Medium',
   },
   launcherVisibilityTabsContainerStyle: {
+    marginRight: 10,
     backgroundColor: 'transparent',
     flexDirection:'row',
   },
@@ -194,6 +217,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
+    marginHorizontal: 15,
   },
   registeredUserComponentInputContainer: {
     borderColor: '#D9D9D9',
@@ -210,6 +234,7 @@ export const styles = StyleSheet.create({
   loginButtonContainer: {
     flexDirection: 'row', 
     justifyContent: 'space-between', 
+    marginHorizontal: 15, 
     marginTop: 5,
   },
   setLanguageTitle:{
@@ -219,12 +244,15 @@ export const styles = StyleSheet.create({
   },
   languageContainer: {
       marginTop: 15,
+      marginLeft: 20,
+      marginRight: 10,
       flex: 1,
       flexDirection:'row',
       alignItems: "center",
       justifyContent: 'space-between',
   },
   languageOptionsContainer: {
+      marginRight: 15,
       flexDirection:'row',
       alignItems: "center",
   },

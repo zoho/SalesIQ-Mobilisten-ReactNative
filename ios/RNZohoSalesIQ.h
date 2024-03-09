@@ -14,6 +14,11 @@
 
 @interface RNZohoSalesIQ : RCTEventEmitter <RCTBridgeModule, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQFAQDelegate>
 
+@property (nonatomic, strong) NSMutableDictionary *remoteNotificationCallbacks;
+
+typedef void (^RNZohoSalesIQRemoteNotificationCallback)(UIBackgroundFetchResult result);
+
+
 + (void)enablePush:(NSString *)token isTestDevice:(BOOL)isTestDevice isProductionMode:(BOOL)isProductionMode;
 + (void)processNotificationWithInfo: (NSDictionary *) info;
 + (BOOL)isMobilistenNotification:(NSDictionary *)info;
@@ -21,5 +26,5 @@
 + (NSMutableDictionary *)getFAQCategoryObject: (SIQFAQCategory*) category;
 + (NSMutableDictionary *)getFAQArticleObject: (SIQFAQArticle*) article;
 + (NSMutableDictionary *)getChatObject: (SIQVisitorChat*) chat;
-
++ (void)didReceiveNotification:(NSDictionary *)notification fetchCompletionHandler:(RNZohoSalesIQRemoteNotificationCallback)completionHandler;
 @end

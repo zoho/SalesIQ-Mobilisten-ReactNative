@@ -2,6 +2,8 @@ package com.zohosalesiq.reactlibrary;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -33,12 +35,14 @@ import com.zoho.commons.ChatComponent;
 import com.zoho.commons.LauncherModes;
 import com.zoho.commons.LauncherProperties;
 import com.zoho.commons.OnInitCompleteListener;
+import com.zoho.livechat.android.MobilistenActivityLifecycleCallbacks;
 import com.zoho.livechat.android.NotificationListener;
 import com.zoho.livechat.android.SIQDepartment;
 import com.zoho.livechat.android.SIQVisitor;
 import com.zoho.livechat.android.SIQVisitorLocation;
 import com.zoho.livechat.android.SalesIQCustomAction;
 import com.zoho.livechat.android.VisitorChat;
+import com.zoho.livechat.android.ZohoLiveChat;
 import com.zoho.livechat.android.constants.ConversationType;
 import com.zoho.livechat.android.constants.SalesIQConstants;
 import com.zoho.livechat.android.exception.InvalidEmailException;
@@ -56,6 +60,7 @@ import com.zoho.livechat.android.models.SalesIQArticle;
 import com.zoho.livechat.android.models.SalesIQArticleCategory;
 import com.zoho.livechat.android.modules.common.DataModule;
 import com.zoho.livechat.android.modules.common.ui.LauncherUtil;
+import com.zoho.livechat.android.modules.common.ui.lifecycle.SalesIQActivitiesManager;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.Resource;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceCategory;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceDepartment;
@@ -65,6 +70,7 @@ import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.ResourceDepa
 import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.ResourceListener;
 import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.ResourcesListener;
 import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.SalesIQKnowledgeBaseListener;
+import com.zoho.livechat.android.modules.notifications.sdk.entities.SalesIQNotificationPayload;
 import com.zoho.livechat.android.operation.SalesIQApplicationManager;
 import com.zoho.livechat.android.utils.LiveChatUtil;
 import com.zoho.salesiqembed.ZohoSalesIQ;
@@ -85,7 +91,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     private static String fcmToken = null;
     private static Boolean isTestDevice = true;
-    private final ReactApplicationContext reactContext;
+    static ReactApplicationContext reactContext = null;
 
     private static final String EVENT_SUPPORT_OPENED = "EVENT_SUPPORT_OPENED";  // No I18N
     private static final String EVENT_SUPPORT_CLOSED = "EVENT_SUPPORT_CLOSED";  // No I18N
@@ -115,6 +121,8 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             "EVENT_CHAT_QUEUE_POSITION_CHANGED";         // No I18N
     private static final String EVENT_CHAT_UNREAD_COUNT_CHANGED =
             "EVENT_CHAT_UNREAD_COUNT_CHANGED";         // No I18N
+
+    private static final String EVENT_NOTIFICATION_CLICKED = "EVENT_NOTIFICATION_CLICKED";  // No I18N
 
     private static final String TYPE_OPEN = "OPEN";         // No I18N
     private static final String TYPE_CONNECTED = "CONNECTED";         // No I18N
@@ -160,6 +168,9 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     private static final String EVENT_RESOURCE_OPENED = "EVENT_RESOURCE_OPENED";  // No I18N
     private static final String EVENT_RESOURCE_CLOSED = "EVENT_RESOURCE_CLOSED";  // No I18N
 
+    private static final String ACTION_SOURCE_APP = "APP";  // No I18N
+    private static final String ACTION_SOURCE_SDK = "SDK";  // No I18N
+
 
     enum Tab {
         CONVERSATIONS("TAB_CONVERSATIONS"),
@@ -175,7 +186,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     public RNZohoSalesIQ(ReactApplicationContext reactContext) {
         super(reactContext);
-        this.reactContext = reactContext;
+        RNZohoSalesIQ.reactContext = reactContext;
     }
 
     @Override
@@ -220,6 +231,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         constants.put("EVENT_RESOURCE_DISLIKED", EVENT_RESOURCE_DISLIKED);         // No I18N
         constants.put("EVENT_RESOURCE_OPENED", EVENT_RESOURCE_OPENED);         // No I18N
         constants.put("EVENT_RESOURCE_CLOSED", EVENT_RESOURCE_CLOSED);         // No I18N
+
+        constants.put("EVENT_NOTIFICATION_CLICKED", EVENT_NOTIFICATION_CLICKED);         // No I18N
+
+        constants.put("ACTION_SOURCE_APP", ACTION_SOURCE_APP);         // No I18N
+        constants.put("ACTION_SOURCE_SDK", ACTION_SOURCE_SDK);         // No I18N
 
         constants.put("ARTICLE_LIKED", EVENT_ARTICLE_LIKED);         // No I18N
         constants.put("ARTICLE_DISLIKED", EVENT_ARTICLE_DISLIKED);         // No I18N
@@ -509,17 +525,29 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         ));
     }
 
+    private static boolean isCallbacksRegistered = false;
+
+    public static void registerCallbacks(Application application) {
+        if (!isCallbacksRegistered && application != null) {
+            MobilistenActivityLifecycleCallbacks.register(application);
+            RNZohoSalesIQListener rnZohoSalesIQListener = new RNZohoSalesIQListener();
+            ZohoSalesIQ.setListener(rnZohoSalesIQListener);
+            ZohoSalesIQ.Chat.setListener(rnZohoSalesIQListener);
+            ZohoSalesIQ.KnowledgeBase.setListener(rnZohoSalesIQListener);
+            ZohoSalesIQ.ChatActions.setListener(rnZohoSalesIQListener);
+            ZohoSalesIQ.Notification.setListener(rnZohoSalesIQListener);
+            isCallbacksRegistered = true;
+            LiveChatUtil.log("Callbacks registered");
+        }
+    }
+
     @ReactMethod
     public void init(final String appKey, final String accessKey) {
-        final Activity activity = getCurrentActivity();
-        if (activity != null) {
+        final Application application = getApplication();
+        if (application != null) {
+            registerCallbacks(application);
             HANDLER.post(() -> {
-                initSalesIQ(activity.getApplication(), activity, appKey, accessKey, null);
-                ZohoSalesIQ.setListener(new RNZohoSalesIQListener());
-                ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
-                ZohoSalesIQ.KnowledgeBase.setListener(new RNZohoSalesIQListener());
-                ZohoSalesIQ.ChatActions.setListener(new RNZohoSalesIQListener());
-                ZohoSalesIQ.Notification.setListener(new RNZohoSalesIQListener());
+                initSalesIQ(application, getCurrentActivity(), appKey, accessKey, null);
             });
         }
     }
@@ -530,18 +558,20 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             final String accessKey,
             final Callback initCallback
     ) {
-        final Activity activity = getCurrentActivity();
-        if (activity != null) {
+        Application application = getApplication();
+        LiveChatUtil.log("initWithCallback, application: " + application);
+        if (application != null) {
+            registerCallbacks(application);
             HANDLER.post(() -> {
-                initSalesIQ(activity.getApplication(), activity, appKey, accessKey,
-                        initCallback);
-                ZohoSalesIQ.setListener(new RNZohoSalesIQListener());
-                ZohoSalesIQ.Chat.setListener(new RNZohoSalesIQListener());
-                ZohoSalesIQ.KnowledgeBase.setListener(new RNZohoSalesIQListener());
-                ZohoSalesIQ.ChatActions.setListener(new RNZohoSalesIQListener());
-                ZohoSalesIQ.Notification.setListener(new RNZohoSalesIQListener());
+                initSalesIQ(application, getCurrentActivity(), appKey, accessKey, initCallback);
             });
         }
+    }
+
+    @Nullable
+    private Application getApplication() {
+        Activity activity = getCurrentActivity();
+        return activity != null ? activity.getApplication() : (reactContext != null ? (reactContext.getApplicationContext() instanceof Application ? (Application) reactContext.getApplicationContext() : null) : null);
     }
 
     private static ZohoSalesIQ.Launcher.VisibilityMode getVisibilityMode(final String mode) {
@@ -577,6 +607,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setChatTitle(final String title) {
         HANDLER.post(() -> ZohoSalesIQ.Chat.setTitle(title));
+    }
+
+    @ReactMethod
+    public void hideQueueTime(final boolean hide) {
+        HANDLER.post(() -> ZohoSalesIQ.Chat.hideQueueTime(hide));
     }
 
     @ReactMethod
@@ -639,6 +674,15 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     @ReactMethod
     public void openChatWithID(final String chat_id) {
         HANDLER.post(() -> ZohoSalesIQ.Chat.open(chat_id));
+    }
+
+    @ReactMethod
+    public void showPayloadChat(final ReadableMap payload) {
+        if (payload.hasKey("chatId")) {
+            String chatId = payload.getString("chatId");
+            LiveChatUtil.log("Opening payload chat with id: " + chatId);
+            HANDLER.post(() -> ZohoSalesIQ.Chat.open(chatId));
+        }
     }
 
     @ReactMethod
@@ -957,8 +1001,22 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     }
 
+    private static boolean hasAnyEventListeners = false;
+
     @ReactMethod
     public void addListener(String eventName) {
+        hasAnyEventListeners = true;
+        LiveChatUtil.log("Add listener, Event: " + eventName + " added ");
+        if (pendingEvents != null && !pendingEvents.isEmpty()) {
+            if (reactContext.hasCatalystInstance()) {
+                for (Map.Entry<String, Object> entry : pendingEvents.entrySet()) {
+                    eventEmitter(entry.getKey(), entry.getValue());
+                }
+                pendingEvents = null;
+            } else {
+                LiveChatUtil.log("Add listener, pending events ignored " + (pendingEvents == null));
+            }
+        }
         // Keep: Required for RN built in Event Emitter Calls.
     }
 
@@ -973,9 +1031,79 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         });
     }
 
+    @ReactMethod
+    void processNotificationMessage(final ReadableMap extras) {
+        HANDLER.post(() -> {
+            ZohoSalesIQ.Notification.handle(reactContext.getApplicationContext(), extras.toHashMap());
+        });
+    }
+
+    @ReactMethod
+    public static void isSDKMessage(final ReadableMap map, final Callback callback) {
+        callback.invoke(ZohoSalesIQ.Notification.isZohoSalesIQNotification(map.toHashMap()));
+    }
+
+    public static boolean isSDKMessage(Map extras) {
+        return ZohoSalesIQ.Notification.isZohoSalesIQNotification(extras);
+    }
+
+    @ReactMethod
+    void registerPush(final String fcmToken, final boolean isTestDevice) {
+        enablePush(fcmToken, isTestDevice);
+    }
+
+    @ReactMethod
+    void getNotificationPayload(final ReadableMap readableMap, final Callback callback) {
+        Map<String, String> map = getMap(readableMap.toHashMap());
+        if (map != null) {
+            ZohoSalesIQ.Notification.getPayload(map, result -> {
+                if (result.isSuccess()) {
+                    SalesIQNotificationPayload payload = result.getData();
+                    callback.invoke(getNotificationPayloadMap(payload));
+                } else {
+                    callback.invoke((Object) null);
+                }
+            });
+        } else {
+            callback.invoke((Object) null);
+        }
+    }
+
+    @ReactMethod
+    void setNotificationActionSource(String actionSource) {
+        ZohoLiveChat.Notification.setActionSource(getActionSource(actionSource));
+    }
+
+    @Nullable
+    private static WritableMap getNotificationPayloadMap(SalesIQNotificationPayload payload) {
+        WritableMap resultMap = new WritableNativeMap();
+        resultMap.putMap("payload", getWritableMap(payload));   // No I18N
+        if (payload instanceof SalesIQNotificationPayload.Chat) {
+            resultMap.putString("type", "chat");    // No I18N
+        } else if (payload instanceof SalesIQNotificationPayload.VisitorHistory) {
+            resultMap.putString("type", "visitorHistory"); // No I18N
+        } else if (payload instanceof SalesIQNotificationPayload.EndChatDetails) {
+            resultMap.putString("type", "endChatDetails");  // No I18N
+        } else {
+            resultMap = null;
+        }
+        return resultMap;
+    }
+
+    ZohoSalesIQ.ActionSource getActionSource(String actionSourceString) {
+        ZohoSalesIQ.ActionSource actionSource;
+        if (ACTION_SOURCE_APP.equals(actionSourceString)) {
+            actionSource = ZohoSalesIQ.ActionSource.APP;
+        } else {
+            actionSource = ZohoSalesIQ.ActionSource.SDK;
+        }
+        return actionSource;
+    }
+
     public static void enablePush(String token, Boolean testDevice) {
         fcmToken = token;
         isTestDevice = testDevice;
+        ZohoSalesIQ.Notification.enablePush(token, isTestDevice);
     }
 
     private static void initSalesIQ(
@@ -1018,10 +1146,22 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         }
     }
 
-    public void eventEmitter(String event, Object value) {
-        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(event, value);
+    public static void eventEmitter(String event, Object value) {
+        if (reactContext != null && hasAnyEventListeners) {
+            LiveChatUtil.log("eventEmitter, Send event: " + event);
+            reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit(event, value);
+            LiveChatUtil.log("eventEmitter, Event: " + event + " sent");
+        } else {
+            LiveChatUtil.log("eventEmitter, Added pending event: " + event);
+            if (pendingEvents == null) {
+                pendingEvents = new HashMap<>();
+            }
+            pendingEvents.put(event, value);
+        }
     }
+
+    private static HashMap<String, Object> pendingEvents = null;
 
     private Boolean isValidFilterName(String filterName) {
         for (ConversationType type : ConversationType.values()) {
@@ -1049,7 +1189,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         }
     }
 
-    public WritableMap getChatMapObject(VisitorChat chat) {
+    public static WritableMap getChatMapObject(VisitorChat chat) {
         WritableMap visitorMap = new WritableNativeMap();
         visitorMap.putString("id", chat.getChatID());         // No I18N
         visitorMap.putInt("unreadCount", chat.getUnreadCount());         // No I18N
@@ -1181,7 +1321,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         return departmentMap;
     }
 
-    public WritableMap getVisitorInfoObject(SIQVisitor siqVisitor) {
+    public static WritableMap getVisitorInfoObject(SIQVisitor siqVisitor) {
         WritableMap infoMap = new WritableNativeMap();
         if (siqVisitor.getName() != null) {
             infoMap.putString("name", siqVisitor.getName());         // No I18N
@@ -1238,7 +1378,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         return infoMap;
     }
 
-    public class RNZohoSalesIQListener implements SalesIQListener, SalesIQChatListener, SalesIQKnowledgeBaseListener, SalesIQActionListener, NotificationListener {
+    public static class RNZohoSalesIQListener implements SalesIQListener, SalesIQChatListener, SalesIQKnowledgeBaseListener, SalesIQActionListener, NotificationListener {
         @Override
         public void handleFeedback(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
@@ -1398,6 +1538,27 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         @Override
         public void onBadgeChange(int count) {
             eventEmitter(EVENT_CHAT_UNREAD_COUNT_CHANGED, count);
+        }
+
+        @Override
+        public void onClick(@Nullable Context context, @NonNull SalesIQNotificationPayload payload) {
+            LiveChatUtil.log("NotificationListener onClick Received");
+            eventEmitter(EVENT_NOTIFICATION_CLICKED, getNotificationPayloadMap(payload));
+            if (SalesIQActivitiesManager.getInstance().isActivityStackEmpty(true)) {
+                Intent intent = null;
+                if (context != null) {
+                    intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+                } else if (reactContext != null && reactContext.getApplicationContext() != null) {
+                    context = reactContext.getApplicationContext();
+                    intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+                    if (intent != null) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    }
+                }
+                if (intent != null) {
+                    context.startActivity(intent);
+                }
+            }
         }
 
         @Override
@@ -1680,6 +1841,15 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             }
         }
         return finalWritableNativeArray;
+    }
+
+    static <K, V> Map<K, V> getMap(HashMap<?, ?> readableMap) {
+        Map<K, V> map = null;
+        try {
+            Type mapType = new TypeToken<Map<K, V>>() {}.getType();
+            map = GsonExtensionsKt.fromJsonSafe(DataModule.getGson(), DataModule.getGson().toJson(readableMap), mapType);
+        } catch (Exception ignored) {}
+        return map;
     }
 
     static WritableMap getWritableMap(Object object) {
