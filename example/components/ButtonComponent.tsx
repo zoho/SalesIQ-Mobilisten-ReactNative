@@ -1,7 +1,6 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { styles } from "../styles/styles";
-import "../assets/fonts/Roboto-Medium.ttf";
 
 const ButtonComponent = ({
     title,

@@ -17,43 +17,43 @@ import com.zohosalesiq.reactlibrary.RNZohoSalesIQ
 
 class MainApplication : Application(), ReactApplication {
 
-  companion object {
-    private lateinit var application: MainApplication
+    companion object {
+        private lateinit var application: MainApplication
 
-    fun getApplication(): MainApplication {
-      return application
+        fun getApplication(): MainApplication {
+            return application
+        }
     }
-  }
 
-  override val reactNativeHost: ReactNativeHost =
-      object : DefaultReactNativeHost(this) {
-        override fun getPackages(): List<ReactPackage> =
-            PackageList(this).packages.apply {
-              // Packages that cannot be autolinked yet can be added manually here, for example:
-              // add(MyReactNativePackage())
-            }
+    override val reactNativeHost: ReactNativeHost =
+        object : DefaultReactNativeHost(this) {
+            override fun getPackages(): List<ReactPackage> =
+                PackageList(this).packages.apply {
+                    // Packages that cannot be autolinked yet can be added manually here, for example:
+                    // add(MyReactNativePackage())
+                }
 
-        override fun getJSMainModuleName(): String = "index"
+            override fun getJSMainModuleName(): String = "index"
 
-        override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
+            override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
 
-        override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
-        override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
-      }
+            override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
+            override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
+        }
 
-  override val reactHost: ReactHost
-    get() = getDefaultReactHost(this.applicationContext, reactNativeHost)
+    override val reactHost: ReactHost
+        get() = getDefaultReactHost(this.applicationContext, reactNativeHost)
 
-  override fun onCreate() {
-    MobilistenActivityLifecycleCallbacks.register(this)
+    override fun onCreate() {
+        MobilistenActivityLifecycleCallbacks.register(this)
 
-    super.onCreate()
-    application = this
-    SoLoader.init(this, false)
-    if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-      // If you opted-in for the New Architecture, we load the native entry point for this app.
-      load()
+        super.onCreate()
+        application = this
+        SoLoader.init(this, false)
+        if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
+            // If you opted-in for the New Architecture, we load the native entry point for this app.
+            load()
+        }
+        ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
     }
-    ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
-  }
 }

@@ -590,6 +590,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public static void updateListener(final String listener) {
+        
+    }
+
+    @ReactMethod
     public static void setVisibilityModeToCustomLauncher(final String mode) {
         ZohoSalesIQ.Launcher.setVisibilityModeToCustomLauncher(getVisibilityMode(mode));
     }

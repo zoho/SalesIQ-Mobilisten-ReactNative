@@ -67,30 +67,10 @@ bool handleURI = YES;
 
 -(void)startObserving {
     hasListeners = YES;
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                               selector:@selector(handleRemoteNotificationReceived:)
-                                                 name:EVENT_NOTIFICATION_CLICKED
-                                                 object:nil];
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *retrievedDictionary = [defaults dictionaryForKey:EVENT_NOTIFICATION_CLICKED];
-    if (retrievedDictionary != nil) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:EVENT_NOTIFICATION_CLICKED
-                                                            object:self
-                                                          userInfo:retrievedDictionary];
-        [self removePayloadData];
-    }
 }
 
 -(void)stopObserving {
     hasListeners = NO;
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [self removePayloadData];
-}
-
-- (void)removePayloadData {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults removeObjectForKey:EVENT_NOTIFICATION_CLICKED];
 }
 
 //MARK:- EVENT TYPES
@@ -886,95 +866,9 @@ NSString *EVENT_NOTIFICATION_CLICKED = @"EVENT_NOTIFICATION_CLICKED";
     }
 }
 
-// -------------------------------------------------------------------------------------------------------------------------
-- (void)handleRemoteNotificationReceived:(NSNotification *)notification
-{
-//    NSMutableDictionary *remoteNotification = [NSMutableDictionary dictionary];
-//    if (notification.userInfo[@"notification"] == nil) {
-//        remoteNotification = [NSMutableDictionary dictionaryWithDictionary:notification.userInfo];
-//    } else {
-//        remoteNotification = [NSMutableDictionary dictionaryWithDictionary:notification.userInfo[@"notification"]];
-//    }
-//
-//    RNZohoSalesIQRemoteNotificationCallback completionHandler = notification.userInfo[@"completionHandler"];
-//    NSString *notificationId = [[NSUUID UUID] UUIDString];
-//    remoteNotification[@"notificationId"] = notificationId;
-//    if (completionHandler) {
-//        if (!self.remoteNotificationCallbacks) {
-//          self.remoteNotificationCallbacks = [NSMutableDictionary dictionary];
-//        }
-//        self.remoteNotificationCallbacks[notificationId] = completionHandler;
-//      }
-    [[ZohoSalesIQ Notification] getPayload: notification.userInfo  completion:^(SalesIQNotificationPayload * _Nullable completionObject) {
-        NSMutableDictionary *resultMap = [NSMutableDictionary dictionary];
-        if (completionObject != nil) {
-            if ([completionObject isKindOfClass:[SalesIQChatNotificationPayload class]]) {
-                SalesIQChatNotificationPayload *chatPayload = (SalesIQChatNotificationPayload *)completionObject;
-                resultMap[@"type"] = @"chat";
-                resultMap[@"payload"] = [chatPayload toDictionary];
-            } else if ([completionObject isKindOfClass:[SalesIQEndChatNotificationPayload class]]) {
-                SalesIQEndChatNotificationPayload *endChatPayload = (SalesIQEndChatNotificationPayload *)completionObject;
-                resultMap[@"type"] = @"endChatDetails";
-                resultMap[@"payload"] = [endChatPayload toDictionary];
-            } else if ([completionObject isKindOfClass:[SalesIQVisitorHistoryNotificationPayload class]]) {
-                SalesIQVisitorHistoryNotificationPayload *visitorHistoryPayload = (SalesIQVisitorHistoryNotificationPayload *)completionObject;
-                resultMap[@"type"] = @"visitorHistory";
-                resultMap[@"payload"] = [visitorHistoryPayload toDictionary];
-            }
-        } else {
-            NSLog(@"Completion object is nil");
-        }
-        [self sendEventWithName:EVENT_NOTIFICATION_CLICKED body: resultMap];
-    }];
-//    [self sendEventWithName:EVENT_NOTIFICATION_CLICKED  body:remoteNotification];
-    
-}
-
-RCT_EXPORT_METHOD(onFinishNotification:(NSString *)notificationId fetchResult:(UIBackgroundFetchResult)result)
-{
-  if (self.remoteNotificationCallbacks) {
-      RNZohoSalesIQRemoteNotificationCallback completionHandler = [self.remoteNotificationCallbacks objectForKey:notificationId];
-    if (completionHandler) {
-      completionHandler(result);
-    }
-    [self.remoteNotificationCallbacks removeObjectForKey:notificationId];
-  }
-}
-
-+ (void)didReceiveNotification:(NSDictionary *)notification fetchCompletionHandler:(RNZohoSalesIQRemoteNotificationCallback)completionHandler;
-{
-    BOOL isActionAllowed = [[ZohoSalesIQ Notification] isSDKActionAllowed];
-    if (isActionAllowed) {
-        [ZohoSalesIQ processNotificationWithInfo:notification];
-    } else {
-        NSDictionary *userInfo = @{@"notification": notification, @"completionHandler": completionHandler};
-        [[NSNotificationCenter defaultCenter] postNotificationName:EVENT_NOTIFICATION_CLICKED
-                                                            object:self
-                                                          userInfo:userInfo];
-        
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:notification forKey:EVENT_NOTIFICATION_CLICKED];
-    }
-    
-}
-
-// -------------------------------------------------------------------------------------------------------------------------
-
 + (void)processNotificationWithInfo: (NSDictionary *) info
 {
-    BOOL isActionAllowed = [[ZohoSalesIQ Notification] isSDKActionAllowed];
-    if (isActionAllowed) {
-        [ZohoSalesIQ processNotificationWithInfo:info];
-    } else {
-        if (hasListeners) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:EVENT_NOTIFICATION_CLICKED
-                                                                object:self
-                                                              userInfo:info];
-        } else {
-            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-            [defaults setObject:info forKey:EVENT_NOTIFICATION_CLICKED];
-        }
-    }
+    [ZohoSalesIQ processNotificationWithInfo:info];
 }
 
 
@@ -1881,6 +1775,34 @@ RCT_EXPORT_METHOD(getNotificationPayload: (NSDictionary *)payload callback:(RCTR
     }];
 }
 
+- (NSMutableDictionary *)getNotificationActionPayload:(id)payload {
+    NSMutableDictionary *resultMap = [NSMutableDictionary dictionary];
+    if (payload != nil) {
+        if ([payload isKindOfClass:[SalesIQChatNotificationPayload class]]) {
+            SalesIQChatNotificationPayload *chatPayload = (SalesIQChatNotificationPayload *)payload;
+            resultMap[@"type"] = @"chat";
+            resultMap[@"payload"] = [chatPayload toDictionary];
+        } else if ([payload isKindOfClass:[SalesIQEndChatNotificationPayload class]]) {
+            SalesIQEndChatNotificationPayload *endChatPayload = (SalesIQEndChatNotificationPayload *)payload;
+            resultMap[@"type"] = @"endChatDetails";
+            resultMap[@"payload"] = [endChatPayload toDictionary];
+        } else if ([payload isKindOfClass:[SalesIQVisitorHistoryNotificationPayload class]]) {
+            SalesIQVisitorHistoryNotificationPayload *visitorHistoryPayload = (SalesIQVisitorHistoryNotificationPayload *)payload;
+            resultMap[@"type"] = @"visitorHistory";
+            resultMap[@"payload"] = [visitorHistoryPayload toDictionary];
+        }
+    } else {
+        NSLog(@"payload object is nil");
+    }
+    return resultMap;
+}
+
+RCT_EXPORT_METHOD(updateListener: (NSString *)eventName) {
+    if ([eventName isEqualToString:EVENT_NOTIFICATION_CLICKED]) {
+        [ZohoSalesIQ registerNotificationListener:YES];
+    }
+}
+
 //MARK:- DELEGATE METHODS - EVENTS
 - (void)agentsOffline {
     if (hasListeners)
@@ -2061,29 +1983,10 @@ RCT_EXPORT_METHOD(getNotificationPayload: (NSDictionary *)payload callback:(RCTR
     }
 }
 
-- (void)handleNotificationActionWithPayload:(NSDictionary<NSString *,id> *)payload {
+- (void)handleNotificationAction:(SalesIQNotificationPayload *)payload {
     if (hasListeners) {
-        [[ZohoSalesIQ Notification] getPayload: payload  completion:^(SalesIQNotificationPayload * _Nullable completionObject) {
-            NSMutableDictionary *resultMap = [NSMutableDictionary dictionary];
-            if (completionObject != nil) {
-                if ([completionObject isKindOfClass:[SalesIQChatNotificationPayload class]]) {
-                    SalesIQChatNotificationPayload *chatPayload = (SalesIQChatNotificationPayload *)completionObject;
-                    resultMap[@"type"] = @"chat";
-                    resultMap[@"payload"] = [chatPayload toDictionary];
-                } else if ([completionObject isKindOfClass:[SalesIQEndChatNotificationPayload class]]) {
-                    SalesIQEndChatNotificationPayload *endChatPayload = (SalesIQEndChatNotificationPayload *)completionObject;
-                    resultMap[@"type"] = @"endChatDetails";
-                    resultMap[@"payload"] = [endChatPayload toDictionary];
-                } else if ([completionObject isKindOfClass:[SalesIQVisitorHistoryNotificationPayload class]]) {
-                    SalesIQVisitorHistoryNotificationPayload *visitorHistoryPayload = (SalesIQVisitorHistoryNotificationPayload *)completionObject;
-                    resultMap[@"type"] = @"visitorHistory";
-                    resultMap[@"payload"] = [visitorHistoryPayload toDictionary];
-                }
-            } else {
-                NSLog(@"Completion object is nil");
-            }
-            [self sendEventWithName:EVENT_NOTIFICATION_CLICKED body: resultMap];
-        }];
+        NSMutableDictionary *resultMap = [self getNotificationActionPayload:payload];
+        [self sendEventWithName:EVENT_NOTIFICATION_CLICKED body: resultMap];
     }
 }
 

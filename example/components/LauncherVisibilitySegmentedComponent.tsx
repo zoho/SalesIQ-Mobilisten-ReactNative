@@ -3,7 +3,6 @@ import { StyleSheet, View, Text } from "react-native";
 import { styles } from "../styles/styles";
 import { ZohoSalesIQ } from "react-native-zohosalesiq-mobilisten";
 import SegmentedControlTab from "react-native-segmented-control-tab";
-import "../assets/fonts/Roboto-Medium.ttf";
 
 const showLauncher = 0;
 const hideLauncher = 1;

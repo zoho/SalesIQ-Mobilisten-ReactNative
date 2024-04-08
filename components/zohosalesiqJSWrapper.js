@@ -241,6 +241,7 @@ module.exports = {
     RNZohoSalesIQ.setVisitorLocation(location);
   },
   addEventListener: function (type, listener) {
+    RNZohoSalesIQ.updateListener(type);
     listener = emitter.addListener(type, listener);
   },
   syncThemeWithOsForAndroid: function (sync) {

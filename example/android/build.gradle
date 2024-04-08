@@ -23,7 +23,7 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url 'https://maven.zohodl.com'}
+        maven { url 'https://maven.zohodl.com' }
     }
 }
 
