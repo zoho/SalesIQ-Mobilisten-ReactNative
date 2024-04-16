@@ -1134,11 +1134,17 @@ RCT_EXPORT_METHOD(setQuestion: (NSString *)question){
 RCT_EXPORT_METHOD(startChat: (NSString *)message){
     [[ZohoSalesIQ Chat] startChatWithQuestion:(message)];
 }
-RCT_EXPORT_METHOD(registerVisitor: (NSString *)uniqueid){
-    [ZohoSalesIQ registerVisitor:uniqueid completion:nil];
+RCT_EXPORT_METHOD(registerVisitor: (NSString *)uniqueid callback:(RCTResponseSenderBlock)callback){
+    [ZohoSalesIQ registerVisitor:uniqueid completion:^(BOOL success) {
+        NSNumber *result = [NSNumber numberWithBool:success];
+        callback(@[[NSNull null], result]);
+    }];
 }
-RCT_EXPORT_METHOD(unregisterVisitor){
-    [ZohoSalesIQ unregisterVisitorWithCompletion:nil];
+RCT_EXPORT_METHOD(unregisterVisitor: (RCTResponseSenderBlock)callback){
+    [ZohoSalesIQ unregisterVisitorWithCompletion:^(BOOL success) {
+        NSNumber *result = [NSNumber numberWithBool:success];
+        callback(@[[NSNull null], result]);
+    }];
 }
 RCT_EXPORT_METHOD(setPageTitle: (NSString *)pagetitle){
     [[ZohoSalesIQ Tracking] setPageTitle:pagetitle];

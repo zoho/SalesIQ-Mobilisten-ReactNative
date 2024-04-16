@@ -175,8 +175,8 @@ module.exports = {
   fetchAttenderImage: function (atttenderId, fetchDefaultImage, callback) {
     RNZohoSalesIQ.fetchAttenderImage(atttenderId, fetchDefaultImage, callback);
   },
-  registerVisitor: function (visitorId) {
-    RNZohoSalesIQ.registerVisitor(visitorId);
+  registerVisitor: function (visitorId, callback) {
+    RNZohoSalesIQ.registerVisitor(visitorId, callback ? callback : () => {});
   },
   setThemeColorforAndroid: function (attribute, colorCode) {
     RNZohoSalesIQ.setThemeColorforAndroid(attribute, colorCode);
@@ -205,8 +205,8 @@ module.exports = {
   disableInAppNotification: function () {
     RNZohoSalesIQ.disableInAppNotification();
   },
-  unregisterVisitor: function () {
-    RNZohoSalesIQ.unregisterVisitor();
+  unregisterVisitor: function (callback) {
+    RNZohoSalesIQ.unregisterVisitor(callback ? callback : () => {});
   },
   setPageTitle: function (title) {
     RNZohoSalesIQ.setPageTitle(title);

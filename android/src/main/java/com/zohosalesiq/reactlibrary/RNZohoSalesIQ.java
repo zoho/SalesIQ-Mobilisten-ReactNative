@@ -46,16 +46,17 @@ import com.zoho.livechat.android.ZohoLiveChat;
 import com.zoho.livechat.android.constants.ConversationType;
 import com.zoho.livechat.android.constants.SalesIQConstants;
 import com.zoho.livechat.android.exception.InvalidEmailException;
-import com.zoho.livechat.android.exception.InvalidVisitorIDException;
 import com.zoho.livechat.android.listeners.ConversationListener;
 import com.zoho.livechat.android.listeners.DepartmentListener;
 import com.zoho.livechat.android.listeners.FAQCategoryListener;
 import com.zoho.livechat.android.listeners.FAQListener;
 import com.zoho.livechat.android.listeners.OperatorImageListener;
+import com.zoho.livechat.android.listeners.RegisterListener;
 import com.zoho.livechat.android.listeners.SalesIQActionListener;
 import com.zoho.livechat.android.listeners.SalesIQChatListener;
 import com.zoho.livechat.android.listeners.SalesIQCustomActionListener;
 import com.zoho.livechat.android.listeners.SalesIQListener;
+import com.zoho.livechat.android.listeners.UnRegisterListener;
 import com.zoho.livechat.android.models.SalesIQArticle;
 import com.zoho.livechat.android.models.SalesIQArticleCategory;
 import com.zoho.livechat.android.modules.common.DataModule;
@@ -751,19 +752,35 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void registerVisitor(final String uniqueid) {
+    public void registerVisitor(final String uniqueid, final Callback callback) {
         HANDLER.post(() -> {
-            try {
-                ZohoSalesIQ.registerVisitor(uniqueid);
-            } catch (InvalidVisitorIDException e) {
-                LiveChatUtil.log(e);
-            }
+            ZohoSalesIQ.registerVisitor(uniqueid, new RegisterListener() {
+                @Override
+                public void onSuccess() {
+                    callback.invoke(null, Boolean.TRUE);
+                }
+
+                @Override
+                public void onFailure(int code, String message) {
+                    callback.invoke(getErrorMap(code, message), Boolean.FALSE);
+                }
+            });
         });
     }
 
     @ReactMethod
-    public void unregisterVisitor() {
-        HANDLER.post(() -> ZohoSalesIQ.unregisterVisitor(getCurrentActivity()));
+    public void unregisterVisitor(final Callback callback) {
+        HANDLER.post(() -> ZohoSalesIQ.unregisterVisitor(getCurrentActivity(), new UnRegisterListener() {
+            @Override
+            public void onSuccess() {
+                callback.invoke(null, Boolean.TRUE);
+            }
+
+            @Override
+            public void onFailure(int code, String message) {
+                callback.invoke(getErrorMap(code, message), Boolean.FALSE);
+            }
+        }));
     }
 
     @ReactMethod
