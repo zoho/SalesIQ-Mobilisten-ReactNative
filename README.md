@@ -123,8 +123,7 @@ ZohoSalesIQ.initWithCallback(appKey, accessKey, success => {
 });
 ```
 
-3. If you want to show the default chat launcher, use the [**ZohoSalesIQ.Launcher.show()
-   **](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-launcher-show.html)
+3. If you want to show the default chat launcher, use the [**ZohoSalesIQ.Launcher.show()**](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-launcher-show.html)
    API (Optional).
 
 ## API Documentation
