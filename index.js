@@ -1,6 +1,7 @@
-import React from 'react';
 import ZohoSalesIQJSWrapper from './components/zohosalesiqJSWrapper';
+import SIQTheme from './components/SIQTheme';
 
 module.exports = {
-    ZohoSalesIQ: ZohoSalesIQJSWrapper
+    ZohoSalesIQ: ZohoSalesIQJSWrapper,
+    SIQTheme: SIQTheme
 };

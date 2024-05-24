@@ -274,6 +274,9 @@ module.exports = {
   refreshLauncher: function() {
     RNZohoSalesIQ.refreshLauncher();
   },
+  setThemeForiOS: function (value) {
+    RNZohoSalesIQ.setThemeColor(value)
+  },
 
   Chat: {
     shouldOpenUrl: function (value) {

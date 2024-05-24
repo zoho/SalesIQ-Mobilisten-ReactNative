@@ -1,4 +1,4 @@
-[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-9.0.0-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
+[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-9.1.0-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
 
 # React Native module for SalesIQ Mobilisten SDK
 
@@ -123,7 +123,8 @@ ZohoSalesIQ.initWithCallback(appKey, accessKey, success => {
 });
 ```
 
-3. If you want to show the default chat launcher, use the [**ZohoSalesIQ.Launcher.show()**](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-launcher-show.html)
+3. If you want to show the default chat launcher, use the [**ZohoSalesIQ.Launcher.show()
+   **](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-launcher-show.html)
    API (Optional).
 
 ## API Documentation

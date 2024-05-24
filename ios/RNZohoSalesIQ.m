@@ -1017,6 +1017,12 @@ RCT_EXPORT_METHOD(setThemeColorforiOS: (NSString *)color_code){
         [[ZohoSalesIQ Theme] setThemeWithTheme:theme];
     }
 }
+
+RCT_EXPORT_METHOD(setThemeColor: (NSDictionary *)colors) {
+    SIQTheme *theme = [[SIQTheme alloc] initWithColors:colors];
+    [[ZohoSalesIQ Theme] setThemeWithTheme:theme];
+}
+
 RCT_EXPORT_METHOD(setLauncherPropertiesForAndroid: (NSDictionary *)launcherProperties){
     
 }
