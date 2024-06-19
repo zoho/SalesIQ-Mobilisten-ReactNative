@@ -1,6 +1,6 @@
 {
   "name": "react-native-zohosalesiq-mobilisten",
-  "version": "9.2.0",
+  "version": "9.2.1",
   "description": "A React Native module for the ZohoSalesIQ Mobilisten SDK",
   "bugs": {
     "email": "support@zohosalesiq.com"
