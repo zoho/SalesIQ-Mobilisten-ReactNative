@@ -88,6 +88,9 @@ module.exports = {
   initWithCallback: function (appKey, accessKey, callback) {
     RNZohoSalesIQ.initWithCallback(appKey, accessKey, callback);
   },
+  present: function(tab = null, id = null, callback = ()=>{}) {
+    RNZohoSalesIQ.present(tab, id, callback);
+  },
   setChatTitle: function (title) {
     RNZohoSalesIQ.setChatTitle(title);
   },
@@ -148,6 +151,7 @@ module.exports = {
   setQuestion: function (question) {
     RNZohoSalesIQ.setQuestion(question);
   },
+  // DEPRECATED
   startChat: function (message) {
     RNZohoSalesIQ.startChat(message);
   },
@@ -293,6 +297,18 @@ module.exports = {
     },
     open: function (map) {
       RNZohoSalesIQ.showPayloadChat(map);
+    },
+    start: function(question, customChatId = null, departmentName = null, callback = ()=>{}) {
+      RNZohoSalesIQ.startNewChat(question, customChatId, departmentName, callback);
+    },
+    startWithTrigger: function(customChatId = null, departmentName = null, callback = ()=>{}) {
+      RNZohoSalesIQ.startNewChatWithTrigger(customChatId, departmentName, callback);
+    },
+    setWaitingTime: function(seconds) {
+      RNZohoSalesIQ.setChatWaitingTime(seconds);
+    },
+    get: function(chatId, callback) {
+      RNZohoSalesIQ.getChat(chatId, callback);
     }
   },
   sendEvent: function (eventName, ...values) {

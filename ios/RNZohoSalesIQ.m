@@ -1314,6 +1314,77 @@ RCT_EXPORT_METHOD(openNewChat){
     [[ZohoSalesIQ Chat] showWithReferenceID:nil new:YES];
 }
 
+//MARK:- START CHAT API's
+RCT_EXPORT_METHOD(startNewChat: (NSString *)question chatId:(NSString * _Nullable)chatId department:(NSString * _Nullable)department callback:(RCTResponseSenderBlock)callback){
+    [[ZohoSalesIQ Chat] startWithQuestion:question chatID:chatId department:department completion:^(id<SIQError> _Nullable error, SIQVisitorChat * _Nullable chat) {
+        if (callback) {
+            if(error != nil){
+                NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getSIQErrorObject:error];
+                callback(@[errorDictionary, [NSNull null]]);
+            }else{
+                NSMutableDictionary *chatDict = [NSMutableDictionary dictionary];
+                chatDict = [RNZohoSalesIQ getChatObject:chat];
+                callback(@[[NSNull null], chatDict]);
+            }
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(startNewChatWithTrigger: (NSString * _Nullable)chatId department:(NSString * _Nullable)department callback:(RCTResponseSenderBlock)callback){
+    [[ZohoSalesIQ Chat] startWithTriggerWithChatID:chatId department:department completion:^(id<SIQError> _Nullable error, SIQVisitorChat * _Nullable chat) {
+        if (callback) {
+            if(error != nil){
+                NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getSIQErrorObject:error];
+                callback(@[errorDictionary, [NSNull null]]);
+            }else{
+                NSMutableDictionary *chatDict = [NSMutableDictionary dictionary];
+                chatDict = [RNZohoSalesIQ getChatObject:chat];
+                callback(@[[NSNull null], chatDict]);
+            }
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(getChat: (NSString *)chatId callback:(RCTResponseSenderBlock)callback){
+    [[ZohoSalesIQ Chat] getWithChatID:chatId completion:^(id<SIQError> _Nullable error, SIQVisitorChat * _Nullable chat) {
+        if(error != nil){
+            NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getSIQErrorObject:error];
+            callback(@[errorDictionary, [NSNull null]]);
+        }else{
+            NSMutableDictionary *chatDict = [NSMutableDictionary dictionary];
+            chatDict = [RNZohoSalesIQ getChatObject:chat];
+            callback(@[[NSNull null], chatDict]);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(present: (NSString * _Nullable)tab referenceId:(NSString * _Nullable)referenceId callback:(RCTResponseSenderBlock)callback) {
+    NSNumber *tabNumber;
+    if ([tab  isEqual: TAB_CONVERSATIONS]) {
+        tabNumber = [NSNumber numberWithInteger:0];
+    } else if ([tab isEqual:TAB_FAQ] || [tab isEqual:TAB_KNOWLEDGE_BASE]) {
+        tabNumber = [NSNumber numberWithInteger:1];
+    }
+    
+    [ZohoSalesIQ presentWithTabBarItem:tabNumber referenceID:referenceId shouldShowListView:YES completion:^(id<SIQError> _Nullable error, BOOL success) {
+        if (callback) {
+            NSNumber *complete = [NSNumber numberWithBool:success];
+            if(error != nil){
+                NSMutableDictionary *errorDictionary = [RNZohoSalesIQ getSIQErrorObject:error];
+                callback(@[errorDictionary, @[complete]]);
+            } else {
+                callback(@[[NSNull null], @[complete]]);
+            }
+        }
+    }];
+}
+
+
+RCT_EXPORT_METHOD(setChatWaitingTime: (NSInteger)seconds){
+    [[ZohoSalesIQ Chat] setWaitingTimeWithUpTo:seconds];
+}
+
+
 //MARK:- CHAT END SESSION API
 RCT_EXPORT_METHOD(endChat: (NSString *)ref_id){
     [[ZohoSalesIQ Chat] endSessionWithReferenceID:ref_id];

@@ -62,6 +62,7 @@ import com.zoho.livechat.android.models.SalesIQArticleCategory;
 import com.zoho.livechat.android.modules.common.DataModule;
 import com.zoho.livechat.android.modules.common.ui.LauncherUtil;
 import com.zoho.livechat.android.modules.common.ui.lifecycle.SalesIQActivitiesManager;
+import com.zoho.livechat.android.modules.common.ui.result.entities.SalesIQError;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.Resource;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceCategory;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceDepartment;
@@ -592,7 +593,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public static void updateListener(final String listener) {
-        
+
     }
 
     @ReactMethod
@@ -1168,6 +1169,35 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    void present(final String tabString, final String id, final Callback callback) {
+        HANDLER.post(() -> {
+            ZohoSalesIQ.Tab tab = getTab(tabString);
+            ZohoSalesIQ.present(tab, id, result -> {
+                if (callback != null) {
+                    if (result.isSuccess()) {
+                        callback.invoke(null, result.getData());
+                    } else {
+                        SalesIQError error = result.getError();
+                        callback.invoke(getErrorMap(error.getCode(), error.getMessage()), null);
+                    }
+                }
+            });
+        });
+    }
+
+    private static ZohoSalesIQ.Tab getTab(String tab) {
+        ZohoSalesIQ.Tab tabType = null;
+        if (tab != null) {
+            if (Tab.CONVERSATIONS.name.equals(tab)) {
+                tabType = ZohoSalesIQ.Tab.Conversations;
+            } else if (Tab.KNOWLEDGE_BASE.name.equals(tab) || Tab.FAQ.name.equals(tab)) {
+                tabType = ZohoSalesIQ.Tab.KnowledgeBase;
+            }
+        }
+        return tabType;
+    }
+
     public static void eventEmitter(String event, Object value) {
         if (reactContext != null && hasAnyEventListeners) {
             LiveChatUtil.log("eventEmitter, Send event: " + event);
@@ -1735,6 +1765,63 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         ZohoSalesIQ.Chat.showFeedback(duration);
     }
 
+    @ReactMethod
+    static void startNewChat(final String question, final String customChatId, final String departmentName, final Callback callback) {
+        final Callback[] finalCallback = {callback};
+        ZohoSalesIQ.Chat.start(question, customChatId, departmentName, result -> {
+            if (finalCallback[0] != null) {
+                if (result.isSuccess()) {
+                    VisitorChat visitorChat = result.getData();
+                    WritableMap visitorMap = getChatMapObject(visitorChat);
+                    finalCallback[0].invoke(null, visitorMap);
+                } else {
+                    SalesIQError error = result.getError();
+                    finalCallback[0].invoke(getErrorMap(error.getCode(), error.getMessage()), null);
+                }
+            }
+            finalCallback[0] = null;
+        });
+    }
+
+    @ReactMethod
+    static void startNewChatWithTrigger(final String customChatId, final String departmentName, final Callback callback) {
+        final Callback[] finalCallback = {callback};
+        ZohoSalesIQ.Chat.startWithTrigger(customChatId, departmentName, result -> {
+            if (finalCallback[0] != null) {
+                if (result.isSuccess()) {
+                    VisitorChat visitorChat = result.getData();
+                    WritableMap visitorMap = getChatMapObject(visitorChat);
+                    finalCallback[0].invoke(null, visitorMap);
+                } else {
+                    SalesIQError error = result.getError();
+                    finalCallback[0].invoke(getErrorMap(error.getCode(), error.getMessage()), null);
+                }
+            }
+            finalCallback[0] = null;
+        });
+    }
+
+    @ReactMethod
+    static void getChat(final String chatId, final Callback callback) {
+        ZohoSalesIQ.Chat.get(chatId, result -> {
+            if (callback != null) {
+                if (result.isSuccess()) {
+                    VisitorChat visitorChat = result.getData();
+                    WritableMap visitorMap = getChatMapObject(visitorChat);
+                    callback.invoke(null, visitorMap);
+                } else {
+                    SalesIQError error = result.getError();
+                    callback.invoke(getErrorMap(error.getCode(), error.getMessage()), null);
+                }
+            }
+        });
+    }
+
+    @ReactMethod
+    static void setChatWaitingTime(final int seconds) {
+        ZohoSalesIQ.Chat.setWaitingTime(seconds);
+    }
+
     public static final String RESOURCE_ARTICLES = "RESOURCE_ARTICLES";    // No I18N
 
     private @Nullable ZohoSalesIQ.ResourceType getResourceType(String value) {
@@ -1927,7 +2014,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         return camelCase.toString();
     }
 
-    WritableMap getErrorMap(int code, String message) {
+    static WritableMap getErrorMap(int code, String message) {
         WritableMap errorMap = new WritableNativeMap();
         errorMap.putInt("code", code);         // No I18N
         errorMap.putString("message", message);         // No I18N
