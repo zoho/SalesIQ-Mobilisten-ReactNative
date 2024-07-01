@@ -15,7 +15,7 @@ RCT_EXPORT_MODULE();
 }
 
 - (void)sendEventName:(NSString *)eventName body:(id)body {
-  if (hasListeners) {
+  if (hasSIQEventListener) {
     NSLog(@"CustomEventsEmitter sendEventName emitting event: %@", eventName);
     [self sendEventWithName:eventName   body:body];
   } else {
@@ -62,15 +62,15 @@ RCT_EXPORT_METHOD(initWithCallback:(NSString *)appKey accessKey:(NSString *)acce
     [self performAdditionalSetup];
 }
 
-bool hasListeners;
+bool hasSIQEventListener;
 bool handleURI = YES;
 
 -(void)startObserving {
-    hasListeners = YES;
+    hasSIQEventListener = YES;
 }
 
 -(void)stopObserving {
-    hasListeners = NO;
+    hasSIQEventListener = NO;
 }
 
 //MARK:- EVENT TYPES
@@ -1888,112 +1888,112 @@ RCT_EXPORT_METHOD(updateListener: (NSString *)eventName) {
 
 //MARK:- DELEGATE METHODS - EVENTS
 - (void)agentsOffline {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:OPERATORS_OFFLINE body:[NSNull null]];
 }
 
 - (void)agentsOnline {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:OPERATORS_ONLINE body:[NSNull null]];
 }
 
 - (void)chatViewClosedWithId:(NSString * _Nullable)id {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:CHATVIEW_CLOSED body:id];
 }
 
 - (void)chatViewOpenedWithId:(NSString * _Nullable)id {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:CHATVIEW_OPENED body:id];
 }
 
 - (void)homeViewClosed {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:HOMEVIEW_CLOSED body:[NSNull null]];
 }
 
 - (void)homeViewOpened {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:HOMEVIEW_OPENED body:[NSNull null]];
 }
 
 - (void)supportClosed {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:SUPPORT_CLOSED body:[NSNull null]];
 }
 
 - (void)supportOpened {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:SUPPORT_OPENED body:[NSNull null]];
 }
 
 - (void)articleClosedWithId:(NSString * _Nullable)id {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:ARTICLE_CLOSED body:id];
 }
 
 - (void)articleDislikedWithId:(NSString * _Nullable)id {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:ARTICLE_DISLIKED body:id];
 }
 
 - (void)articleLikedWithId:(NSString * _Nullable)id {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:ARTICLE_LIKED body:id];
 }
 
 - (void)articleOpenedWithId:(NSString * _Nullable)id {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:ARTICLE_OPENED body:id];
 }
 
 - (void)chatAttendedWithChat:(SIQVisitorChat * _Nullable)chat {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:CHAT_ATTENDED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatClosedWithChat:(SIQVisitorChat * _Nullable)chat {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:CHAT_CLOSED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatFeedbackRecievedWithChat:(SIQVisitorChat * _Nullable)chat {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:FEEDBACK_RECEIVED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatMissedWithChat:(SIQVisitorChat * _Nullable)chat {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:CHAT_MISSED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatOpenedWithChat:(SIQVisitorChat * _Nullable)chat {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:CHAT_OPENED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatQueuePositionChangedWithChat:(SIQVisitorChat *)chat {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:CHAT_QUEUE_POSITION_CHANGED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatRatingRecievedWithChat:(SIQVisitorChat * _Nullable)chat {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:RATING_RECEIVED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)chatReopenedWithChat:(SIQVisitorChat * _Nullable)chat {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:CHAT_REOPENED body: [RNZohoSalesIQ getChatObject:chat]];
 }
 
 - (void)unreadCountChanged:(NSInteger)count {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:CHAT_UNREAD_COUNT_CHANGED body: @(count)];
 }
 
 - (void)visitorIPBlocked {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:VISITOR_IPBLOCKED body:[NSNull null]];
 }
 
@@ -2006,7 +2006,7 @@ RCT_EXPORT_METHOD(updateListener: (NSString *)eventName) {
 }
 
 - (void) handleTriggerWithName:(NSString *)name visitorInformation:(SIQVisitor *)visitorInformation{
-    if (hasListeners){
+    if (hasSIQEventListener){
         
         NSMutableDictionary *triggerInformation = [NSMutableDictionary dictionary];
         
@@ -2026,19 +2026,19 @@ RCT_EXPORT_METHOD(updateListener: (NSString *)eventName) {
 }
 
 - (void)handleBotTrigger {
-    if (hasListeners)
+    if (hasSIQEventListener)
         [self sendEventWithName:BOT_TRIGGER body:[NSNull null]];
 }
 
 - (void)handleResourceOpened:(enum SIQResourceType)type resource:(SIQKnowledgeBaseResource * _Nullable)resource {
-    if (hasListeners) {
+    if (hasSIQEventListener) {
         NSMutableDictionary *resourceInformation = [self prepareResourceInformation:type resource:resource];
         [self sendEventWithName:EVENT_RESOURCE_OPENED body: resourceInformation];
     }
 }
 
 - (void)handleResourceClosed:(enum SIQResourceType)type resource:(SIQKnowledgeBaseResource * _Nullable)resource {
-    if (hasListeners) {
+    if (hasSIQEventListener) {
         NSMutableDictionary *resourceInformation = [self prepareResourceInformation:type resource:resource];
         [self sendEventWithName:EVENT_RESOURCE_CLOSED body: resourceInformation];
     }
@@ -2046,28 +2046,28 @@ RCT_EXPORT_METHOD(updateListener: (NSString *)eventName) {
 
 
 - (void)handleResourceLiked:(enum SIQResourceType)type resource:(SIQKnowledgeBaseResource * _Nullable)resource {
-    if (hasListeners) {
+    if (hasSIQEventListener) {
         NSMutableDictionary *resourceInformation = [self prepareResourceInformation:type resource:resource];
         [self sendEventWithName:EVENT_RESOURCE_LIKED body: resourceInformation];
     }
 }
 
 - (void)handleResourceDisliked:(enum SIQResourceType)type resource:(SIQKnowledgeBaseResource * _Nullable)resource {
-    if (hasListeners) {
+    if (hasSIQEventListener) {
         NSMutableDictionary *resourceInformation = [self prepareResourceInformation:type resource:resource];
         [self sendEventWithName:EVENT_RESOURCE_DISLIKED body: resourceInformation];
     }
 }
 
 - (void)handleCustomLauncherVisibility:(BOOL)visible {
-    if (hasListeners) {
+    if (hasSIQEventListener) {
         NSNumber *visibleLauncher = [NSNumber numberWithBool:visible];
         [self sendEventWithName:EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY body: visibleLauncher];
     }
 }
 
 - (void)handleNotificationAction:(SalesIQNotificationPayload *)payload {
-    if (hasListeners) {
+    if (hasSIQEventListener) {
         NSMutableDictionary *resultMap = [self getNotificationActionPayload:payload];
         [self sendEventWithName:EVENT_NOTIFICATION_CLICKED body: resultMap];
     }
