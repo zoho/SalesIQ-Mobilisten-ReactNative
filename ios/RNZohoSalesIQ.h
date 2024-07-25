@@ -12,15 +12,19 @@
 #import <React/RCTBridgeModule.h>
 #endif
 
-@interface RNZohoSalesIQ : RCTEventEmitter <RCTBridgeModule, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQFAQDelegate>
+@interface RNZohoSalesIQ : RCTEventEmitter <RCTBridgeModule, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQFAQDelegate, ZohoSalesIQKnowledgeBaseDelegate>
 
-+ (void)enablePush:(NSString *)token isTestDevice:(BOOL)isTestDevice isProductionMode:(BOOL)isProductionMode;
-+ (void)setWebhookNotificationCustomID:(NSString *)customID;
-+ (void)processNotificationWithInfo: (NSDictionary *) info;
-+ (BOOL)isMobilistenNotification:(NSDictionary *)info;
-+ (void)handleNotificationAction: (NSDictionary *) info response:(NSString *) response;
+@property (nonatomic, strong) NSMutableDictionary *remoteNotificationCallbacks;
+
+typedef void (^RNZohoSalesIQRemoteNotificationCallback)(UIBackgroundFetchResult result);
+
+
++ (void)enablePush:(NSString *)token isTestDevice:(BOOL)isTestDevice  isProductionMode:(BOOL)isProductionMode __attribute__ ((deprecated("This method is deprecated. Use [RNZSIQNotifications enablePush] instead.")));
++ (void)processNotificationWithInfo: (NSDictionary *) info __attribute__ ((deprecated("This method is deprecated. Use [RNZSIQNotifications processNotificationWithInfo] instead.")));
++ (BOOL)isMobilistenNotification:(NSDictionary *)info __attribute__ ((deprecated("This method is deprecated. Use [RNZSIQNotifications isMobilistenNotification] instead.")));
++ (void)handleNotificationAction: (NSDictionary *) info response:(NSString *) response __attribute__ ((deprecated("This method is deprecated. Use [RNZSIQNotifications handleNotificationAction] instead.")));
 + (NSMutableDictionary *)getFAQCategoryObject: (SIQFAQCategory*) category;
 + (NSMutableDictionary *)getFAQArticleObject: (SIQFAQArticle*) article;
 + (NSMutableDictionary *)getChatObject: (SIQVisitorChat*) chat;
-
++ (void)didReceiveNotification:(NSDictionary *)notification fetchCompletionHandler:(RNZohoSalesIQRemoteNotificationCallback)completionHandler __attribute__ ((deprecated("This method is deprecated. Use [RNZSIQNotifications didReceiveNotification] instead.")));
 @end

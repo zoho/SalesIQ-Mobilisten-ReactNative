@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         jcenter()
+        google()
     }
 
     dependencies {
@@ -9,6 +10,7 @@ buildscript {
 }
 
 apply plugin: 'com.android.library'
+
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
@@ -24,6 +26,12 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     lintOptions {
         abortOnError false
     }
@@ -31,9 +39,11 @@ android {
 
 repositories {
     mavenCentral()
+    google()
 }
 
 dependencies {
-    compile 'com.facebook.react:react-native:+'
-    implementation 'com.zoho.salesiq:mobilisten:4.2-beta.1'
+    implementation 'com.facebook.react:react-native:+'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    api 'com.zoho.salesiq:mobilisten:8.0.2'
 }

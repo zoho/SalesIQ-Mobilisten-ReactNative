@@ -36,4 +36,6 @@ jobs:
         env:
          NODE_AUTH_TOKEN: ${{ secrets.SALESIQ_MOBILISTEN_REACTNATIVE_NPM_TOKEN }}
         run: |
-          npm publish
+          npm publish --tag beta
+      - run: |
+          npm dist-tag add react-native-zohosalesiq-mobilisten@9.3.1 latest
