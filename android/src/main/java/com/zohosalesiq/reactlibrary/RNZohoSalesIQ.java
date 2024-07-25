@@ -2042,6 +2042,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         }));
     }
 
+    @ReactMethod
+    public void setThemeColor(final ReadableMap theme) {
+        
+    }
+
     static WritableArray getWritableArray(Object object) {
         WritableNativeArray finalWritableNativeArray = new WritableNativeArray();
         if (object != null) {

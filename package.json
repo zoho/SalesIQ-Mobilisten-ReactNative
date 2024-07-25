@@ -80,7 +80,6 @@
   "peerDependencies": {
     "react-native": ">=0.41.2"
   },
-  "packageManager": "yarn@3.6.1",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
