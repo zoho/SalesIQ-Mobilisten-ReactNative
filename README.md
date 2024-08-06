@@ -1,4 +1,4 @@
-[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-9.3.2-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
+[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-10.0.0-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
 
 # React Native module for SalesIQ Mobilisten SDK
 
@@ -28,15 +28,23 @@ react-native link react-native-zohosalesiq-mobilisten
 
 #### Installation steps for iOS
 
-1. Navigate to the `ios` folder in the project directory and open **Podfile**.
-   Add the "**/ios**" to the path for the `RNZohoSalesIQ` pod as shown below.
+1. Navigate to the `ios` folder in the project directory.
 
+2. Run the `pod repo update && pod install` command from the `ios` directory.
+
+For the RNZohoSalesIQ version below `10.0.0`:
+
+1. Open your podfile.
+
+2. Add the "/ios" to the path for the RNZohoSalesIQ pod, as shown below. 
+   
 ```diff
 - pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten'
 + pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten/ios'
-```
+```     
+3. Run `pod install` after saving the changes made to the Podfile.
 
-2. Run the `pod repo update && pod install` command from the `ios` directory.
+**Note:** If you're updating from the SDK versions below `10.0.0` to above, remove the above path in your `Podfile` and run the `pod install` in the iOS folder.
 
 #### Installation steps for Android
 
@@ -118,7 +126,7 @@ if (Platform.OS === 'ios') {
     accessKey = "android_access_key";
 }
 
-ZohoSalesIQ.initWithCallback(appKey, accessKey, success => {
+ZohoSalesIQ.initWithCallback((appKey, accessKey, success) => {
     // Your code
 });
 ```

@@ -30,6 +30,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.zoho.commons.ChatComponent;
 import com.zoho.commons.LauncherModes;
@@ -77,6 +78,8 @@ import com.zoho.livechat.android.operation.SalesIQApplicationManager;
 import com.zoho.livechat.android.utils.LiveChatUtil;
 import com.zoho.salesiqembed.ZohoSalesIQ;
 import com.zoho.salesiqembed.ktx.GsonExtensionsKt;
+
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Type;
@@ -173,6 +176,12 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     private static final String ACTION_SOURCE_APP = "APP";  // No I18N
     private static final String ACTION_SOURCE_SDK = "SDK";  // No I18N
 
+    // Common event names;
+    private static final String ZSIQ_EVENT_LISTENER = "ZSIQ_EVENT_LISTENER"; // No I18N
+    private static final String CHAT_EVENT_LISTENER = "CHAT_EVENT_LISTENER"; // No I18N
+    private static final String KNOWLEDGEBASE_EVENT_LISTENER = "KNOWLEDGEBASE_EVENT_LISTENER"; // No I18N
+    private static final String NOTIFICATION_EVENT_LISTENER = "NOTIFICATION_EVENT_LISTENER"; // No I18N
+    private static final String LAUNCHER_EVENT_LISTENER = "LAUNCHER_EVENT_LISTENER"; // No I18N
 
     enum Tab {
         CONVERSATIONS("TAB_CONVERSATIONS"),
@@ -256,6 +265,13 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         constants.put("LAUNCHER_VERTICAL_BOTTOM", LAUNCHER_VERTICAL_BOTTOM);         // No I18N
 
         constants.put("RESOURCE_ARTICLES", RESOURCE_ARTICLES);         // No I18N
+
+        constants.put("CHAT_EVENT_LISTENER", CHAT_EVENT_LISTENER); // No I18N
+        constants.put("KNOWLEDGEBASE_EVENT_LISTENER", KNOWLEDGEBASE_EVENT_LISTENER); // No I18N
+        constants.put("NOTIFICATION_EVENT_LISTENER", NOTIFICATION_EVENT_LISTENER); // No I18N
+        constants.put("LAUNCHER_EVENT_LISTENER", LAUNCHER_EVENT_LISTENER); // No I18N
+        constants.put("ZSIQ_EVENT_LISTENER", ZSIQ_EVENT_LISTENER); // No I18N
+
         return constants;
     }
 
@@ -684,9 +700,21 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void showPayloadChat(final ReadableMap payload) {
-        if (payload.hasKey("chatId")) {
-            String chatId = payload.getString("chatId");
+    public void showPayloadChat(final ReadableMap result) {
+        String chatId;
+        if (result.hasKey("chatId")) {
+            chatId = result.getString("chatId");
+        } else if (result.hasKey("payload")) {
+            ReadableMap payload = result.getMap("payload"); // No I18N
+            if (payload != null && payload.hasKey("chatId")) {
+                chatId = payload.getString("chatId");
+            } else {
+                chatId = null;
+            }
+        } else {
+            chatId = null;
+        }
+        if (chatId != null) {
             LiveChatUtil.log("Opening payload chat with id: " + chatId);
             HANDLER.post(() -> ZohoSalesIQ.Chat.open(chatId));
         }
@@ -807,15 +835,6 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     @ReactMethod
     public void disableInAppNotification() {
         HANDLER.post(() -> ZohoSalesIQ.Notification.disableInApp());
-    }
-
-    @ReactMethod
-    @Deprecated
-    public void setThemeColorforAndroid(String attribute, String color_code) {
-        int color = Color.parseColor(color_code);
-        int r = (color & 0xFF0000) >> 16;
-        int g = (color & 0xFF00) >> 8;
-        int b = (color & 0xFF);
     }
 
     @ReactMethod
@@ -1430,32 +1449,58 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         return infoMap;
     }
 
+    public static WritableMap getEventEmitterObjectWithMap(String eventName, ReadableMap body) {
+        try {
+            WritableMap eventEmitterObject = new WritableNativeMap();
+            eventEmitterObject.putString("event", eventName); // No I18N
+            eventEmitterObject.putMap("body", body); // No I18N
+            return eventEmitterObject;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static WritableMap getEventEmitterObjectWithBoolean(String eventName, Boolean body) {
+        WritableMap eventEmitterObject = new WritableNativeMap();
+        eventEmitterObject.putString("event", eventName); // No I18N
+        eventEmitterObject.putBoolean("body", body); // No I18N
+        return eventEmitterObject;
+    }
+
     public static class RNZohoSalesIQListener implements SalesIQListener, SalesIQChatListener, SalesIQKnowledgeBaseListener, SalesIQActionListener, NotificationListener {
         @Override
         public void handleFeedback(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
-            eventEmitter(EVENT_FEEDBACK_RECEIVED, visitorMap);
+            eventEmitter(EVENT_FEEDBACK_RECEIVED, visitorMap.copy());
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_FEEDBACK_RECEIVED, visitorMap));
         }
 
         @Override
         public void handleQueuePositionChange(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
-            eventEmitter(EVENT_CHAT_QUEUE_POSITION_CHANGED, visitorMap);
+            eventEmitter(EVENT_CHAT_QUEUE_POSITION_CHANGED, visitorMap.copy());
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_CHAT_QUEUE_POSITION_CHANGED, visitorMap));
         }
 
         @Override
         public void handleRating(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_RATING_RECEIVED, visitorMap.copy()));
+            // DEPRECATED
             eventEmitter(EVENT_RATING_RECEIVED, visitorMap);
         }
 
         @Override
         public void handleOperatorsOnline() {
+            eventEmitter(ZSIQ_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_OPERATORS_ONLINE, null));
+            // DEPRECATED
             eventEmitter(EVENT_OPERATORS_ONLINE, null);
         }
 
         @Override
         public void handleOperatorsOffline() {
+            eventEmitter(ZSIQ_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_OPERATORS_OFFLINE, null));
+            // DEPRECATED
             eventEmitter(EVENT_OPERATORS_OFFLINE, null);
         }
 
@@ -1464,7 +1509,10 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             WritableMap resourceMap = new WritableNativeMap();
             resourceMap.putString("type", RESOURCE_ARTICLES);       // No I18N
             resourceMap.putMap("resource", getWritableMap(resource));       // No I18N
-            eventEmitter(EVENT_RESOURCE_OPENED, resourceMap);
+            eventEmitter(EVENT_RESOURCE_OPENED, resourceMap.copy());
+
+            eventEmitter(KNOWLEDGEBASE_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_RESOURCE_OPENED, resourceMap));
+
             eventEmitter(EVENT_ARTICLE_OPENED, resource != null ? resource.getId() : null);
         }
 
@@ -1473,7 +1521,9 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             WritableMap resourceMap = new WritableNativeMap();
             resourceMap.putString("type", RESOURCE_ARTICLES);       // No I18N
             resourceMap.putMap("resource", getWritableMap(resource));       // No I18N
-            eventEmitter(EVENT_RESOURCE_CLOSED, resourceMap);
+            eventEmitter(EVENT_RESOURCE_CLOSED, resourceMap.copy());
+
+            eventEmitter(KNOWLEDGEBASE_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_RESOURCE_CLOSED, resourceMap));
             eventEmitter(EVENT_ARTICLE_CLOSED, resource != null ? resource.getId() : null);
         }
 
@@ -1482,7 +1532,10 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             WritableMap resourceMap = new WritableNativeMap();
             resourceMap.putString("type", RESOURCE_ARTICLES);       // No I18N
             resourceMap.putMap("resource", getWritableMap(resource));       // No I18N
-            eventEmitter(EVENT_RESOURCE_LIKED, resourceMap);
+            eventEmitter(EVENT_RESOURCE_LIKED, resourceMap.copy());
+
+            eventEmitter(KNOWLEDGEBASE_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_RESOURCE_LIKED, resourceMap));
+
             eventEmitter(EVENT_ARTICLE_LIKED, resource != null ? resource.getId() : null);
         }
 
@@ -1491,32 +1544,48 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             WritableMap resourceMap = new WritableNativeMap();
             resourceMap.putString("type", RESOURCE_ARTICLES);       // No I18N
             resourceMap.putMap("resource", getWritableMap(resource));       // No I18N
-            eventEmitter(EVENT_RESOURCE_DISLIKED, resourceMap);
+            eventEmitter(EVENT_RESOURCE_DISLIKED, resourceMap.copy());
+            eventEmitter(KNOWLEDGEBASE_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_RESOURCE_DISLIKED, resourceMap));
+
             eventEmitter(EVENT_ARTICLE_DISLIKED, resource != null ? resource.getId() : null);
         }
 
         @Override
         public void handleSupportOpen() {
+            eventEmitter(ZSIQ_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_SUPPORT_OPENED, null));
+            // DEPRECATED
             eventEmitter(EVENT_SUPPORT_OPENED, null);
         }
 
         @Override
         public void handleSupportClose() {
+            eventEmitter(ZSIQ_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_SUPPORT_CLOSED, null));
+            // DEPRECATED
             eventEmitter(EVENT_SUPPORT_CLOSED, null);
         }
 
         @Override
         public void handleChatViewOpen(String id) {
+            WritableMap chatMap = new WritableNativeMap();
+            chatMap.putString("id", id); // No I18N
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_CHATVIEW_OPENED, chatMap));
+            // DEPRECATED
             eventEmitter(EVENT_CHATVIEW_OPENED, id);
         }
 
         @Override
         public void handleChatViewClose(String id) {
+            WritableMap chatMap = new WritableNativeMap();
+            chatMap.putString("id", id); // No I18N
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_CHATVIEW_CLOSED, chatMap));
+            // DEPRECATED
             eventEmitter(EVENT_CHATVIEW_CLOSED, id);
         }
 
         @Override
         public void handleIPBlock() {
+            eventEmitter(ZSIQ_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_VISITOR_IPBLOCKED, null));
+            // DEPRECATED
             eventEmitter(EVENT_VISITOR_IPBLOCKED, null);
         }
 
@@ -1526,46 +1595,65 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             WritableMap triggerMap = new WritableNativeMap();
             triggerMap.putString("triggerName", triggerName);         // No I18N
             triggerMap.putMap("visitorInformation", visitorInfoMap);         // No I18N
+
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_CUSTOMTRIGGER, triggerMap.copy()));
+
+            // DEPRECATED
             eventEmitter(EVENT_CUSTOMTRIGGER, triggerMap);
         }
 
         @Override
         public void handleBotTrigger() {
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_BOT_TRIGGER, null));
             eventEmitter(EVENT_BOT_TRIGGER, null);
         }
 
         @Override
         public void handleCustomLauncherVisibility(boolean visible) {
+            WritableMap launcherMap = new WritableNativeMap();
+            launcherMap.putBoolean("visible", visible); // No I18N
+            eventEmitter(LAUNCHER_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY, launcherMap));
+            // DEPRECATED
             eventEmitter(EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY, visible);
         }
 
         @Override
         public void handleChatOpened(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_CHAT_OPENED, visitorMap.copy()));
+            // DEPRECATED
             eventEmitter(EVENT_CHAT_OPENED, visitorMap);
         }
 
         @Override
         public void handleChatClosed(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_CHAT_CLOSED, visitorMap.copy()));
+
             eventEmitter(EVENT_CHAT_CLOSED, visitorMap);
         }
 
         @Override
         public void handleChatAttended(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_CHAT_ATTENDED, visitorMap.copy()));
+
             eventEmitter(EVENT_CHAT_ATTENDED, visitorMap);
         }
 
         @Override
         public void handleChatMissed(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_CHAT_MISSED, visitorMap.copy()));
+
             eventEmitter(EVENT_CHAT_MISSED, visitorMap);
         }
 
         @Override
         public void handleChatReOpened(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_CHAT_REOPENED, visitorMap.copy()));
+
             eventEmitter(EVENT_CHAT_REOPENED, visitorMap);
         }
 
@@ -1584,18 +1672,29 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             actionDetailsMap.putString("clientActionName", salesIQCustomAction.clientActionName);         // No I18N
 
             actionsList.put(uuid.toString(), salesIQCustomActionListener);
-            eventEmitter(EVENT_PERFORM_CHATACTION, actionDetailsMap);
+            // DEPRECATED
+            eventEmitter(EVENT_PERFORM_CHATACTION, actionDetailsMap.copy());
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_PERFORM_CHATACTION, actionDetailsMap));
         }
 
         @Override
         public void onBadgeChange(int count) {
+            WritableMap countMap = new WritableNativeMap();
+            countMap.putInt("count", count); // No I18N
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_CHAT_UNREAD_COUNT_CHANGED, countMap));
+
             eventEmitter(EVENT_CHAT_UNREAD_COUNT_CHANGED, count);
         }
 
         @Override
         public void onClick(@Nullable Context context, @NonNull SalesIQNotificationPayload payload) {
             LiveChatUtil.log("NotificationListener onClick Received");
-            eventEmitter(EVENT_NOTIFICATION_CLICKED, getNotificationPayloadMap(payload));
+            WritableMap notificationPayloadMap = getNotificationPayloadMap(payload);
+            if (notificationPayloadMap != null) {
+                eventEmitter(EVENT_NOTIFICATION_CLICKED, notificationPayloadMap.copy());
+
+                eventEmitter(NOTIFICATION_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_NOTIFICATION_CLICKED, notificationPayloadMap));
+            }
             if (SalesIQActivitiesManager.getInstance().isActivityStackEmpty(true)) {
                 Intent intent = null;
                 if (context != null) {
@@ -1615,9 +1714,14 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
         @Override
         public boolean handleUri(final Uri uri, final VisitorChat visitorChat) {
-            WritableMap visitorMap = getChatMapObject(visitorChat);
-            visitorMap.putString("url", uri.toString());    // No I18N
-            eventEmitter(EVENT_HANDLE_URL, visitorMap);
+            WritableMap visitorChatMap = getChatMapObject(visitorChat);
+            WritableMap chatMap = new WritableNativeMap();
+            chatMap.putMap("chat", visitorChatMap.copy()); // No I18N
+            chatMap.putString("url", uri.toString()); // No I18N
+            eventEmitter(CHAT_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_HANDLE_URL, chatMap));
+            // DEPRECATED
+            visitorChatMap.putString("url", uri.toString());    // No I18N
+            eventEmitter(EVENT_HANDLE_URL, visitorChatMap);
             return shouldOpenUrl;
         }
     }
@@ -1936,6 +2040,11 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                 callback.invoke(getErrorMap(code, message), null);
             }
         }));
+    }
+
+    @ReactMethod
+    public void setThemeColor(final ReadableMap theme) {
+
     }
 
     static WritableArray getWritableArray(Object object) {
