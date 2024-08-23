@@ -350,7 +350,7 @@ export interface ZSIQWrapperTypes {
    */
   registerVisitor: (
     visitorId: string,
-    callback: (error: CallbackError, result: boolean) => void
+    callback?: (error: CallbackError, result: boolean) => void
   ) => void;
 
   /**

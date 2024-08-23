@@ -120,7 +120,7 @@ export const ZSIQWrapper = {
   fetchAttenderImage: function (atttenderId, fetchDefaultImage, callback) {
     RNZohoSalesIQ.fetchAttenderImage(atttenderId, fetchDefaultImage, callback);
   },
-  registerVisitor: function (visitorId, callback) {
+  registerVisitor: function (visitorId, callback = () => {}) {
     RNZohoSalesIQ.registerVisitor(visitorId, callback);
   },
   setThemeColorforiOS: function (colorCode) {
