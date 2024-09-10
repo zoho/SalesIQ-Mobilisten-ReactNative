@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect } from 'react';
 import { Platform, StatusBar } from "react-native";
 import { addListeners } from "./scripts/listeners";
 
@@ -37,7 +37,7 @@ const App: React.FC = () => {
         ZohoSalesIQ.printDebugLogsForAndroid(true);
 
         //This API is used to initialize the SalesIQ SDK with callback.
-        ZohoSalesIQ.initWithCallback(appkey, accesskey, (success: any) => {
+        ZohoSalesIQ.initWithCallback(appkey, accesskey, (success) => {
             if (success) {
                 /*
                         ThisAPI allows managing the visibility of the mobilisten launcher according to your visibility mode. 

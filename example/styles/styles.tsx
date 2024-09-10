@@ -22,7 +22,7 @@ export const styles = StyleSheet.create({
   },
   visitorInfoTitle:{
     fontSize: 16,
-    color: '#191919'
+    color: '#191919',
     paddingTop: 5,
     paddingRight: 5
   },
