@@ -76,6 +76,15 @@ type ZSIQLauncherPropTypes = {
   icon?: string;
 };
 
+type SIQFontType = {
+  path?: string
+}
+
+type SIQFont = {
+  regular?: SIQFontType,
+  medium?: SIQFontType;
+};
+
 export interface Department {
   id?: string;
   name?: string;
@@ -102,6 +111,15 @@ export interface ZSIQWrapperTypes {
     appKey: string,
     accessKey: string,
     callback: (success: boolean) => void
+  ) => void;
+
+  /**
+     * This API is used to customise the font of the SalesIQ UI.
+     * @param fonts
+     * @returns
+     */
+  setCustomFont: (
+    font: SIQFont
   ) => void;
 
   present: (

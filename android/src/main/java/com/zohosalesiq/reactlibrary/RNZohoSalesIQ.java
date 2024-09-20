@@ -32,6 +32,8 @@ import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.zoho.commons.Fonts;
+import com.zoho.commons.InitConfig;
 import com.zoho.commons.ChatComponent;
 import com.zoho.commons.LauncherModes;
 import com.zoho.commons.LauncherProperties;
@@ -182,6 +184,13 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     private static final String KNOWLEDGEBASE_EVENT_LISTENER = "KNOWLEDGEBASE_EVENT_LISTENER"; // No I18N
     private static final String NOTIFICATION_EVENT_LISTENER = "NOTIFICATION_EVENT_LISTENER"; // No I18N
     private static final String LAUNCHER_EVENT_LISTENER = "LAUNCHER_EVENT_LISTENER"; // No I18N
+
+    private static Font customFont = null;
+
+    static class Font {
+        public String regular;
+        public String medium;
+    }
 
     enum Tab {
         CONVERSATIONS("TAB_CONVERSATIONS"),
@@ -1158,7 +1167,13 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         if (application != null) {
             final boolean[] canInvokeCallBack = {true};
             ZohoSalesIQ.setPlatformName(SalesIQConstants.Platform.REACT_NATIVE);
-            ZohoSalesIQ.init(application, appKey, accessKey, null, new OnInitCompleteListener() {
+            InitConfig initConfig = null;
+            if (customFont != null) {
+                initConfig = new InitConfig();
+                initConfig.setFont(Fonts.REGULAR, customFont.regular);
+                initConfig.setFont(Fonts.MEDIUM, customFont.medium);
+            }
+            ZohoSalesIQ.init(application, appKey, accessKey, initConfig, new OnInitCompleteListener() {
                 @Override
                 public void onInitComplete() {
                     if (fcmToken != null) {
@@ -1203,6 +1218,21 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                 }
             });
         });
+    }
+
+    @ReactMethod
+    static void setCustomFont(final ReadableMap map) {
+        ReadableMap regular = map.getMap("regular");    // No I18N
+        ReadableMap medium = map.getMap("medium");  // No I18N
+        String regularPath = regular != null ? regular.getString("path") : null;    // No I18N
+        String mediumPath = medium != null ? medium.getString("path") : null;   // No I18N
+        if (regularPath != null || mediumPath != null) {
+            customFont = new Font();
+            customFont.regular = regularPath != null ? LiveChatUtil.getString(regularPath) : null;
+            customFont.medium = mediumPath != null ? LiveChatUtil.getString(mediumPath) : null;
+        } else {
+            customFont = null;
+        }
     }
 
     private static ZohoSalesIQ.Tab getTab(String tab) {

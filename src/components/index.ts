@@ -30,6 +30,9 @@ export const ZSIQWrapper = {
   initWithCallback: function (appKey, accessKey, callback) {
     RNZohoSalesIQ.initWithCallback(appKey, accessKey, callback);
   },
+  setCustomFont: function (font) {
+    RNZohoSalesIQ.setCustomFont(font);
+  },
   present: function (tab = null, id = null, callback = () => {}) {
     RNZohoSalesIQ.present(tab, id, callback);
   },
