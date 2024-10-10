@@ -96,12 +96,32 @@ public ReactNativeHost getReactNativeHost(){
    platform of choice for Android development.
    Add the following maven repository to the `build.gradle` file.
 
+For Gradle version 6.7 and lower
 ```Gradle
+// Add the following to your project's root build.gradle file.
+
 allprojects {
-      repositories {
-        // ...
-          maven { url 'https://maven.zohodl.com' }
-      }
+   repositories {
+      google()
+      mavenCentral()
+      // ...
+      maven { url 'https://maven.zohodl.com' }
+   }
+}
+```
+
+For Gradle version 6.8 and higher
+```Gradle
+// Add the following to your settings.gradle file.
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // Add the Zoho Maven URL here
+        maven { url 'https://maven.zohodl.com' }
+    }
 }
 ```
 
