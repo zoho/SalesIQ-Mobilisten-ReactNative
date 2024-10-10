@@ -11,7 +11,13 @@ Connect with customers at every step of their journey. Give them the best in-app
 
 **iOS**: Minimum deployment target should be set to iOS 12.
 
-**Android**: Android API level 21 or above is required.
+**Android**: 
+Ensure that your project meets the following requirements:
+
+   - Minimum Android Version: Android 5.0 (Lollipop) (API Level 21)
+   - Compile SDK Version: 34 (Android 14)
+   - Required Permissions:
+      - android.permission.INTERNET (Required for network operations)   
 
 ## Installation
 Follow the below steps given below to complete installation of **Mobilisten** in your React-Native app.
@@ -76,27 +82,27 @@ implementation project(':react-native-zohosalesiq-mobilisten')
   packages were not auto-generated.
 
 ```java
-private final ReactNativeHost mReactNativeHost=new ReactNativeHost(this){
-// ...
-@Override
-protected List<ReactPackage> getPackages(){
-        // Add new RNZohoSalesIQPackage() into the React packages list like below
-        return new ArrayList<>(Arrays.<ReactPackage>asList(new RNZohoSalesIQPackage()));
-        }
-        // ...
-        };
+private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
+   // ...
+   @Override
+   protected List<ReactPackage> getPackages(){
+         // Add new RNZohoSalesIQPackage() into the React packages list like below
+         return new ArrayList<>(Arrays.<ReactPackage>asList(new RNZohoSalesIQPackage()));
+   }
+   // ...
+};
 
 @Override
 public ReactNativeHost getReactNativeHost(){
-        return mReactNativeHost;
-        }
+   return mReactNativeHost;
+}
 ```
 
 2. Navigate to the `android` folder within the project directory using Android Studio or any other
    platform of choice for Android development.
    Add the following maven repository to the `build.gradle` file.
 
-For Gradle version 6.7 and lower
+For Gradle version 6.7 and below
 ```Gradle
 // Add the following to your project's root build.gradle file.
 
@@ -110,7 +116,7 @@ allprojects {
 }
 ```
 
-For Gradle version 6.8 and higher
+For Gradle version 6.8 and above
 ```Gradle
 // Add the following to your settings.gradle file.
 
