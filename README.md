@@ -100,7 +100,7 @@ public ReactNativeHost getReactNativeHost(){
 
 2. Navigate to the `android` folder within the project directory using Android Studio or any other
    platform of choice for Android development.
-   Add the following maven repository to the `build.gradle` file.
+   Add the following maven repository to the `build.gradle` or `settings.gradle` file.
 
 For Gradle version 6.7 and below
 ```Gradle
