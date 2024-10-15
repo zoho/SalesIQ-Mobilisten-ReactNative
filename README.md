@@ -130,8 +130,13 @@ dependencyResolutionManagement {
     }
 }
 ```
+3. #### Proguard rules:
+If you have enabled ProGuard(minifyEnabled) R8, then please add the following rules in your `proguard-rules.pro` file in your `android` folder.
+```
+-dontwarn kotlinx.parcelize.Parcelize
+```
 
-3. Click `Sync Now` from the toolbar on the IDE.
+4. Click `Sync Now` from the toolbar on the IDE.
 
 ## Initializing Mobilisten
 
