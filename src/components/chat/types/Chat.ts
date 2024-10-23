@@ -12,36 +12,8 @@ type OpenChatPayload =
   | VisitorHistoryNotificationPayloadType["payload"]
   | EndChatDetailsNotificationPayload["payload"] | ZSIQNotificationPayloadResult;
 
-export enum ZSIQChatComponent {
-  OPERATOR_IMAGE = "OPERATOR_IMAGE",
-  RATING = "RATING",
-  FEEDBACK = "FEEDBACK",
-  SCREENSHOT = "SCREENSHOT",
-  PRE_CHAT_FORM = "PRE_CHAT_FORM",
-  VISITOR_NAME = "VISITOR_NAME",
-  EMAIL_TRANSCRIPT = "EMAIL_TRANSCRIPT",
-  FILE_SHARE = "FILE_SHARE",
-  MEDIA_CAPTURE = "MEDIA_CAPTURE",
-  END = "END",
-  END_WHEN_IN_QUEUE = "END_WHEN_IN_QUEUE",
-  END_WHEN_BOT_CONNECTED = "END_WHEN_BOT_CONNECTED",
-  END_WHEN_OPERATOR_CONNECTED = "END_WHEN_OPERATOR_CONNECTED",
-  REOPEN = "REOPEN"
-}
-
 export interface ChatTypes {
   Chat: {
-    /**
-     * This API lets you toggle the function of various chat components.
-     * 
-     * Note: The settings for the components are taken into consideration 
-     *       only if their function is enabled in portal settings.
-     * 
-     * @param ZSIQChatComponent - Type of the chat component.
-     * @param visibility - The visibility will be applied to the chat component.    
-     */
-    setVisibility: (chatComponent: (typeof ZSIQChatComponent)[keyof typeof ZSIQChatComponent], visibility: boolean) => void;
-
     /**
      * This API is used to handle URL-related actions inside Mobilisten.
      *
@@ -148,6 +120,7 @@ export interface ChatTypes {
     addListener: (
       callback: (callbackData: ChatListeners) => void
     ) => void;
+    
     Event: typeof ChatListenerEvent
   };
 }

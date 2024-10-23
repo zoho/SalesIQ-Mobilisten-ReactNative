@@ -851,66 +851,6 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
 
     }
 
-    private static @Nullable ChatComponent getChatComponent(final String componentName) {
-        ChatComponent chatComponent = null;
-        switch (componentName) {
-            case "OPERATOR_IMAGE":
-                chatComponent = ChatComponent.operatorImage;
-                break;
-            case "RATING":
-                chatComponent = ChatComponent.rating;
-                break;
-            case "FEEDBACK":
-                chatComponent = ChatComponent.feedback;
-                break;
-            case "SCREENSHOT":
-                chatComponent = ChatComponent.screenshot;
-                break;
-            case "PRE_CHAT_FORM":
-                chatComponent = ChatComponent.prechatForm;
-                break;
-            case "VISITOR_NAME":
-                chatComponent = ChatComponent.visitorName;
-                break;
-            case "EMAIL_TRANSCRIPT":
-                chatComponent = ChatComponent.emailTranscript;
-                break;
-            case "FILE_SHARE":
-                chatComponent = ChatComponent.fileShare;
-                break;
-            case "MEDIA_CAPTURE":
-                chatComponent = ChatComponent.mediaCapture;
-                break;
-            case "END":
-                chatComponent = ChatComponent.end;
-                break;
-            case "END_WHEN_IN_QUEUE":
-                chatComponent = ChatComponent.endWhenInQueue;
-                break;
-            case "END_WHEN_BOT_CONNECTED":
-                chatComponent = ChatComponent.endWhenBotConnected;
-                break;
-            case "END_WHEN_OPERATOR_CONNECTED":
-                chatComponent = ChatComponent.endWhenOperatorConnected;
-                break;
-            case "REOPEN":
-                chatComponent = ChatComponent.reopen;
-                break;
-            default:
-        }
-        return chatComponent;
-    }
-
-    @ReactMethod
-    public static void setChatComponentVisibility(final String chatComponentName, final boolean visibility) {
-        HANDLER.post(() -> {
-            ChatComponent chatComponent = getChatComponent(chatComponentName);
-            if (chatComponent != null) {
-                ZohoSalesIQ.Chat.setVisibility(chatComponent, visibility);
-            }
-        });
-    }
-
     @ReactMethod
     public void setVisitorNameVisibility(final boolean visibility) {
         HANDLER.post(() -> ZohoSalesIQ.Chat.setVisibility(ChatComponent.visitorName, visibility));

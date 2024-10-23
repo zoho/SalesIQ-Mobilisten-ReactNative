@@ -1,6 +1,5 @@
 import type { ZSIQLauncherTypes } from './../components/launcher/types/Launcher';
 import type { ZSIQKnowledgeBaseTypes } from './../components/knowledgebase/types/KnowledgeBase';
-import type { ChatTypes } from './../components/chat/types/Chat';
 import type { SalesIQChat } from '../components/chat/types/SalesIQChat';
 import type { ListenerEvent, Listeners, LauncherProps, ZSIQTabs } from './Listener';
 import ZSIQTheme from '../components/ios-theme';
@@ -159,9 +158,6 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API lets you configure the visibility status of operator's profile picture in the chat window.
-   * 
-   * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
    * @param visibility
    * @returns
    */
@@ -169,9 +165,6 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API lets you control the visibility of the feedback form which would appear right after a chat session concludes.
-   * 
-   * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
    * @param visibility
    * @returns
    */
@@ -179,9 +172,6 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API would let you control the visibility of the rating option right after a chat session concludes.
-   * 
-   * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
    * @param visibility
    * @returns
    */
@@ -390,24 +380,18 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API allows you to display the visitor's name if available as the message sender name for all outgoing messages within the chat window.
-   * 
-   * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
    * @param visible
    * @returns
    */
   setVisitorNameVisibility: (visible: boolean) => void;
 
   /**
-   * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
-   * This API allows you to enable pre-chat forms before initiating a chat.  
+   * This API allows you to enable pre-chat forms before initiating a chat.
+   * @returns
    */
   enablePreChatForms: () => void;
 
   /**
-   * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
    * This API allows you to disable pre-chat forms before initiating a chat.
    * @returns
    */
@@ -415,8 +399,7 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API allows you to enable the ability to capture and send screenshots.
-   * 
-   * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
+   *
    *
    * Note: The option to capture and send screenshots is enabled by default.
    * @returns
@@ -426,7 +409,6 @@ export interface ZSIQWrapperTypes {
   /**
    * This API allows you to disable the option to capture and send screenshots.
    *
-   * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
    *
    * Note: The option to capture and send screenshots is enabled by default.
    * @returns
@@ -713,4 +695,3 @@ export interface ZSIQWrapperTypes {
 // Sample export for using ZSIQKnowledgeBaseTypes in this file
 export type _ZSIQKnowledgeBaseTypes = ZSIQKnowledgeBaseTypes;
 export type _ZSIQLauncherTypes = ZSIQLauncherTypes;
-export type _ZSIQChatTypes = ChatTypes;

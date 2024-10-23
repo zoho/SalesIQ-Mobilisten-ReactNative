@@ -158,22 +158,6 @@ NSString *KNOWLEDGEBASE_EVENT_LISTENER = @"KNOWLEDGEBASE_EVENT_LISTENER";
 NSString *NOTIFICATION_EVENT_LISTENER = @"NOTIFICATION_EVENT_LISTENER";
 NSString *LAUNCHER_EVENT_LISTENER = @"LAUNCHER_EVENT_LISTENER";
 
-//Chat Component Visibility
-NSString *OPERATOR_IMAGE = @"OPERATOR_IMAGE";
-NSString *RATING = @"RATING";
-NSString *FEEDBACK = @"FEEDBACK";
-NSString *SCREENSHOT = @"SCREENSHOT";
-NSString *PRE_CHAT_FORM = @"PRE_CHAT_FORM";
-NSString *VISITOR_NAME = @"VISITOR_NAME";
-NSString *EMAIL_TRANSCRIPT = @"EMAIL_TRANSCRIPT";
-NSString *FILE_SHARE = @"FILE_SHARE";
-NSString *MEDIA_CAPTURE = @"MEDIA_CAPTURE";
-NSString *END = @"END";
-NSString *END_WHEN_IN_QUEUE = @"END_WHEN_IN_QUEUE";
-NSString *END_WHEN_BOT_CONNECTED = @"END_WHEN_BOT_CONNECTED";
-NSString *END_WHEN_OPERATOR_CONNECTED = @"END_WHEN_OPERATOR_CONNECTED";
-NSString *REOPEN = @"REOPEN";
-
 - (NSArray<NSString *> *)supportedEvents {
     return @[OPERATORS_OFFLINE,
              OPERATORS_ONLINE,
@@ -220,7 +204,7 @@ NSString *REOPEN = @"REOPEN";
              EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY,
              ACTION_SOURCE_APP,
              ACTION_SOURCE_SDK,
-             EVENT_NOTIFICATION_CLICKED,
+             EVENT_NOTIFICATION_CLICKED, 
              CHAT_EVENT_LISTENER,
              KNOWLEDGEBASE_EVENT_LISTENER,
              LAUNCHER_EVENT_LISTENER,
@@ -1581,49 +1565,6 @@ RCT_EXPORT_METHOD(clearLogsForiOS){
 
 RCT_EXPORT_METHOD(shouldOpenUrl : (BOOL)shouldOpen){
     handleURI = shouldOpen;
-}
-
-RCT_EXPORT_METHOD(setChatComponentVisibility : (NSString*) chatComponent visibility:(BOOL)visibility) {
-    ChatComponent component;
-    BOOL validType = YES;
-    
-    if([chatComponent isEqual: OPERATOR_IMAGE]) {
-        component = ChatComponentAttenderImageInChat;
-    } else if ([chatComponent  isEqual: RATING]) {
-        component = ChatComponentRating;
-    } else if ([chatComponent  isEqual: FEEDBACK]) {
-        component = ChatComponentFeedback;
-    } else if ([chatComponent  isEqual: SCREENSHOT]) {
-        component = ChatComponentScreenshotOption;
-    } else if ([chatComponent  isEqual: PRE_CHAT_FORM]) {
-        component = ChatComponentPreChatForm;
-    } else if ([chatComponent  isEqual: VISITOR_NAME]) {
-        component = ChatComponentVisitorName;
-    } else if ([chatComponent  isEqual: EMAIL_TRANSCRIPT]) {
-        component = ChatComponentEmailTranscript;
-    } else if ([chatComponent  isEqual: FILE_SHARE]) {
-        component = ChatComponentFileSharing;
-    } else if ([chatComponent  isEqual: MEDIA_CAPTURE]) {
-        component = ChatComponentMediaCapture;
-    } else if ([chatComponent  isEqual: END]) {
-        component = ChatComponentEnd;
-    } else if ([chatComponent  isEqual: END_WHEN_IN_QUEUE]) {
-        component = ChatComponentEndWhenInQueue;
-    } else if ([chatComponent  isEqual: END_WHEN_BOT_CONNECTED]) {
-        component = ChatComponentEndWhenBotConnected;
-    } else if ([chatComponent  isEqual: END_WHEN_OPERATOR_CONNECTED]) {
-        component = ChatComponentEndWhenOperatorConnected;
-    } else if ([chatComponent  isEqual: REOPEN]) {
-        component = ChatComponentReopen;
-    } else {
-        validType = NO;
-    }
-    
-    if (validType) {
-        [[ZohoSalesIQ Chat] setVisibility: component visible:visibility];
-    } else {
-        NSLog(@"Invalid component type: %@", chatComponent);
-    }
 }
 
 RCT_EXPORT_METHOD(setNotificationIconForAndroid:(NSString *)icon) {
