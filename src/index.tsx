@@ -1,5 +1,7 @@
 export { default as SIQTheme } from './components/ios-theme';
 export { ZSIQWrapper as ZohoSalesIQ } from "./components";
+export { ZSIQChatComponent } from './components/chat/types/Chat';
+
 // {/**
 
 // import {
