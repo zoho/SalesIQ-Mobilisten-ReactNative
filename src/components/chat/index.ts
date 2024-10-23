@@ -4,6 +4,9 @@ import {ChatListenerEvent} from './types/Listener';
 
 export const ZSIQChats = {
   Chat: {
+    setVisibility: function (chatComponent, visibility) {
+      RNZohoSalesIQ.setChatComponentVisibility(chatComponent, visibility);
+    },
     shouldOpenUrl: function (value) {
       RNZohoSalesIQ.shouldOpenUrl(value);
     },

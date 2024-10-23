@@ -1,4 +1,4 @@
-[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-10.0.2-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
+[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-10.0.3-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
 
 # React Native module for SalesIQ Mobilisten SDK
 
@@ -11,13 +11,13 @@ Connect with customers at every step of their journey. Give them the best in-app
 
 **iOS**: Minimum deployment target should be set to iOS 12.
 
-**Android**: 
+**Android**:
 Ensure that your project meets the following requirements:
 
-   - Minimum Android Version: Android 5.0 (Lollipop) (API Level 21)
-   - Compile SDK Version: 34 (Android 14)
-   - Required Permissions:
-      - android.permission.INTERNET (Required for network operations)   
+- Minimum Android Version: Android 5.0 (Lollipop) (API Level 21)
+- Compile SDK Version: 34 (Android 14)
+- Required Permissions:
+    - android.permission.INTERNET (Required for network operations)
 
 ## Installation
 Follow the below steps given below to complete installation of **Mobilisten** in your React-Native app.
@@ -83,18 +83,18 @@ implementation project(':react-native-zohosalesiq-mobilisten')
 
 ```java
 private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
-   // ...
-   @Override
-   protected List<ReactPackage> getPackages(){
-         // Add new RNZohoSalesIQPackage() into the React packages list like below
-         return new ArrayList<>(Arrays.<ReactPackage>asList(new RNZohoSalesIQPackage()));
-   }
-   // ...
+    // ...
+    @Override
+    protected List<ReactPackage> getPackages() {
+        // Add new RNZohoSalesIQPackage() into the React packages list like below
+        return new ArrayList<>(Arrays.<ReactPackage>asList(new RNZohoSalesIQPackage()));
+    }
+    // ...
 };
 
 @Override
 public ReactNativeHost getReactNativeHost(){
-   return mReactNativeHost;
+    return mReactNativeHost;
 }
 ```
 
@@ -130,6 +130,7 @@ dependencyResolutionManagement {
     }
 }
 ```
+
 3. #### Proguard rules:
 If you have enabled ProGuard(minifyEnabled) R8, then please add the following rules in your `proguard-rules.pro` file in your `android` folder.
 ```
@@ -162,7 +163,7 @@ ZohoSalesIQ.initWithCallback((appKey, accessKey, success) => {
 });
 ```
 
-3. If you want to show the default chat launcher, use the [**ZohoSalesIQ.Launcher.show()**](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-launcher-show.html) API (Optional).
+5. If you want to show the default chat launcher, use the [**ZohoSalesIQ.Launcher.show()**](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-launcher-show.html) API (Optional).
 
 ## API Documentation
 You can find the list of all APIs and their documentation [here](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-add-event-listener.html) under the **API Reference** section.
