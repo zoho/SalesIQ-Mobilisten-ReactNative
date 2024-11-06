@@ -103,6 +103,8 @@ public ReactNativeHost getReactNativeHost(){
    Add the following maven repository to the `build.gradle` or `settings.gradle` file.
 
 For Gradle version 6.7 and below
+
+Note: Make sure the above code block isn't added to your module's `build.gradle` file.
 ```Gradle
 // Add the following to your project's root build.gradle file.
 
