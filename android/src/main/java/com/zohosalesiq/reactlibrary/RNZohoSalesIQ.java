@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Base64;
 
 import androidx.annotation.NonNull;
@@ -25,6 +26,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableNativeMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
@@ -46,6 +48,7 @@ import com.zoho.livechat.android.SIQVisitorLocation;
 import com.zoho.livechat.android.SalesIQCustomAction;
 import com.zoho.livechat.android.VisitorChat;
 import com.zoho.livechat.android.ZohoLiveChat;
+import com.zoho.livechat.android.config.DeviceConfig;
 import com.zoho.livechat.android.constants.ConversationType;
 import com.zoho.livechat.android.constants.SalesIQConstants;
 import com.zoho.livechat.android.exception.InvalidEmailException;
@@ -63,9 +66,14 @@ import com.zoho.livechat.android.listeners.UnRegisterListener;
 import com.zoho.livechat.android.models.SalesIQArticle;
 import com.zoho.livechat.android.models.SalesIQArticleCategory;
 import com.zoho.livechat.android.modules.common.DataModule;
+import com.zoho.livechat.android.modules.common.data.local.MobilistenEncryptedSharedPreferences;
+import com.zoho.livechat.android.modules.common.domain.repositories.entities.DebugInfoData;
 import com.zoho.livechat.android.modules.common.ui.LauncherUtil;
+import com.zoho.livechat.android.modules.common.ui.LoggerUtil;
 import com.zoho.livechat.android.modules.common.ui.lifecycle.SalesIQActivitiesManager;
 import com.zoho.livechat.android.modules.common.ui.result.entities.SalesIQError;
+import com.zoho.livechat.android.modules.commonpreferences.data.local.entities.CommonPreferencesLocalDataSource;
+import com.zoho.livechat.android.modules.jwt.domain.entities.SalesIQAuth;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.Resource;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceCategory;
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceDepartment;
@@ -154,6 +162,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     private static final int LAUNCHER_MODE_FLOATING = 2;
 
     private static final String EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY = "EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY";    // No I18N
+    private static final String EVENT_VISITOR_REGISTRATION_FAILURE = "EVENT_VISITOR_REGISTRATION_FAILURE";    // No I18N
 
     private static final String LAUNCHER_VISIBILITY_MODE_ALWAYS = "LAUNCHER_VISIBILITY_MODE_ALWAYS";    // No I18N
     private static final String LAUNCHER_VISIBILITY_MODE_NEVER = "LAUNCHER_VISIBILITY_MODE_NEVER";  // No I18N
@@ -265,6 +274,7 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
         constants.put("LAUNCHER_MODE_STATIC", LAUNCHER_MODE_STATIC);         // No I18N
         constants.put("LAUNCHER_MODE_FLOATING", LAUNCHER_MODE_FLOATING);         // No I18N
         constants.put("EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY", EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY);         // No I18N
+        constants.put("EVENT_VISITOR_REGISTRATION_FAILURE", EVENT_VISITOR_REGISTRATION_FAILURE);         // No I18N
         constants.put("LAUNCHER_VISIBILITY_MODE_ALWAYS", LAUNCHER_VISIBILITY_MODE_ALWAYS);         // No I18N
         constants.put("LAUNCHER_VISIBILITY_MODE_NEVER", LAUNCHER_VISIBILITY_MODE_NEVER);         // No I18N
         constants.put("LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT", LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT);         // No I18N
@@ -1707,6 +1717,18 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
             eventEmitter(EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY, visible);
         }
 
+        @Nullable
+        @Override
+        public SalesIQAuth onVisitorRegistrationFailed(@NonNull SalesIQError salesIQError) {
+            WritableMap eventMap = new WritableNativeMap();
+            eventMap.putInt("code", salesIQError.getCode());    // No I18N
+            if (salesIQError.getMessage() != null) {
+                eventMap.putString("message", salesIQError.getMessage());   // No I18N
+            }
+            eventEmitter(ZSIQ_EVENT_LISTENER, getEventEmitterObjectWithMap(EVENT_VISITOR_REGISTRATION_FAILURE, eventMap));
+            return null;
+        }
+
         @Override
         public void handleChatOpened(VisitorChat visitorChat) {
             WritableMap visitorMap = getChatMapObject(visitorChat);
@@ -1853,8 +1875,61 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
                         }
                     }
                     break;
+                case EVENT_VISITOR_REGISTRATION_FAILURE:
+                    if (objects.size() > 0) {
+                        Object auth = objects.getMap(0);
+                        if (auth instanceof ReadableNativeMap) {
+                            handleVisitorRegistrationFailure((ReadableNativeMap) auth);
+                        }
+                    }
+                    break;
             }
         });
+    }
+
+    private static void handleVisitorRegistrationFailure(ReadableNativeMap map) {
+        if (map.hasKey("type")) {
+            String type = map.getString("type");
+            String userId = map.getString("userId");
+            if ("registered_visitor".equals(type)) {
+                if (userId != null && !TextUtils.isEmpty(userId)) {
+                    LiveChatUtil.log("MobilistenEncryptedSharedPreferences- re-registering visitor");   // No I18N
+                    LiveChatUtil.registerVisitor(userId, new RegisterListener() {
+                        @Override
+                        public void onSuccess() {
+                            LoggerUtil.logDebugInfo(new DebugInfoData.VisitorFailureReRegistrationAcknowledged(userId));
+                            LiveChatUtil.log("MobilistenEncryptedSharedPreferences- re-registering visitor success");   // No I18N
+                            if (DataModule.getSharedPreferences().contains(MobilistenEncryptedSharedPreferences.ARE_NEW_ENCRYPTED_KEYS_PRESENT_IN_DEFAULT_PREFERENCES) && DataModule.getSharedPreferences().getBoolean(MobilistenEncryptedSharedPreferences.ARE_NEW_ENCRYPTED_KEYS_PRESENT_IN_DEFAULT_PREFERENCES, true)) {
+                                if (DeviceConfig.getPreferences() != null) {
+                                    DeviceConfig.getPreferences().edit().putBoolean(CommonPreferencesLocalDataSource.SharedPreferenceKeys.IsEncryptedSharedPreferenceFailureAcknowledged, true).commit();
+                                }
+                            } else {
+                                DataModule.getSharedPreferences().edit().remove(CommonPreferencesLocalDataSource.SharedPreferenceKeys.IsEncryptedSharedPreferenceFailureAcknowledged).commit();
+                            }
+                        }
+                        @Override
+                        public void onFailure(int code, String message) {
+                        }
+                    });
+                }
+            } else if ("guest".equals(type)) {
+                LiveChatUtil.log("MobilistenEncryptedSharedPreferences- Guest user acknowledged");
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("avuid", LiveChatUtil.getAVUID());
+                } catch (Exception e) {
+                    LiveChatUtil.log(e);
+                }
+                LoggerUtil.logDebugInfo(new DebugInfoData.VisitorFailureGuestAcknowledged(jsonObject.toString()));
+                if (DataModule.getSharedPreferences().contains(MobilistenEncryptedSharedPreferences.ARE_NEW_ENCRYPTED_KEYS_PRESENT_IN_DEFAULT_PREFERENCES) && DataModule.getSharedPreferences().getBoolean(MobilistenEncryptedSharedPreferences.ARE_NEW_ENCRYPTED_KEYS_PRESENT_IN_DEFAULT_PREFERENCES, true)) {
+                    if (DeviceConfig.getPreferences() != null) {
+                        DeviceConfig.getPreferences().edit().putBoolean(CommonPreferencesLocalDataSource.SharedPreferenceKeys.IsEncryptedSharedPreferenceFailureAcknowledged, true).commit();
+                    }
+                } else {
+                    DataModule.getSharedPreferences().edit().remove(CommonPreferencesLocalDataSource.SharedPreferenceKeys.IsEncryptedSharedPreferenceFailureAcknowledged).commit();
+                }
+            }
+        }
     }
 
     @ReactMethod

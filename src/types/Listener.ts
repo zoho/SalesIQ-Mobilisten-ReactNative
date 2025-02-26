@@ -28,6 +28,12 @@ export enum ListenerEvent {
   VISITOR_IPBLOCKED = 'EVENT_VISITOR_IPBLOCKED',
 
   /**
+   * Invoked when the visitor's registration is failed due to data corruption
+   * or any other failures.
+   */
+  VISITOR_REGISTRATION_FAILURE = 'EVENT_VISITOR_REGISTRATION_FAILURE',
+
+  /**
    * This event allows you to open a URL when invoked. When using this event followed by a URL, this will open the mentioned URL.
    */
   OPEN_URL = 'EVENT_OPEN_URL',
@@ -35,11 +41,11 @@ export enum ListenerEvent {
   /**
    * This event will complete the chat action as a success or failure, with or without a message
    */
-  COMPLETE_CHAT_ACTION = 'EVENT_COMPLETE_CHAT_ACTION',
+  COMPLETE_CHAT_ACTION = 'EVENT_COMPLETE_CHAT_ACTION'
 }
 
 export type Listeners = {
-  event: ListenerEvent.SUPPORT_OPENED | ListenerEvent.SUPPORT_CLOSED | ListenerEvent.OPERATORS_ONLINE | ListenerEvent.OPERATORS_OFFLINE | ListenerEvent.VISITOR_IPBLOCKED,
+  event: ListenerEvent.SUPPORT_OPENED | ListenerEvent.SUPPORT_CLOSED | ListenerEvent.OPERATORS_ONLINE | ListenerEvent.OPERATORS_OFFLINE | ListenerEvent.VISITOR_REGISTRATION_FAILURE,
   body?: null
 }
 

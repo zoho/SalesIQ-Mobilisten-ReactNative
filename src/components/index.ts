@@ -33,7 +33,7 @@ export const ZSIQWrapper = {
   setCustomFont: function (font) {
     RNZohoSalesIQ.setCustomFont(font);
   },
-  present: function (tab = null, id = null, callback = () => {}) {
+  present: function (tab = null, id = null, callback = () => { }) {
     RNZohoSalesIQ.present(tab, id, callback);
   },
   setChatTitle: function (title) {
@@ -123,7 +123,7 @@ export const ZSIQWrapper = {
   fetchAttenderImage: function (atttenderId, fetchDefaultImage, callback) {
     RNZohoSalesIQ.fetchAttenderImage(atttenderId, fetchDefaultImage, callback);
   },
-  registerVisitor: function (visitorId, callback = () => {}) {
+  registerVisitor: function (visitorId, callback = () => { }) {
     RNZohoSalesIQ.registerVisitor(visitorId, callback);
   },
   setThemeColorforiOS: function (colorCode) {
@@ -150,7 +150,7 @@ export const ZSIQWrapper = {
   disableInAppNotification: function () {
     RNZohoSalesIQ.disableInAppNotification();
   },
-  unregisterVisitor: function (callback = () => {}) {
+  unregisterVisitor: function (callback = () => { }) {
     RNZohoSalesIQ.unregisterVisitor(callback);
   },
   setPageTitle: function (title) {

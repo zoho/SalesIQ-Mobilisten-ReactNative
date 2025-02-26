@@ -682,7 +682,7 @@ export interface ZSIQWrapperTypes {
    * @param rest
    * @returns
    */
-  sendEvent: (eventName: ListenerEvent.OPEN_URL | ListenerEvent.COMPLETE_CHAT_ACTION, ...rest: any[]) => void;
+  sendEvent: (eventName: ListenerEvent.OPEN_URL | ListenerEvent.COMPLETE_CHAT_ACTION | ListenerEvent.VISITOR_REGISTRATION_FAILURE, ...rest: any[]) => void;
 
   /**
    * This API allows you to change the order of the tabs in the SalesIQ SDK inside your mobile app.
