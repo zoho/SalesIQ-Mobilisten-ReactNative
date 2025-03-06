@@ -26,7 +26,7 @@
     "react-native-simple-toast": "^3.0.1",
     "react-native-vector-icons": "^10.0.3",
     "react-native-webview": "^13.6.4",
-    "react-native-zohosalesiq-mobilisten": "^10.0.4"
+    "react-native-zohosalesiq-mobilisten": "^10.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

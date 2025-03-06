@@ -245,6 +245,10 @@ export const ZSIQWrapper = {
     RNZohoSalesIQ.dismissUI();
   },
 
+  updateConfiguration: function (configuration, value) {
+    RNZohoSalesIQ.updateConfiguration(configuration, value);
+  },
+
   ...ZSIQNotification,
 
   ...ZSIQLogger,

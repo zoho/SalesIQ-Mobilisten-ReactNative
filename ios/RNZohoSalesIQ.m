@@ -174,6 +174,13 @@ NSString *END_WHEN_BOT_CONNECTED = @"END_WHEN_BOT_CONNECTED";
 NSString *END_WHEN_OPERATOR_CONNECTED = @"END_WHEN_OPERATOR_CONNECTED";
 NSString *REOPEN = @"REOPEN";
 
+//MobilistenFlag
+NSString *NEUTRAL_RATING_DISABLED = @"NeutralRatingDisabled";
+NSString *TRACK_STORAGE_SPACE = @"TrackStorageSpace";
+NSString *TRACK_APP_INSTALLED_TIME = @"TrackAppInstalledTime";
+NSString *TRACK_APP_UPDATED_TIME = @"TrackAppUpdatedTime";
+NSString *SHOW_END_SESSION_IN_INAPP_NOTIFICATION = @"ShowEndSessionInInAppNotification";
+
 - (NSArray<NSString *> *)supportedEvents {
     return @[OPERATORS_OFFLINE,
              OPERATORS_ONLINE,
@@ -1581,6 +1588,31 @@ RCT_EXPORT_METHOD(clearLogsForiOS){
 
 RCT_EXPORT_METHOD(shouldOpenUrl : (BOOL)shouldOpen){
     handleURI = shouldOpen;
+}
+
+RCT_EXPORT_METHOD(updateConfiguration : (NSString*) key value:(BOOL)value) {
+    MobilistenFlag flag;
+    BOOL validType = YES;
+    
+    if([key isEqual: NEUTRAL_RATING_DISABLED]) {
+        flag = MobilistenFlagNeutralRatingDisabled;
+    } else if ([key  isEqual: TRACK_STORAGE_SPACE]) {
+        flag = MobilistenFlagTrackStorageSpace;
+    } else if ([key  isEqual: TRACK_APP_UPDATED_TIME]) {
+        flag = MobilistenFlagTrackAppUpdatedTime;
+    } else if ([key  isEqual: TRACK_APP_INSTALLED_TIME]) {
+        flag = MobilistenFlagTrackAppInstalledTime;
+    } else if ([key  isEqual: SHOW_END_SESSION_IN_INAPP_NOTIFICATION]) {
+        flag = MobilistenFlagShowEndSessionInAppNotification;
+    } else {
+        validType = NO;
+    }
+    
+    if (validType) {
+        [ZohoSalesIQ updateConfigurationFlag: flag value: value];
+    } else {
+        NSLog(@"Invalid Flag type: %@", key);
+    }
 }
 
 RCT_EXPORT_METHOD(setChatComponentVisibility : (NSString*) chatComponent visibility:(BOOL)visibility) {

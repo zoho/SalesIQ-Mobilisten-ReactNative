@@ -58,6 +58,8 @@ export type CallbackError = {
   message?: string;
 };
 
+export type Configuration = 'NeutralRatingDisabled' | 'TrackStorageSpace' | 'TrackAppInstalledTime' | 'TrackAppUpdatedTime' | 'ShowEndSessionInInAppNotification'
+
 type VisitorLocationType = {
   latitude?: number;
   longitude?: number;
@@ -706,6 +708,14 @@ export interface ZSIQWrapperTypes {
    * @returns
    */
   addListener: (callback: (callbackData: Listeners) => void) => void;
+
+  /**
+   * 
+   * @param configuration
+   * @param value 
+   * @returns 
+   */
+  updateConfiguration: (configuration: Configuration, value: Boolean) => void;
 
   Event: typeof ListenerEvent;
 }

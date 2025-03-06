@@ -1960,6 +1960,13 @@ public class RNZohoSalesIQ extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void updateConfiguration(final String key, final Boolean value) {
+        if ("NeutralRatingDisabled".equals(key)) {
+            System.setProperty("binaryRating", value.toString());
+        }
+    }
+
+    @ReactMethod
     void setNotificationIconForAndroid(final String drawableName) {
         int resourceId = getDrawableResourceId(drawableName);
         if (resourceId > 0) {
