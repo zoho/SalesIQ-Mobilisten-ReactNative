@@ -1,4 +1,4 @@
-[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-10.0.5-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
+[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-11.0.0-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
 
 # React Native module for SalesIQ Mobilisten SDK
 
@@ -50,7 +50,7 @@ For the RNZohoSalesIQ version below `10.0.0`:
 ```     
 3. Run `pod install` after saving the changes made to the Podfile.
 
-**Note:** If you're updating from the SDK versions below `10.0.0` to above, remove the above path in your `Podfile` and run the `pod install` in the iOS folder.
+> **Note:** If you're updating from the SDK versions below `10.0.0` to above, remove the above path in your `Podfile` and run the `pod install` in the iOS folder.
 
 #### Installation steps for Android
 
@@ -138,6 +138,41 @@ If you have enabled ProGuard(minifyEnabled) R8, then please add the following ru
 ```
 
 4. Click `Sync Now` from the toolbar on the IDE.
+
+## New Architecture support: (RN >= 0.73)
+
+To take advantage of the new architecture
+
+1. **iOS**
+- Open the `ios/Podfile`  file
+Add `ENV['RCT_NEW_ARCH_ENABLED'] = '1'` in the main scope of your `Podfile`
+```diff
+# Resolve react_native_pods.rb with node to allow for hoisting
++ ENV['RCT_NEW_ARCH_ENABLED'] = '1'
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+```
+
+- Navigate to the `ios` folder under the project directory and run `pod install`.
+
+2. **Android**
+- Open the `android/gradle.properties` file.
+Toggle the `newArchEnabled` flag from `false` to `true`.
+
+```diff
+# Use this property to enable support to the new architecture.
+# This will allow you to use TurboModules and the Fabric render in
+# your application. You should enable this flag either if you want
+# to write custom TurboModules/Fabric components OR use libraries that
+# are providing them.
++ newArchEnabled=true
+- newArchEnabled=false
+```   
+> **Note:** While switching between old architecture and new architecture remove the node_modules folder and then run your project.
+
 
 ## Initializing Mobilisten
 

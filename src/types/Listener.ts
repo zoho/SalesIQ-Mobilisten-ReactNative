@@ -45,7 +45,7 @@ export enum ListenerEvent {
 }
 
 export type Listeners = {
-  event: ListenerEvent.SUPPORT_OPENED | ListenerEvent.SUPPORT_CLOSED | ListenerEvent.OPERATORS_ONLINE | ListenerEvent.OPERATORS_OFFLINE | ListenerEvent.VISITOR_REGISTRATION_FAILURE,
+  event: ListenerEvent.SUPPORT_OPENED | ListenerEvent.SUPPORT_CLOSED | ListenerEvent.OPERATORS_ONLINE | ListenerEvent.OPERATORS_OFFLINE | ListenerEvent.VISITOR_REGISTRATION_FAILURE | ListenerEvent.VISITOR_IPBLOCKED,
   body?: null
 }
 

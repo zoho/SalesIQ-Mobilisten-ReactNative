@@ -1,6 +1,6 @@
 {
   "name": "react-native-zohosalesiq-mobilisten",
-  "version": "10.0.5",
+  "version": "11.0.0",
   "description": "A React Native module for the ZohoSalesIQ Mobilisten SDK",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -9,6 +9,7 @@
     "lib",
     "android",
     "ios",
+    "src",
     "cpp",
     "*.podspec",
     "!ios/build",
@@ -152,5 +153,10 @@
         }
       ]
     ]
+  },
+  "codegenConfig": {
+    "name": "RNZohoSalesIQSpec",
+    "type": "modules",
+    "jsSrcsDir": "src"
   }
 }

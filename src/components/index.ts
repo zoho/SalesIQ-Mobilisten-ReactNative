@@ -1,7 +1,7 @@
 import type {
   ZSIQWrapperTypes,
 } from '../types/ZSIQWrapperTypes';
-import { Dimensions, Platform, NativeEventEmitter } from 'react-native'; //No I18N
+import { Dimensions, Platform } from 'react-native'; //No I18N
 import RNZohoSalesIQ, { RNZohoSalesIQEmitter } from '../commons/utils';
 import {
   ListenerEvent,
@@ -20,15 +20,15 @@ import type { ZSIQLauncherTypes } from './launcher/types/Launcher';
 import type { ChatTypes } from './chat/types/Chat';
 import { ZSIQLogger } from './logger';
 
-const emitter = new NativeEventEmitter(RNZohoSalesIQ);
+// const emitter = new NativeEventEmitter(RNZohoSalesIQ);
 
 export const ZSIQWrapper = {
   ...ZSIQConstants,
   init: function (appKey, accessKey) {
-    RNZohoSalesIQ.init(appKey, accessKey);
+    RNZohoSalesIQ.init(appKey, accessKey)
   },
   initWithCallback: function (appKey, accessKey, callback) {
-    RNZohoSalesIQ.initWithCallback(appKey, accessKey, callback);
+    RNZohoSalesIQ.initWithCallback(appKey, accessKey, callback)
   },
   setCustomFont: function (font) {
     RNZohoSalesIQ.setCustomFont(font);
@@ -186,8 +186,8 @@ export const ZSIQWrapper = {
     RNZohoSalesIQ.setVisitorLocation(location);
   },
   addEventListener: function (type, listener) {
-    RNZohoSalesIQ.updateListener(type);
-    emitter.addListener(type, listener);
+    RNZohoSalesIQ.updateListener(type);    
+    RNZohoSalesIQEmitter.addListener(type, listener);
   },
   addListener: function (callback) {
     RNZohoSalesIQEmitter.addListener("ZSIQ_EVENT_LISTENER", callback);

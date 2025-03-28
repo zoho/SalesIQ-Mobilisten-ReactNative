@@ -17,7 +17,6 @@ typedef void (^RNZohoSalesIQRemoteNotificationCallback)(UIBackgroundFetchResult 
 + (void)processNotificationWithInfo: (NSDictionary *) info;
 + (BOOL)isMobilistenNotification:(NSDictionary *)info;
 + (void)handleNotificationAction: (NSDictionary *) info response:(NSString *) response;
-+ (void)didReceiveNotification:(NSDictionary *)notification fetchCompletionHandler:(RNZohoSalesIQRemoteNotificationCallback)completionHandler;
 
 @end
 

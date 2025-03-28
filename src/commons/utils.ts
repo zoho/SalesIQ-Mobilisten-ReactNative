@@ -5,8 +5,15 @@ const LINKING_ERROR =
   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
   `- You rebuilt the app after following installation steps in our documentation(${"https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html"}).`
 
-const RNZohoSalesIQ = NativeModules.RNZohoSalesIQ
-  ? NativeModules.RNZohoSalesIQ
+// @ts-expect-error
+const isTurboModuleEnabled = global.__turboModuleProxy != null;
+
+const RNZSIQModule = isTurboModuleEnabled
+  ? require('../NativeRNZohoSalesIQ').default
+  : NativeModules.RNZohoSalesIQMobilisten;
+
+const RNZohoSalesIQ = RNZSIQModule
+  ? RNZSIQModule
   : new Proxy(
       {},
       {

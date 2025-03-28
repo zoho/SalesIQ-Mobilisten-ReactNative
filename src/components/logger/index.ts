@@ -19,7 +19,7 @@ export const ZSIQLogger = {
     clearLogsForiOS: function () {
       RNZohoSalesIQ.clearLogsForiOS();
     },
-    writeLogForiOS: function (log, level, callback) {
+    writeLogForiOS: function (log, level, callback = () => {}) {
       RNZohoSalesIQ.writeLogForiOS(log, level, callback);
     },
   },
