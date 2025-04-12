@@ -1114,14 +1114,14 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             ) { result: SalesIQResult<Unit> ->
                 if (callback != null) {
                     if (result.isSuccess) {
-                        callback.invoke(null, result.data)
+                        callback.invoke(null, true)
                     } else {
                         val error = result.error
                         callback.invoke(
                             getErrorMap(
                                 error!!.code,
                                 error.message
-                            ), null
+                            ), false
                         )
                     }
                 }

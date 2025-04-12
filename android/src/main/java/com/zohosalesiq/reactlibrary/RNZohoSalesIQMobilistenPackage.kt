@@ -26,7 +26,8 @@ class RNZohoSalesIQMobilistenPackage : TurboReactPackage() {
         false,  // canOverrideExistingModule
         false,  // needsEagerInit
         // hasConstants
-        false,  // isCxxModule
+        false,
+        false, // isCxxModule
         isTurboModule // isTurboModule
       )
       moduleInfos
