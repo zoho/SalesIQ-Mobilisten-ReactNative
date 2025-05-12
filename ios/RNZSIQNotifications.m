@@ -6,25 +6,28 @@
 //
 
 #import "RNZSIQNotifications.h"
-#import "RNZohoSalesIQ-Swift.h"
 
 @implementation RNZSIQNotifications
 
 + (void)enablePush:(NSString *)token isTestDevice:(BOOL)isTestDevice isProductionMode:(BOOL)isProductionMode {
-    [RNZSIQNotificationService enablePush:token isTestDevice:isTestDevice isProductionMode:isProductionMode
-    ];
+
+    if(isProductionMode){
+        [ZohoSalesIQ enablePush:token isTestDevice:isTestDevice mode:APNSModeProduction];
+    }else{
+        [ZohoSalesIQ enablePush:token isTestDevice:isTestDevice mode:APNSModeSandbox];
+    }
 }
 
 + (void)processNotificationWithInfo:(NSDictionary *)info {
-    [RNZSIQNotificationService processNotificationWithInfo:info];
+    [ZohoSalesIQ processNotificationWithInfo:info];
 }
 
 + (BOOL)isMobilistenNotification:(NSDictionary *)info {
-    return [RNZSIQNotificationService isMobilistenNotification:info];
+    return [ZohoSalesIQ isMobilistenNotification:info];
 }
 
 + (void)handleNotificationAction:(NSDictionary *)info response:(NSString *)response {
-    [RNZSIQNotificationService handleNotificationAction:info response:response];
+    [ZohoSalesIQ handleNotificationAction:info response:response];
 }
 
 @end

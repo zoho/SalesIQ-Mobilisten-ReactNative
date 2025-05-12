@@ -1697,10 +1697,11 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     @objc(setThemeColorforiOS:)
     func setThemeColorforiOS(_ colorCode: String) {
         RNZohoSalesIQMobilisten.mainThread {
-            let scanner = Scanner(string: colorCode)
-            scanner.currentIndex = colorCode.index(after: colorCode.startIndex)
+            let hexString = String(colorCode.dropFirst()) // Remove leading #
+            let scanner = Scanner(string: hexString)
             var rgbValue: UInt64 = 0
             scanner.scanHexInt64(&rgbValue)
+            
             let themeColor = UIColor(
                 red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
                 green: CGFloat((rgbValue & 0xFF00) >> 8) / 255.0,
