@@ -97,6 +97,7 @@ public ReactNativeHost getReactNativeHost(){
     return mReactNativeHost;
 }
 ```
+#### Android: Maven configurations
 
 2. Navigate to the `android` folder within the project directory using Android Studio or any other
    platform of choice for Android development.
