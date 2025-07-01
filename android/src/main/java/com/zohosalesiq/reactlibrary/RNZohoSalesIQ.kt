@@ -63,7 +63,7 @@ import com.zoho.livechat.android.models.SalesIQArticleCategory
 import com.zoho.livechat.android.modules.common.DataModule.gson
 import com.zoho.livechat.android.modules.common.DataModule.sharedPreferences
 import com.zoho.livechat.android.modules.common.data.local.MobilistenEncryptedSharedPreferences
-import com.zoho.livechat.android.modules.common.domain.repositories.entities.DebugInfoData
+import com.zoho.livechat.android.modules.common.domain.entities.DebugInfoData
 import com.zoho.livechat.android.modules.common.ui.LauncherUtil.isAllowedToShow
 import com.zoho.livechat.android.modules.common.ui.LauncherUtil.refreshLauncher
 import com.zoho.livechat.android.modules.common.ui.LauncherUtil.showChatBubble
@@ -71,7 +71,7 @@ import com.zoho.livechat.android.modules.common.ui.LoggerUtil.logDebugInfo
 import com.zoho.livechat.android.modules.common.ui.lifecycle.SalesIQActivitiesManager
 import com.zoho.livechat.android.modules.common.ui.result.entities.SalesIQError
 import com.zoho.livechat.android.modules.common.ui.result.entities.SalesIQResult
-import com.zoho.livechat.android.modules.commonpreferences.data.local.entities.CommonPreferencesLocalDataSource
+import com.zoho.livechat.android.modules.commonpreferences.data.local.CommonPreferencesLocalDataSource
 import com.zoho.livechat.android.modules.jwt.domain.entities.SalesIQAuth
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.Resource
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceCategory
@@ -106,6 +106,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
     internal enum class Tab(val value: String) {
         CONVERSATIONS("TAB_CONVERSATIONS"),
+
         @Deprecated("")
         FAQ("TAB_FAQ"),
         KNOWLEDGE_BASE("TAB_KNOWLEDGE_BASE")
@@ -248,7 +249,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     fun fetchAttenderImage(
         attenderId: String,
         defaultImage: Boolean,
-        imageCallback: Callback
+        imageCallback: Callback,
     ) {
         ZohoSalesIQ.Chat.fetchAttenderImage(
             attenderId,
@@ -305,7 +306,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     @ReactMethod
     fun getChatsWithFilter(
         filter: String,
-        listCallback: Callback
+        listCallback: Callback,
     ) {
         HANDLER.post {
             try {
@@ -402,7 +403,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     @ReactMethod
     fun getArticlesWithCategoryID(
         categoryId: String,
-        articlesCallback: Callback
+        articlesCallback: Callback,
     ) {
         HANDLER.post {
             ZohoSalesIQ.KnowledgeBase.getResources(
@@ -466,7 +467,8 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     @ReactMethod
     fun openArticle(id: String?, articlesCallback: Callback) {
         HANDLER.post {
-            ZohoSalesIQ.KnowledgeBase.open(ZohoSalesIQ.ResourceType.Articles, id,
+            ZohoSalesIQ.KnowledgeBase.open(
+                ZohoSalesIQ.ResourceType.Articles, id,
                 object : OpenResourceListener {
                     override fun onSuccess() {
                         articlesCallback.invoke("null")
@@ -501,7 +503,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     fun initWithCallback(
         appKey: String,
         accessKey: String,
-        initCallback: Callback?
+        initCallback: Callback?,
     ) {
         val application = application
         LiveChatUtil.log("initWithCallback, application: $application")
@@ -557,7 +559,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     }
 
     @ReactMethod
-    fun setLanguage(code: String?) {
+    fun setLanguage(code: String) {
         HANDLER.post { ZohoSalesIQ.Chat.setLanguage(code) }
     }
 
@@ -701,12 +703,12 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
     @ReactMethod
     fun setConversationVisibility(visible: Boolean) {
-        HANDLER.post { ZohoLiveChat.Conversation.setVisibility(visible) }
+        HANDLER.post { ZohoSalesIQ.Conversation.setVisibility(visible) }
     }
 
     @ReactMethod
     fun setConversationListTitle(title: String?) {
-        HANDLER.post { ZohoLiveChat.Conversation.setTitle(title) }
+        HANDLER.post { ZohoSalesIQ.Conversation.setTitle(title) }
     }
 
     @ReactMethod
@@ -761,12 +763,12 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     }
 
     @ReactMethod
-    fun setCustomAction(actionName: String?) {
+    fun setCustomAction(actionName: String) {
         HANDLER.post { ZohoSalesIQ.Tracking.setCustomAction(actionName) }
     }
 
     @ReactMethod
-    fun performCustomAction(actionName: String?, shouldOpenChatWindow: Boolean) {
+    fun performCustomAction(actionName: String, shouldOpenChatWindow: Boolean) {
         HANDLER.post {
             ZohoSalesIQ.Tracking.setCustomAction(
                 actionName,
@@ -883,7 +885,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     fun completeChatActionWithMessage(
         uuid: String,
         success: Boolean,
-        message: String?
+        message: String?,
     ) {
         HANDLER.post {
             val listener =
@@ -1077,7 +1079,8 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     fun getNotificationPayload(readableMap: ReadableMap, callback: Callback) {
         val map = getMap<String, String>(readableMap.toHashMap())
         if (map != null) {
-            ZohoLiveChat.Notification.getPayload(map
+            ZohoLiveChat.Notification.getPayload(
+                map
             ) { result: SalesIQResult<SalesIQNotificationPayload?> ->
                 if (result.isSuccess) {
                     val payload = result.data
@@ -1208,7 +1211,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         val departmentMap: WritableMap = WritableNativeMap()
         departmentMap.putString("id", department.id) // No I18N
         departmentMap.putString("name", department.name) // No I18N
-        departmentMap.putBoolean("available", department.available) // No I18N
+        department.available?.let { departmentMap.putBoolean("available", it) } // No I18N
         return departmentMap
     }
 
@@ -1264,7 +1267,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
         override fun handleResourceOpened(
             type: ZohoSalesIQ.ResourceType,
-            resource: Resource?
+            resource: Resource?,
         ) {
             val resourceMap: WritableMap = WritableNativeMap()
             resourceMap.putString("type", RESOURCE_ARTICLES) // No I18N
@@ -1285,7 +1288,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
         override fun handleResourceClosed(
             type: ZohoSalesIQ.ResourceType,
-            resource: Resource?
+            resource: Resource?,
         ) {
             val resourceMap: WritableMap = WritableNativeMap()
             resourceMap.putString("type", RESOURCE_ARTICLES) // No I18N
@@ -1305,7 +1308,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
         override fun handleResourceLiked(
             type: ZohoSalesIQ.ResourceType,
-            resource: Resource?
+            resource: Resource?,
         ) {
             val resourceMap: WritableMap = WritableNativeMap()
             resourceMap.putString("type", RESOURCE_ARTICLES) // No I18N
@@ -1326,7 +1329,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
         override fun handleResourceDisliked(
             type: ZohoSalesIQ.ResourceType,
-            resource: Resource?
+            resource: Resource?,
         ) {
             val resourceMap: WritableMap = WritableNativeMap()
             resourceMap.putString("type", RESOURCE_ARTICLES) // No I18N
@@ -1491,7 +1494,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
         override fun handleCustomAction(
             salesIQCustomAction: SalesIQCustomAction,
-            salesIQCustomActionListener: SalesIQCustomActionListener
+            salesIQCustomActionListener: SalesIQCustomActionListener,
         ) {
             val uuid = UUID.randomUUID()
 
@@ -1728,27 +1731,19 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         question: String,
         customChatId: String?,
         departmentName: String?,
-        callback: Callback?
+        callback: Callback?,
     ) {
-        val finalCallback = arrayOf(callback)
         ZohoSalesIQ.Chat.start(
             question, customChatId, departmentName
         ) { result: SalesIQResult<VisitorChat?> ->
-            if (finalCallback[0] != null) {
-                if (result.isSuccess) {
-                    val visitorChat = result.data
-                    val visitorMap = getChatMapObject(visitorChat!!)
-                    finalCallback[0]!!.invoke(null, visitorMap)
-                } else {
-                    val error = result.error
-                    finalCallback[0]!!
-                        .invoke(
-                            getErrorMap(error!!.code, error.message),
-                            null
-                        )
-                }
+            if (result.isSuccess && result.data != null) {
+                val visitorChat = result.data
+                val visitorMap = getChatMapObject(visitorChat!!)
+                callback?.invoke(null, visitorMap)
+            } else {
+                val error = result.error
+                callback?.invoke(getErrorMap(error!!.code, error.message), null)
             }
-            finalCallback[0] = null
         }
     }
 
@@ -1756,7 +1751,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     fun startNewChatWithTrigger(
         customChatId: String?,
         departmentName: String?,
-        callback: Callback?
+        callback: Callback?,
     ) {
         val finalCallback = arrayOf(callback)
         ZohoSalesIQ.Chat.startWithTrigger(
@@ -1922,7 +1917,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         page: Int,
         limit: Int,
         searchKey: String?,
-        callback: Callback
+        callback: Callback,
     ) {
         executeIfResourceTypeIsValid(
             type, callback
@@ -1938,7 +1933,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                 object : ResourcesListener {
                     override fun onSuccess(
                         articles: List<Resource>,
-                        moreDataAvailable: Boolean
+                        moreDataAvailable: Boolean,
                     ) {
                         callback.invoke(
                             null,
@@ -1959,7 +1954,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         type: String,
         departmentID: String?,
         parentCategoryID: String?,
-        callback: Callback
+        callback: Callback,
     ) {
         executeIfResourceTypeIsValid(
             type, callback
@@ -1997,7 +1992,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     private fun executeIfResourceTypeIsValid(
         type: String,
         callback: Callback?,
-        runnable: Runnable
+        runnable: Runnable,
     ) {
         val resourceType = getResourceType(type)
         if (resourceType != null) {
@@ -2107,6 +2102,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
         var sharedInstance: RNZohoSalesIQ? = null
 
+        @JvmStatic
         fun setInstance(reactContext: ReactApplicationContext) {
             if (sharedInstance == null) {
                 synchronized(RNZohoSalesIQ::class.java) { // Thread-safe initialization
@@ -2119,6 +2115,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
         private var isCallbacksRegistered = false
 
+        @JvmStatic
         fun registerCallbacks(application: Application?) {
             if (!isCallbacksRegistered && application != null) {
                 register(application)
@@ -2169,12 +2166,14 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
         private var hasAnyEventListeners = false
 
+        @JvmStatic
         fun handleNotification(application: Application?, extras: Map<*, *>?) {
             HANDLER.post {
                 ZohoLiveChat.Notification.handle(application, extras)
             }
         }
 
+        @JvmStatic
         fun isSDKMessage(extras: Map<*, *>?): Boolean {
             return ZohoLiveChat.Notification.isZohoSalesIQNotification(extras)
         }
@@ -2202,6 +2201,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             return resultMap
         }
 
+        @JvmStatic
         fun enablePush(token: String?, testDevice: Boolean) {
             fcmToken = token
             isTestDevice = testDevice
@@ -2213,7 +2213,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             activity: Activity?,
             appKey: String,
             accessKey: String,
-            initCallback: Callback?
+            initCallback: Callback?,
         ) {
             if (application != null) {
                 val canInvokeCallBack = booleanArrayOf(true)
@@ -2477,7 +2477,9 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                         LiveChatUtil.log("MobilistenEncryptedSharedPreferences- re-registering visitor") // No I18N
                         LiveChatUtil.registerVisitor(userId, object : RegisterListener {
                             override fun onSuccess() {
-                                logDebugInfo(DebugInfoData.VisitorFailureReRegistrationAcknowledged(userId))
+                                logDebugInfo(
+                                    DebugInfoData.VisitorFailureReRegistrationAcknowledged(userId)
+                                )
                                 LiveChatUtil.log("MobilistenEncryptedSharedPreferences- re-registering visitor success") // No I18N
                                 if (sharedPreferences.contains(MobilistenEncryptedSharedPreferences.ARE_NEW_ENCRYPTED_KEYS_PRESENT_IN_DEFAULT_PREFERENCES) && sharedPreferences.getBoolean(
                                         MobilistenEncryptedSharedPreferences.ARE_NEW_ENCRYPTED_KEYS_PRESENT_IN_DEFAULT_PREFERENCES,
@@ -2518,12 +2520,16 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                     ) {
                         if (DeviceConfig.getPreferences() != null) {
                             DeviceConfig.getPreferences()!!.edit()
-                                .putBoolean(CommonPreferencesLocalDataSource.SharedPreferenceKeys.IsEncryptedSharedPreferenceFailureAcknowledged, true)
+                                .putBoolean(
+                                    CommonPreferencesLocalDataSource.SharedPreferenceKeys.IsEncryptedSharedPreferenceFailureAcknowledged,
+                                    true
+                                )
                                 .commit()
                         }
                     } else {
                         sharedPreferences.edit()
-                            .remove(CommonPreferencesLocalDataSource.SharedPreferenceKeys.IsEncryptedSharedPreferenceFailureAcknowledged).commit()
+                            .remove(CommonPreferencesLocalDataSource.SharedPreferenceKeys.IsEncryptedSharedPreferenceFailureAcknowledged)
+                            .commit()
                     }
                 }
             }

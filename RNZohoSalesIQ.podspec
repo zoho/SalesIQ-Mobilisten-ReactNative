@@ -5,13 +5,13 @@ folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 
 
 Pod::Spec.new do |s|
   s.name         = "RNZohoSalesIQ"
-  s.version      = "9.2.5"
+  s.version      = "9.3.1"
   s.summary      = package["description"]
   s.homepage     = package["homepage"]
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => 12.0 }
+  s.platforms    = { :ios => 13.0 }
   s.source        = { :git => "https://github.com/zoho/SalesIQ-Mobilisten-iOS", :tag => "v#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"

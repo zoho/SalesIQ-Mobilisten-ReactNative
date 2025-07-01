@@ -1593,7 +1593,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 "fil": .filipino, "fi": .finnish, "zh_TW": .chineseTraditional, "in": .indonesian,
                 "ka": .georgian, "hy": .armenian, "fa": .persian, "ta": .tamil, "kn": .kannada,
                 "bn": .bengali, "hi": .hindi, "gu": .gujarati, "mr": .marathi, "te": .telugu,
-                "pa": .punjabi, "or": .oriya, "ml": .malayalam
+                "pa": .punjabi, "or": .oriya, "ml": .malayalam, "ca": .catalan
             ]
             ZohoSalesIQ.Chat.setLanguage(languageMap[languageCode] ?? .english)
         }

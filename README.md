@@ -1,4 +1,4 @@
-[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-11.0.2-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
+[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-11.1.0-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
 
 # React Native module for SalesIQ Mobilisten SDK
 
@@ -9,13 +9,13 @@ Connect with customers at every step of their journey. Give them the best in-app
 
 ## Requirements
 
-**iOS**: Minimum deployment target should be set to iOS 12.
+**iOS**: Minimum deployment target should be set to iOS 13.
 
 **Android**:
 Ensure that your project meets the following requirements:
 
 - Minimum Android Version: Android 5.0 (Lollipop) (API Level 21)
-- Compile SDK Version: 34 (Android 14)
+- Compile SDK Version: 35 (Android 14)
 - Required Permissions:
     - android.permission.INTERNET (Required for network operations)
 
@@ -97,7 +97,6 @@ public ReactNativeHost getReactNativeHost(){
     return mReactNativeHost;
 }
 ```
-#### Android: Maven configurations
 
 2. Navigate to the `android` folder within the project directory using Android Studio or any other
    platform of choice for Android development.

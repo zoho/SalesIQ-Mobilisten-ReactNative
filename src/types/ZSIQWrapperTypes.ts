@@ -51,7 +51,8 @@ export type SalesIQLanguageCodes =
   | 'pa'
   | 'or'
   | 'ml'
-  | 'en';
+  | 'en'
+  | 'ca';
 
 export type CallbackError = {
   code?: string | number;
