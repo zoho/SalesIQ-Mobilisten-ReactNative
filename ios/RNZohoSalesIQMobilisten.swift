@@ -7,6 +7,7 @@
 
 import Foundation
 import Mobilisten
+import MobilistenCore
 
 @objc(RNZohoSalesIQMobilisten)
 class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQFAQDelegate, ZohoSalesIQKnowledgeBaseDelegate {

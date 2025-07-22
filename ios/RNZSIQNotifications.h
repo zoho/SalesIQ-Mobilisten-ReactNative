@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <Mobilisten/Mobilisten.h>
+#import <MobilistenCore/MobilistenCore.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
