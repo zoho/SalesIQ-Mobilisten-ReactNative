@@ -127,4 +127,5 @@ abstract class ZohoSalesIQMobilistenSpec internal constructor(context: ReactAppl
   abstract fun getKnowledgeBaseCategories(type: String, departmentID: String?, parentCategoryID: String?, callback: Callback)
   abstract fun updateConfiguration(key: String, value: Boolean)
   abstract fun registerLocalizationFile(fileName: String?)
+  abstract fun reRegisterPush()
 }

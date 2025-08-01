@@ -49,6 +49,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let VISITOR_IPBLOCKED = "EVENT_VISITOR_IPBLOCKED"
     let CUSTOMTRIGGER = "EVENT_CUSTOMTRIGGER"
     let BOT_TRIGGER = "EVENT_BOT_TRIGGER"
+    let RE_REGISTER_PUSH = "EVENT_RE_REGISTER_PUSH"
     let TYPE_OPEN = "OPEN"
     let TYPE_TRIGGERED = "TRIGGERED"
     let TYPE_PROACTIVE = "PROACTIVE"
@@ -165,7 +166,8 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 KNOWLEDGEBASE_EVENT_LISTENER,
                 LAUNCHER_EVENT_LISTENER,
                 ZSIQ_EVENT_LISTENER,
-                NOTIFICATION_EVENT_LISTENER];
+                NOTIFICATION_EVENT_LISTENER,
+                RE_REGISTER_PUSH];
     }
     
     override func constantsToExport() -> [AnyHashable : Any]! {
@@ -228,7 +230,8 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             "KNOWLEDGEBASE_EVENT_LISTENER": KNOWLEDGEBASE_EVENT_LISTENER,
             "NOTIFICATION_EVENT_LISTENER": NOTIFICATION_EVENT_LISTENER,
             "LAUNCHER_EVENT_LISTENER": LAUNCHER_EVENT_LISTENER,
-            "ZSIQ_EVENT_LISTENER": ZSIQ_EVENT_LISTENER
+            "ZSIQ_EVENT_LISTENER": ZSIQ_EVENT_LISTENER,
+            "RE_REGISTER_PUSH": RE_REGISTER_PUSH
         ]
     }
     
@@ -814,6 +817,12 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
     
+    func shouldReRegisterPushNotification() {
+        if hasSIQEventListener {
+            sendRCTEvent(withName:CHAT_EVENT_LISTENER, body: RNZohoSalesIQMobilisten.getEventEmitterObject(RE_REGISTER_PUSH, body: NSNull()))
+        }
+    }
+    
     func handleResourceOpened(_ type: SIQResourceType, resource: SIQKnowledgeBaseResource?) {
         if hasSIQEventListener {
             let resourceInformation = prepareResourceInformation(type: type, resource: resource)
@@ -903,6 +912,13 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             if type == self.RESOURCE_ARTICLES {
                 ZohoSalesIQ.KnowledgeBase.categorize(.articles, enable: shouldCategorize)
             }
+        }
+    }
+    
+    @objc(reRegisterPush)
+    func reRegisterPush() {
+        RNZohoSalesIQMobilisten.mainThread {
+            ZohoSalesIQ.reregisterPushNotification()
         }
     }
     

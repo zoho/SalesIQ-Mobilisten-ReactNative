@@ -41,11 +41,16 @@ export enum ListenerEvent {
   /**
    * This event will complete the chat action as a success or failure, with or without a message
    */
-  COMPLETE_CHAT_ACTION = 'EVENT_COMPLETE_CHAT_ACTION'
+  COMPLETE_CHAT_ACTION = 'EVENT_COMPLETE_CHAT_ACTION',
+
+  /**
+   * This event is called when the application should re-register the push notification.
+   */
+  RE_REGISTER_PUSH = 'EVENT_RE_REGISTER_PUSH'
 }
 
 export type Listeners = {
-  event: ListenerEvent.SUPPORT_OPENED | ListenerEvent.SUPPORT_CLOSED | ListenerEvent.OPERATORS_ONLINE | ListenerEvent.OPERATORS_OFFLINE | ListenerEvent.VISITOR_REGISTRATION_FAILURE | ListenerEvent.VISITOR_IPBLOCKED,
+  event: ListenerEvent.SUPPORT_OPENED | ListenerEvent.SUPPORT_CLOSED | ListenerEvent.OPERATORS_ONLINE | ListenerEvent.OPERATORS_OFFLINE | ListenerEvent.VISITOR_REGISTRATION_FAILURE | ListenerEvent.VISITOR_IPBLOCKED | ListenerEvent.RE_REGISTER_PUSH,
   body?: null
 }
 

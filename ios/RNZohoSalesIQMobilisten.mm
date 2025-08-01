@@ -119,7 +119,7 @@ RCT_EXTERN_METHOD(unregisterVisitor:(RCTResponseSenderBlock)callback);
 RCT_EXTERN_METHOD(updateListener:(NSString *)listener);
 RCT_EXTERN_METHOD(writeLogForiOS:(NSString *)message logLevel:(NSString *)logLevel callback:(RCTResponseSenderBlock)callback);
 RCT_EXTERN_METHOD(registerLocalizationFile:(NSString *)name);
-
+RCT_EXTERN_METHOD(reRegisterPush);
 RCT_EXTERN_METHOD(updateConfiguration:(NSString*) key value:(BOOL)value)
 
 #ifdef RCT_NEW_ARCH_ENABLED

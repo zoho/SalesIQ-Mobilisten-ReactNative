@@ -11,10 +11,10 @@
 
 + (void)enablePush:(NSString *)token isTestDevice:(BOOL)isTestDevice isProductionMode:(BOOL)isProductionMode {
 
-    if(isProductionMode){
-        [ZohoSalesIQ enablePush:token isTestDevice:isTestDevice mode:APNSModeProduction];
-    }else{
-        [ZohoSalesIQ enablePush:token isTestDevice:isTestDevice mode:APNSModeSandbox];
+    if (isProductionMode) {
+        [ZohoSalesIQ enablePush:token isTestDevice:isTestDevice mode: APNSModeProduction];
+    } else {
+        [ZohoSalesIQ enablePush:token isTestDevice:isTestDevice mode: APNSModeSandbox];
     }
 }
 

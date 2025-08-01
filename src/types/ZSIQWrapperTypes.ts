@@ -664,6 +664,13 @@ export interface ZSIQWrapperTypes {
   registerLocalizationFileForiOS: (fileName: string) => void;
 
   /**
+   * This API is used to reregister the push notification.
+   *
+   *
+   */
+  reRegisterPush: () => void;
+
+  /**
    *
    * @returns
    */

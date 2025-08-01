@@ -62,6 +62,7 @@ export interface Spec extends TurboModule {
     EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY: string;
     EVENT_RESOURCE_OPENED: string;
     EVENT_VISITOR_REGISTRATION_FAILURE: string;
+    RE_REGISTER_PUSH: string;
   };
   fetchAttenderImage(attenderId: string, defaultImage: boolean, imageCallback: () => void): void;
   getChats(listCallback: () => void): void;
@@ -170,7 +171,8 @@ export interface Spec extends TurboModule {
   getKnowledgeBaseResources(type: string, departmentID: string, parentCategoryID: string, page: number, limit: number, searchKey: string, callback: () => void): void;
   getKnowledgeBaseCategories(type: string, departmentID: string | null, parentCategoryID: string | null, callback: () => void): void;
   updateConfiguration(key: string, value: boolean): void;
-  registerLocalizationFile(fileName: string): void
+  registerLocalizationFile(fileName: string): void;
+  reRegisterPush(): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNZohoSalesIQMobilisten');

@@ -5,7 +5,7 @@ folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 
 
 Pod::Spec.new do |s|
   s.name         = "RNZohoSalesIQ"
-  s.version      = "10.1.0"
+  s.version      = "10.1.1"
   s.summary      = package["description"]
   s.homepage     = package["homepage"]
   s.license      = package["license"]

@@ -219,8 +219,9 @@ export const ZSIQWrapper = {
   },
   registerLocalizationFileForiOS: function (fileName) {
     RNZohoSalesIQ.registerLocalizationFile(fileName);
-  },
-  refreshLauncher: function () {
+  },reRegisterPush: function () {
+    RNZohoSalesIQ.reRegisterPush();
+  },refreshLauncher: function () {
     RNZohoSalesIQ.refreshLauncher();
   },
   setThemeForiOS: function (value) {

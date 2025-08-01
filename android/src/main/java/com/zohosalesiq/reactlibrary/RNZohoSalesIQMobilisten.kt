@@ -588,6 +588,11 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
         // This method is only for iOS
     }
 
+    @ReactMethod
+    override fun reRegisterPush() {
+        
+    }
+
     override fun getName(): String {
         return NAME
     }
