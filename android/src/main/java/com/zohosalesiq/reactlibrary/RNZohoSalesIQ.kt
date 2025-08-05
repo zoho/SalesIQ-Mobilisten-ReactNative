@@ -154,6 +154,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             constants["CUSTOMTRIGGER"] = EVENT_CUSTOMTRIGGER // No I18N
             constants["BOT_TRIGGER"] = EVENT_BOT_TRIGGER // No I18N
             constants["EVENT_HANDLE_URL"] = EVENT_HANDLE_URL // No I18N
+            constants["RE_REGISTER_PUSH"] = EVENT_RE_REGISTER_PUSH // No I18N
             constants["EVENT_OPEN_URL"] = EVENT_OPEN_URL // No I18N
             constants["EVENT_COMPLETE_CHAT_ACTION"] =
                 EVENT_COMPLETE_CHAT_ACTION // No I18N
@@ -2029,6 +2030,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         private const val EVENT_CUSTOMTRIGGER = "EVENT_CUSTOMTRIGGER" // No I18N
         private const val EVENT_BOT_TRIGGER = "EVENT_BOT_TRIGGER" // No I18N
         private const val EVENT_HANDLE_URL = "EVENT_HANDLE_URL" // No I18N
+        private const val EVENT_RE_REGISTER_PUSH = "EVENT_RE_REGISTER_PUSH" // No I18N
         private const val EVENT_OPEN_URL = "EVENT_OPEN_URL" // No I18N
         private const val EVENT_COMPLETE_CHAT_ACTION = "EVENT_COMPLETE_CHAT_ACTION" // No I18N
         private const val EVENT_CHAT_QUEUE_POSITION_CHANGED =
