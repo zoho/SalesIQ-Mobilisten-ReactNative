@@ -1,4 +1,4 @@
-[![SupportedLanguages](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
+[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
 
 # React Native module for SalesIQ Mobilisten Calls SDK
 
@@ -76,20 +76,20 @@ react-native link @react-native-zohosalesiq/mobilisten react-native link @react-
 - Add the below code to the `android/settings.gradle`
 
 ```Gradle
-include ':@react-native-zohosalesiq/mobilisten-core'
-project(':@react-native-zohosalesiq/mobilisten-core').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-zohosalesiq/mobilisten-core/android')
+include ':react-native-zohosalesiq_mobilisten-core'
+project(':react-native-zohosalesiq_mobilisten-core').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-zohosalesiq/mobilisten-core/android')
 
-include ':@react-native-zohosalesiq/mobilisten'
-project(':@react-native-zohosalesiq/mobilisten').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-zohosalesiq/mobilisten/android')
+include ':react-native-zohosalesiq_mobilisten'
+project(':react-native-zohosalesiq_mobilisten').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-zohosalesiq/mobilisten/android')
 
-include ':@react-native-zohosalesiq/mobilisten-calls'
-project(':@react-native-zohosalesiq/mobilisten-calls').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-zohosalesiq/mobilisten-calls/android')
+include ':react-native-zohosalesiq_mobilisten-calls'
+project(':react-native-zohosalesiq_mobilisten-calls').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-zohosalesiq/mobilisten-calls/android')
 ```
 
 - Implement the dependency in the `android/app/build.gradle` file inside `dependencies`
 
 ```Gradle
-implementation project(':@react-native-zohosalesiq/mobilisten-calls')
+implementation project(':react-native-zohosalesiq_mobilisten-calls')
 ```
 
 - Add the below snippet to `android/app/src/main/java/com/module_name/MainApplication.java` if the

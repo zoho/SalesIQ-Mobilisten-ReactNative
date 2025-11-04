@@ -1,4 +1,4 @@
-[![SupportedLanguages](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-12.0.0-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
+[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-12.0.0-blue.svg)](https://mobilisten.io/) [![Mobilisten NPM CD](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/workflows/Mobilisten%20NPM%20CD/badge.svg)](https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/actions)
 
 # React Native module for SalesIQ Mobilisten SDK
 
@@ -84,23 +84,32 @@ Note: `mobilisten-core` must be linked mandatorily.
 
 #### Installation steps for iOS
 
-3. Navigate to the **ios** folder in the project directory and open **Podfile**.
-   Add the "**/ios**" to the path for the **RNZohoSalesIQ** pod as shown below.
+1. Navigate to the `ios` folder in the project directory.
 
-```diff
+2. Run the `pod repo update && pod install` command from the `ios` directory.
+
+For the RNZohoSalesIQ version below `10.0.0`:
+
+1. Open your podfile.
+
+2. Add the "/ios" to the path for the RNZohoSalesIQ pod, as shown below.
+
+```ruby
 pod 'RNZohoSalesIQ', :path => '../node_modules/@react-native-zohosalesiq/mobilisten/ios'
 ```
 
 (Optional)
-```diff
+```ruby
 pod 'RNZohoSalesIQCalls', :path => '../node_modules/@react-native-zohosalesiq/mobilisten-calls/ios'
 ```
 
-4. Run the `pod repo update && pod install` command from the **ios** directory.
+3. Run `pod install` after saving the changes made to the Podfile.
+
+> **Note:** If you're updating from the SDK versions below `10.0.0` to above, remove the above path in your `Podfile` and run the `pod install` in the iOS folder.
 
 #### Installation steps for Android
 
-5. Navigate to the **android** folder within the project directory using Android Studio or any other
+4. Navigate to the **android** folder within the project directory using Android Studio or any other
    platform of choice for Android development.
    Add the following maven repository to the **build.gradle** file.
 
@@ -113,7 +122,7 @@ allprojects {
 }
 ```
 
-6. Click **Sync Now** from the toolbar on the IDE.
+5. Click **Sync Now** from the toolbar on the IDE.
 
 ## Initializing Mobilisten
 
@@ -122,6 +131,10 @@ allprojects {
 
 ```js
 import { ZohoSalesIQ } from '@react-native-zohosalesiq/mobilisten';
+
+// OPTIONAL - Only If Calls feature is required.
+import { ZohoSalesIQCalls } from '@react-native-zohosalesiq/mobilisten-calls';
+
 let APP_KEY;
 let ACCESS_KEY;
 if (Platform.OS === 'ios'){
@@ -132,7 +145,10 @@ if (Platform.OS === 'ios'){
     ACCESS_KEY = "android_access_key";
 }
 
-ZohoSalesIQ.initialize({ appKey: APP_KEY, accessKey: ACCESS_KEY, androidCallViewMode: SalesIQCallViewMode.BANNER }).then(() => {
+// OPTIONAL - Only If Calls feature is required.
+ZohoSalesIQCalls.initialiseForiOS();
+
+ZohoSalesIQ.initialize({ appKey: APP_KEY, accessKey: ACCESS_KEY }).then(() => {
   ZohoSalesIQ.Launcher.show(ZohoSalesIQ.Launcher.VisibilityMode.ALWAYS); // Show the chat launcher
   // Your logic after initialization
 }).catch((error) => {
