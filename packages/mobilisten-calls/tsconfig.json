@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "babel.config.js",
+    "metro.config.js",
+    "jest.config.js",
+    "node_modules",
+    "lib"
+  ],
+  "references": [
+    {
+      "path": "../mobilisten-core"
+    }
+  ]
+}

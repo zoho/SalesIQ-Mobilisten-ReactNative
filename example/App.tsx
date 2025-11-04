@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Platform, StatusBar } from "react-native";
 import { addListeners } from "./scripts/listeners";
 
-import { ZohoSalesIQ } from "react-native-zohosalesiq-mobilisten";
+import { ZohoSalesIQ } from "@react-native-zohosalesiq/mobilisten";
 import Main from "./screens/Main";
 
 const App: React.FC = () => {

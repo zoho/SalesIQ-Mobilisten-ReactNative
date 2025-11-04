@@ -1,3 +1,3 @@
 module.exports = {
-  preset: 'react-native',   // No I18N
+  preset: 'react-native'   // No I18N
 };

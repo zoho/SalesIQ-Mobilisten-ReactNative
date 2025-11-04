@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { styles } from '../styles/styles';
-import { ZohoSalesIQ } from 'react-native-zohosalesiq-mobilisten';
+import { ZohoSalesIQ } from '@react-native-zohosalesiq/mobilisten';
 
 export default function SalesIQLogoComponent() {
     const openSalesIQSupport = () => {

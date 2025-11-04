@@ -1,4 +1,4 @@
-import { ZohoSalesIQ } from 'react-native-zohosalesiq-mobilisten';
+import { ZohoSalesIQ } from '@react-native-zohosalesiq/mobilisten';
 
 export const addListeners = () => {
   const { Chat, KnowledgeBase, Launcher, Notification } = ZohoSalesIQ;

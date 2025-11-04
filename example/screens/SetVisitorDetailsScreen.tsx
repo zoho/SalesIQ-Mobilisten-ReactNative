@@ -15,7 +15,7 @@ import ButtonComponent from "../components/ButtonComponent";
 import Divider from "../components/Divider";
 import DropdownComponent from "../components/DropdownComponent";
 
-import { ZohoSalesIQ } from "react-native-zohosalesiq-mobilisten";
+import { ZohoSalesIQ } from "@react-native-zohosalesiq/mobilisten";
 
 const SetVisitorDetailsScreen = () => {
     const [name, setName] = useState("");

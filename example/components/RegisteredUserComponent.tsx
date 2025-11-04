@@ -8,7 +8,7 @@ import {
     TouchableOpacity,
 } from "react-native";
 import { styles } from "../styles/styles";
-import { ZohoSalesIQ } from "react-native-zohosalesiq-mobilisten";
+import { ZohoSalesIQ } from "@react-native-zohosalesiq/mobilisten";
 import TextInputComponent from "../components/TextInputComponent";
 
 const RegisteredUserComponent = () => {

@@ -8,7 +8,7 @@ import LauncherVisibilitySegmentedComponent from "../components/LauncherVisibili
 import Divider from "../components/Divider";
 import RegisteredUserComponent from "../components/RegisteredUserComponent";
 import SetLanguageComponent from "../components/SetLanguageComponent";
-import { ZohoSalesIQ } from "react-native-zohosalesiq-mobilisten";
+import { ZohoSalesIQ } from "@react-native-zohosalesiq/mobilisten";
 
 const HomeScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     useFocusEffect(() => {

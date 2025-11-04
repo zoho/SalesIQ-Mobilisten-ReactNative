@@ -1,7 +1,7 @@
 import React, { Component, useState } from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { styles } from "../styles/styles";
-import { ZohoSalesIQ } from "react-native-zohosalesiq-mobilisten";
+import { ZohoSalesIQ } from "@react-native-zohosalesiq/mobilisten";
 import SegmentedControlTab from "react-native-segmented-control-tab";
 
 const showLauncher = 0;

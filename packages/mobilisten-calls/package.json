@@ -1,0 +1,117 @@
+{
+  "name": "@react-native-zohosalesiq/mobilisten-calls",
+  "version": "0.0.1",
+  "description": "A React Native module for the ZohoSalesIQ Mobilisten Calls SDK",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "android",
+    "ios",
+    "src",
+    "cpp",
+    "*.podspec",
+    "!ios/build",
+    "!android/build",
+    "!android/gradle",
+    "!android/gradlew",
+    "!android/gradlew.bat",
+    "!android/local.properties",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__",
+    "!**/.*"
+  ],
+  "scripts": {
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "prepare": "npm run clean && tsc -b",
+    "release": "release-it",
+    "build": "npm run clean && tsc -b",
+    "clean": "rm -f ./*.tsbuildinfo && rm -rf lib dist build node_modules",
+    "pack": "npm i ../mobilisten-core/@react-native-zohosalesiq/mobilisten-core-0.0.1+1.tgz && npm pack"
+  },
+  "keywords": [
+    "mobilisten",
+    "react-native",
+    "chat sdk",
+    "support sdk",
+    "support",
+    "chat",
+    "chat sdk",
+    "sdk"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zoho/SalesIQ-Mobilisten-ReactNative.git"
+  },
+  "author": "Rishabh Raghunath <rishabh.r@zohocorp.com>",
+  "license": "MIT",
+  "bugs": {
+    "email": "support@zohosalesiq.com"
+  },
+  "homepage": "https://www.zoho.com/salesiq/",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "@react-native-zohosalesiq/mobilisten-core": "workspace:*",
+    "expo": ">=47.0.0",
+    "react-native": ">=0.41.2"
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": true
+    }
+  },
+  "jest": {
+    "preset": "react-native",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/example/node_modules",
+      "<rootDir>/lib/"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@react-native",
+      "prettier"
+    ],
+    "rules": {
+      "prettier/prettier": [
+        "error",
+        {
+          "quoteProps": "consistent",
+          "singleQuote": true,
+          "tabWidth": 2,
+          "trailingComma": "es5",
+          "useTabs": false
+        }
+      ]
+    }
+  },
+  "eslintIgnore": [
+    "node_modules/",
+    "lib/"
+  ],
+  "prettier": {
+    "quoteProps": "consistent",
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "es5",
+    "useTabs": false
+  },
+  "codegenConfig": {
+    "name": "RNZohoSalesIQCallsSpec",
+    "type": "modules",
+    "jsSrcsDir": "src"
+  }
+}

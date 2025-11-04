@@ -23,16 +23,16 @@ bundle ID from the SalesIQ console.
 Follow the below steps given below to complete installation of **Mobilisten** in your React-Native
 app.
 
-1. Install the **react-native-zohosalesiq-mobilisten** package using NPM.
+1. Install the **@react-native-zohosalesiq/mobilisten** package using NPM.
 
 ```ruby
-npm install react-native-zohosalesiq-mobilisten --save
+npm install @react-native-zohosalesiq/mobilisten --save
 ```
 
 2. Link the module with the react native app
 
 ```ruby
-react-native link react-native-zohosalesiq-mobilisten
+react-native link @react-native-zohosalesiq/mobilisten
 ```
 
 #### Installation steps for iOS
@@ -41,8 +41,8 @@ react-native link react-native-zohosalesiq-mobilisten
    Add the "**/ios**" to the path for the **RNZohoSalesIQ** pod as shown below.
 
 ```diff
-- pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten'
-+ pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten/ios'
+- pod 'RNZohoSalesIQ', :path => '../node_modules/@react-native-zohosalesiq/mobilisten'
++ pod 'RNZohoSalesIQ', :path => '../node_modules/@react-native-zohosalesiq/mobilisten/ios'
 ```
 
 2. Run the `pod repo update && pod install` command from the **ios** directory.
@@ -70,7 +70,7 @@ allprojects {
 2. Use the **ZohoSalesIQ.init** API with keys for each platform as shown below.
 
 ```js
-import { ZohoSalesIQ } from 'react-native-zohosalesiq-mobilisten';
+import { ZohoSalesIQ } from '@react-native-zohosalesiq/mobilisten';
 
 if (Platform.OS === 'ios'){
     ZohoSalesIQ.init("ios_app_key","ios_access_key");

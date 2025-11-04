@@ -1,7 +1,7 @@
 import React, { useState, Component } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { styles } from "../styles/styles";
-import { ZohoSalesIQ } from "react-native-zohosalesiq-mobilisten";
+import { ZohoSalesIQ } from "@react-native-zohosalesiq/mobilisten";
 
 type lang = "en" | "fr" | "ja";
 

@@ -18,7 +18,7 @@ import Divider from "../components/Divider";
 import RegisteredUserComponent from "../components/RegisteredUserComponent";
 import TextInputComponent from "../components/TextInputComponent";
 
-import { ZohoSalesIQ } from "react-native-zohosalesiq-mobilisten";
+import { ZohoSalesIQ } from "@react-native-zohosalesiq/mobilisten";
 
 const FetchSalesIQDataScreen = () => {
     const [chatID, setChatID] = useState("");

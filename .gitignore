@@ -1,2 +1,11 @@
 
 .DS_Store
+.gradle/
+build/
+/local.properties
+.idea/
+*.iml
+*.log
+node_modules/
+dist/
+packages/mobilisten/android/.gradle

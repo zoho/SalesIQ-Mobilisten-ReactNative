@@ -39,7 +39,7 @@ target 'mobilistensampleapp' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  # pod 'RNZohoSalesIQ', :path => '../node_modules/react-native-zohosalesiq-mobilisten/ios'
+  # pod 'RNZohoSalesIQ', :path => '../node_modules/@react-native-zohosalesiq/mobilisten/ios'
 
   target 'mobilistensampleappTests' do
     inherit! :complete
