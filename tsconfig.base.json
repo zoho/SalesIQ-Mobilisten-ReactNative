@@ -1,0 +1,43 @@
+{
+  // "compilerOptions": {
+  //   "target": "esnext",
+  //   "module": "esnext",
+  //   "lib": ["es2021"],
+  //   "strict": true,
+  //   "jsx": "react-native",
+  //   "moduleResolution": "node",
+  //   "esModuleInterop": true,
+  //   "skipLibCheck": true,
+  //   "composite": true
+  // }
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "lib": [
+      "esnext"
+    ],
+    "moduleResolution": "Node",
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "strict": true,
+    "jsx": "react-native",
+    "resolveJsonModule": true,
+    "paths": {
+      "@react-native-zohosalesiq/mobilisten-core": [
+        "packages/mobilisten-core/src"
+      ],
+      "@react-native-zohosalesiq/mobilisten": [
+        "packages/mobilisten/src"
+      ],
+      "@react-native-zohosalesiq/mobilisten-calls": [
+        "packages/mobilisten-calls/src"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "packs"
+  ]
+}
