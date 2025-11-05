@@ -54,7 +54,6 @@ For the RNZohoSalesIQ version below `10.0.0`:
 
 ```ruby
 pod 'RNZohoSalesIQ', :path => '../node_modules/@react-native-zohosalesiq/mobilisten/ios'
-pod 'RNZohoSalesIQCalls', :path => '../node_modules/@react-native-zohosalesiq/mobilisten-calls/ios'
 ```
 3. Run `pod install` after saving the changes made to the Podfile.
 
