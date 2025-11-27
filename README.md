@@ -1,10 +1,15 @@
-[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-12.0.0-blue.svg)](https://mobilisten.io/)
+[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-12.1.0-blue.svg)](https://mobilisten.io/) [![Expo Compatible](https://img.shields.io/badge/Expo-Compatible-brightgreen.svg)](https://expo.dev)
 
 # React Native module for SalesIQ Mobilisten SDK
 
 Connect with customers at every step of their journey. Give them the best in-app live chat
 experience with Mobilisten. Mobilisten enables customers to reach you from any screen on your app,
 get their questions answered, and make better purchase decisions.
+
+## Platform Compatibility
+
+✅ **React Native** - Fully supported  
+✅ **Expo** - Fully supported with development builds (Expo Go not supported due to native dependencies)
 
 ## Getting Started
 

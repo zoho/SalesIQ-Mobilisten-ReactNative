@@ -61,7 +61,7 @@ export type CallbackError = {
   message?: string;
 };
 
-export type Configuration = 'NeutralRatingDisabled' | 'TrackStorageSpace' | 'TrackAppInstalledTime' | 'TrackAppUpdatedTime' | 'ShowEndSessionInInAppNotification'
+export type Configuration = 'NeutralRatingDisabled' | 'TrackStorageSpace' | 'TrackAppInstalledTime' | 'TrackAppUpdatedTime' | 'ShowEndSessionInInAppNotification' | 'ChatBotCarousalCardPropertiesOrientation' | 'ChatBotCarousalCardImageVisibility'
 
 type VisitorLocationType = {
   latitude?: number;
@@ -733,7 +733,7 @@ export interface ZSIQWrapperTypes {
    * @param value 
    * @returns 
    */
-  updateConfiguration: (configuration: Configuration, value: Boolean) => void;
+  updateConfiguration: (configuration: Configuration, value: string | number | boolean) => void;
 
   getCommunicationMode: () => Promise<CommunicationMode | null>;
 

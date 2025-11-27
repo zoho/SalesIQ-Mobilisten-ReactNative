@@ -75,7 +75,7 @@ import com.zoho.livechat.android.modules.common.ui.lifecycle.SalesIQActivitiesMa
 import com.zoho.livechat.android.modules.common.ui.result.entities.SalesIQError
 import com.zoho.livechat.android.modules.common.ui.result.entities.SalesIQResult
 import com.zoho.livechat.android.modules.commonpreferences.data.local.CommonPreferencesLocalDataSource
-import com.zoho.livechat.android.modules.jwt.domain.entities.SalesIQAuth
+import com.zoho.livechat.android.modules.authentication.domain.entities.SalesIQAuth
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.Resource
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceCategory
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceDepartment
@@ -636,8 +636,8 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     }
 
     @ReactMethod
-    fun setDepartments(department: List<String>?) {
-        HANDLER.post { ZohoSalesIQ.Chat.setDepartments(department) }
+    fun setDepartments(departments: List<String>?) {
+        HANDLER.post { ZohoSalesIQ.Chat.setDepartments(departments.orEmpty()) }
     }
 
     @ReactMethod
@@ -2041,9 +2041,44 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     }
 
     @ReactMethod
-    fun updateConfiguration(key: String, value: Boolean) {
-        if (key == "NeutralRatingDisabled") {
-            System.setProperty("binaryRating", value.toString())
+    fun updateConfiguration(key: String, config: ReadableMap?) {
+        if (config == null) return
+
+        val value = when (val type = config.getString("type")) {
+            "boolean" -> {
+                config.getBoolean("value")
+            }
+
+            "string" -> {
+                config.getString("value")
+            }
+
+            "number" -> {
+                config.getDouble("value")
+            }
+
+            else -> {
+                LiveChatUtil.log("MobilistenPlugin - Invalid configuration type: $type")
+                return
+            }
+        }
+
+        var configurationKey: String? = null
+        when (key) {
+            "NeutralRatingDisabled" -> {
+                configurationKey = "binaryRating"
+            }
+            "ChatBotCarousalCardPropertiesOrientation" -> {
+                configurationKey = "chat_bot_carousal_card_properties_orientation"
+            }
+            "ChatBotCarousalCardImageVisibility" -> {
+                configurationKey = "chat_bot_carousal_card_image_visibility"
+            }
+        }
+        if (configurationKey != null) {
+            System.setProperty(configurationKey, value.toString())
+        } else {
+            LiveChatUtil.log("MobilistenPlugin - Invalid configuration key: $key")
         }
     }
 
@@ -2219,6 +2254,8 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
                 "REOPEN" -> chatComponent = ChatComponent.reopen
                 "CALL" -> chatComponent = ChatComponent.call
+                "FILE_SHARING_WHEN_BOT_CONNECTED" -> chatComponent = ChatComponent.fileSharingWhenBotConnected
+                "VOICE_NOTE_WHEN_BOT_CONNECTED" -> chatComponent = ChatComponent.voiceNoteWhenBotConnected
                 else -> {}
             }
             return chatComponent

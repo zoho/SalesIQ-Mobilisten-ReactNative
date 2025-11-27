@@ -100,6 +100,8 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let END_WHEN_OPERATOR_CONNECTED = "END_WHEN_OPERATOR_CONNECTED"
     let REOPEN = "REOPEN"
     let CALL = "CALL"
+    let FILE_SHARING_WHEN_BOT_CONNECTED = "FILE_SHARING_WHEN_BOT_CONNECTED"
+    let VOICE_NOTE_WHEN_BOT_CONNECTED = "VOICE_NOTE_WHEN_BOT_CONNECTED"
     
     // MobilistenFlag
     let NEUTRAL_RATING_DISABLED = "NeutralRatingDisabled"
@@ -107,6 +109,8 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let TRACK_APP_INSTALLED_TIME = "TrackAppInstalledTime"
     let TRACK_APP_UPDATED_TIME = "TrackAppUpdatedTime"
     let SHOW_END_SESSION_IN_INAPP_NOTIFICATION = "ShowEndSessionInInAppNotification"
+    let CHAT_BOT_CAROUSEL_CARD_ORIENTATION = "ChatBotCarousalCardPropertiesOrientation"
+    let CHAT_BOT_CAROUSEL_CARD_IMAGE_VISIBILITY = "ChatBotCarousalCardImageVisibility"
     
     func sendRCTEvent(withName eventName: String, body: Any?) {
         if hasSIQEventListener {
@@ -1532,6 +1536,8 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             case self.END_WHEN_OPERATOR_CONNECTED: component = .endWhenOperatorConnected
             case self.REOPEN: component = .reopen
             case self.CALL: component = .callIcon
+            case self.FILE_SHARING_WHEN_BOT_CONNECTED: component = .attachmentIconWhenBotConnected
+            case self.VOICE_NOTE_WHEN_BOT_CONNECTED: component = .voiceNoteIconWhenBotConnected
             default: component = nil
             }
             
@@ -2139,7 +2145,11 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     }
     
     @objc(updateConfiguration:value:)
-    func updateConfiguration(_ key: String, value: Bool) {
+    func updateConfiguration(_ key: String, value: Any) {
+        guard let value = value as? [String: Any] else {
+            print("Failed update Flag: \(key)")
+            return
+        }
         RNZohoSalesIQMobilisten.mainThread {
             
             var flag: MobilistenFlag?
@@ -2155,12 +2165,16 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 flag = .trackAppInstalledTime
             case self.SHOW_END_SESSION_IN_INAPP_NOTIFICATION:
                 flag = .showEndSessionInAppNotification
+            case self.CHAT_BOT_CAROUSEL_CARD_ORIENTATION:
+                flag = .inputCarouselCardOrientation
+            case self.CHAT_BOT_CAROUSEL_CARD_IMAGE_VISIBILITY:
+                flag = .showInputCarouselCardImage
             default:
                 flag = nil
             }
             
             if let validFlag = flag {
-                ZohoSalesIQ.updateConfigurationFlag(validFlag, value: value)
+                ZohoSalesIQ.updateConfigurationFlag(validFlag, value: value["value"] as Any)
             } else {
                 print("Invalid Flag type: \(key)")
             }

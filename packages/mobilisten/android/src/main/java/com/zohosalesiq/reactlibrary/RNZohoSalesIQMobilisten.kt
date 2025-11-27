@@ -604,8 +604,10 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
         )
     }
 
-    @ReactMethod
-    override fun updateConfiguration(key: String, value: Boolean) {
+    override fun updateConfiguration(key: String?, value: ReadableMap?) {
+        if (key == null) {
+            return
+        }
         RNZohoSalesIQ.sharedInstance?.updateConfiguration(key, value)
     }
 

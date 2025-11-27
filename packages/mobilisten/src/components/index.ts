@@ -261,7 +261,24 @@ export const ZSIQWrapper = {
   },
 
   updateConfiguration: function (configuration, value) {
-    RNZohoSalesIQ.updateConfiguration(configuration, value);
+    const valueType = typeof value;
+    let payload: { type: string; value: any };
+
+    switch (valueType) {
+      case 'string':
+        payload = { type: 'string', value };
+        break;
+      case 'number':
+        payload = { type: 'number', value };
+        break;
+      case 'boolean':
+        payload = { type: 'boolean', value };
+        break;
+      default:        
+        throw new Error(`Unsupported value type: ${valueType}`);
+    }
+    console.log('Updating configuration:', configuration, 'with value type:', valueType);
+    RNZohoSalesIQ.updateConfiguration(configuration, payload);
   },
 
   ...ZSIQNotification,
