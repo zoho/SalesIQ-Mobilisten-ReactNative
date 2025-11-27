@@ -1,10 +1,15 @@
-[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-12.0.0-blue.svg)](https://mobilisten.io/)
+[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-12.1.0-blue.svg)](https://mobilisten.io/) [![Expo Compatible](https://img.shields.io/badge/Expo-Compatible-brightgreen.svg)](https://expo.dev)
 
 # React Native module for SalesIQ Mobilisten SDK
 
 Connect with customers at every step of their journey. Give them the best in-app live chat
 experience with Mobilisten. Mobilisten enables customers to reach you from any screen on your app,
 get their questions answered, and make better purchase decisions.
+
+## Platform Compatibility
+
+✅ **React Native** - Fully supported  
+✅ **Expo** - Fully supported with development builds (Expo Go not supported due to native dependencies)
 
 ## Getting Started
 
@@ -45,7 +50,23 @@ for more details with calls integration
 
 2. Link the module with the react native app
    If you're using React Native v0.60 or above, the dependency will be linked automatically without
-   any steps being taken.
+   any steps being taken. **Expo projects with development builds will autolink automatically.**
+
+### Expo Projects
+
+This package is compatible with Expo projects using **development builds** (custom development client). It **cannot run in Expo Go** due to native dependencies.
+
+```bash
+# Install the package
+npm install @react-native-zohosalesiq/mobilisten-core @react-native-zohosalesiq/mobilisten
+
+# Create a development build
+npx expo prebuild
+npx expo run:ios
+npx expo run:android
+```
+
+The package will be automatically linked via Expo autolinking. No additional configuration needed!
 
 #### Android: Auto linking with React Native v0.59 and below
 

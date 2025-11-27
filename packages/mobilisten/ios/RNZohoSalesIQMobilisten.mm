@@ -120,7 +120,7 @@ RCT_EXTERN_METHOD(updateListener:(NSString *)listener);
 RCT_EXTERN_METHOD(writeLogForiOS:(NSString *)message logLevel:(NSString *)logLevel callback:(RCTResponseSenderBlock)callback);
 RCT_EXTERN_METHOD(registerLocalizationFile:(NSString *)name);
 RCT_EXTERN_METHOD(reRegisterPush);
-RCT_EXTERN_METHOD(updateConfiguration:(NSString*) key value:(BOOL)value);
+RCT_EXTERN_METHOD(updateConfiguration:(NSString*)key value:(id)value);
 
 RCT_EXTERN_METHOD(fetchDepartments:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(setAttributes:(NSDictionary *)attributes resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject);

@@ -172,7 +172,7 @@ export interface Spec extends TurboModule {
   getKnowledgeBaseSingleResource(type: string, id: string, callback: () => void): void;
   getKnowledgeBaseResources(type: string, departmentID: string, parentCategoryID: string, page: number, limit: number, searchKey: string, callback: () => void): void;
   getKnowledgeBaseCategories(type: string, departmentID: string | null, parentCategoryID: string | null, callback: () => void): void;
-  updateConfiguration(key: string, value: boolean): void;
+  updateConfiguration(key: string, value: Object): void;
   registerLocalizationFile(fileName: string): void;
   reRegisterPush(): void;
   getCommunicationMode(): Promise<CommunicationMode | null>;
