@@ -135,7 +135,7 @@ dependencies {
     implementation "com.facebook.react:react-native:+"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api project(':react-native-zohosalesiq_mobilisten-core')
-    api 'com.zoho.salesiq:mobilisten-calls:0.0.3'
+    api 'com.zoho.salesiq:mobilisten-calls:0.0.4'
 }
 
 if (isNewArchitectureEnabled()) {

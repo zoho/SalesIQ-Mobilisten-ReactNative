@@ -1,6 +1,6 @@
 {
   "name": "@react-native-zohosalesiq/mobilisten",
-  "version": "12.1.1",
+  "version": "12.1.2",
   "description": "A React Native module for the ZohoSalesIQ Mobilisten SDK",
   "main": "lib/index.js",
   "module": "lib/index.js",
