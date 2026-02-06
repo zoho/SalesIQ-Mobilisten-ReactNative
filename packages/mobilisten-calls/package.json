@@ -1,6 +1,6 @@
 {
   "name": "@react-native-zohosalesiq/mobilisten-calls",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "A React Native module for the ZohoSalesIQ Mobilisten Calls SDK",
   "main": "lib/index.js",
   "module": "lib/index.js",

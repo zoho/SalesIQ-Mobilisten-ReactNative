@@ -5,7 +5,7 @@ folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 
 
 Pod::Spec.new do |s|
   s.name         = "RNZohoSalesIQCalls"
-  s.version      = "1.1.0"
+  s.version      = "1.2.0"
   s.summary      = package["description"]
   s.homepage     = package["homepage"]
   s.license      = package["license"]
@@ -40,6 +40,6 @@ Pod::Spec.new do |s|
    end
   end 
 
-  s.dependency "Mobilisten", "10.2.2"
+  s.dependency "Mobilisten", "10.4.1"
   s.dependency "MobilistenCalls", "#{s.version}"
 end
