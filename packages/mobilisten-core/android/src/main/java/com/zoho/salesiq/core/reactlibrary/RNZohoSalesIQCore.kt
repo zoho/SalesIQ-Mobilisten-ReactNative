@@ -145,6 +145,25 @@ class RNZohoSalesIQCore private constructor(reactContext: ReactApplicationContex
             }.build()
         }
 
+        fun getConversationAttributes(departmentName: String?, secretFields: ReadableMap?): SalesIQConversationAttributes {
+            return SalesIQConversationAttributes.Builder().apply {
+                departmentName?.let {
+                    val dept = SIQDepartment(
+                        id = null,
+                        name = it,
+                        communicationMode = CommunicationMode.CHAT)
+                    setDepartments(listOf(dept))
+                }
+                secretFields.let { secretFields ->
+                        secretFields?.toMap()?.mapValues { (_, value) ->
+                            value?.toString() ?: ""
+                        }?.let {
+                            setCustomSecretFields(it)
+                        }
+                }
+            }.build()
+        }
+
         fun ReadableMap?.toMap(): Map<String, Any?>? {
             if (this == null) {
                 return null

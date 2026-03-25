@@ -17,7 +17,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         return true
     }
     
-    public static let sharedInstance = RNZohoSalesIQMobilisten()
+    nonisolated(unsafe) public static let sharedInstance = RNZohoSalesIQMobilisten()
     private var hasSIQEventListener = false
     private var handleURI = true
     private var actionDictionary: [String: SIQActionHandler] = [:]
@@ -94,6 +94,9 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let EMAIL_TRANSCRIPT = "EMAIL_TRANSCRIPT"
     let FILE_SHARE = "FILE_SHARE"
     let MEDIA_CAPTURE = "MEDIA_CAPTURE"
+    let TAKE_PHOTO = "TAKE_PHOTO"
+    let RECORD_VIDEO = "RECORD_VIDEO"
+    let MEDIA_LIBRARY = "MEDIA_LIBRARY"
     let END = "END"
     let END_WHEN_IN_QUEUE = "END_WHEN_IN_QUEUE"
     let END_WHEN_BOT_CONNECTED = "END_WHEN_BOT_CONNECTED"
@@ -1530,6 +1533,9 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             case self.EMAIL_TRANSCRIPT: component = .emailTranscript
             case self.FILE_SHARE: component = .fileSharing
             case self.MEDIA_CAPTURE: component = .mediaCapture
+            case self.TAKE_PHOTO: component = .takePhoto
+            case self.RECORD_VIDEO: component = .recordVideo
+            case self.MEDIA_LIBRARY: component = .photoLibrary
             case self.END: component = .end
             case self.END_WHEN_IN_QUEUE: component = .endWhenInQueue
             case self.END_WHEN_BOT_CONNECTED: component = .endWhenBotConnected
@@ -1989,6 +1995,21 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     func startNewChatWithTrigger(_ chatId: String?, department: String?, callback: @escaping RCTResponseSenderBlock) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.Chat.startWithTrigger(chatID: chatId, department: department) { error, chat in
+                if let error = error {
+                    let errorDictionary = RNZohoSalesIQMobilisten.getSIQErrorObject(siqError: error)
+                    callback([errorDictionary, NSNull()])
+                } else if let chat = chat {
+                    let chatDict = RNZohoSalesIQMobilisten.getChatObject(chat: chat)
+                    callback([NSNull(), chatDict])
+                }
+            }
+        }
+    }
+
+    // @objc(initNewChatWithTrigger:chatId:departmentName:secretField:callback:)
+    func initNewChatWithTrigger(_ customAction: String, chatId: String?, department: String?, secretField: [String: Any]?, callback: @escaping RCTResponseSenderBlock) {
+        RNZohoSalesIQMobilisten.mainThread {
+            ZohoSalesIQ.Chat.startWithTrigger(actionName: customAction, chatID: chatId, department: department, secretFields: secretField) { error, chat in
                 if let error = error {
                     let errorDictionary = RNZohoSalesIQMobilisten.getSIQErrorObject(siqError: error)
                     callback([errorDictionary, NSNull()])

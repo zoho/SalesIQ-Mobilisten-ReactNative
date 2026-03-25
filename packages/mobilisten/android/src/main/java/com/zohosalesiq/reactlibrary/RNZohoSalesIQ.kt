@@ -1842,6 +1842,25 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     }
 
     @ReactMethod
+    fun initNewChatWithTrigger(
+        customAction: String,
+        customChatId: String?,
+        departmentName: String?,
+        secretField: ReadableMap?,
+        callback: Callback?,
+    ) {
+        val attributes = RNZohoSalesIQCore.getConversationAttributes(departmentName, secretField)
+        val finalCallback = arrayOf(callback)
+
+        ZohoSalesIQ.Chat.startWithTrigger(
+            customAction, customChatId, attributes
+        ) {
+            result ->
+            finalCallback[0] = null
+        }
+    }
+
+    @ReactMethod
     fun getChat(chatId: String, callback: Callback?) {
         ZohoSalesIQ.Chat.get(
             chatId
@@ -2245,7 +2264,10 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                 "VISITOR_NAME" -> chatComponent = ChatComponent.visitorName
                 "EMAIL_TRANSCRIPT" -> chatComponent = ChatComponent.emailTranscript
                 "FILE_SHARE" -> chatComponent = ChatComponent.fileShare
-                "MEDIA_CAPTURE" -> chatComponent = ChatComponent.mediaCapture
+                "MEDIA_CAPTURE" -> chatComponent = ChatComponent.takePhoto
+                "TAKE_PHOTO" -> chatComponent = ChatComponent.takePhoto
+                "RECORD_VIDEO" -> chatComponent = ChatComponent.recordVideo
+                "MEDIA_LIBRARY" -> chatComponent = ChatComponent.gallery
                 "END" -> chatComponent = ChatComponent.end
                 "END_WHEN_IN_QUEUE" -> chatComponent = ChatComponent.endWhenInQueue
                 "END_WHEN_BOT_CONNECTED" -> chatComponent = ChatComponent.endWhenBotConnected
