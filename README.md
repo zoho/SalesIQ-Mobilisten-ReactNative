@@ -145,7 +145,7 @@ if (Platform.OS === 'ios'){
     ACCESS_KEY = "android_access_key";
 }
 
-// OPTIONAL - Only If Calls feature is required.
+// OPTIONAL - Only if Calls feature is required.
 ZohoSalesIQCalls.initialiseForiOS();
 
 ZohoSalesIQ.initialize({ appKey: APP_KEY, accessKey: ACCESS_KEY }).then(() => {
