@@ -132,22 +132,22 @@ export interface ChatTypes {
       callback?: (error: CallbackError, result: SalesIQChat | null) => void
     ) => void;
 
-    /**
-     *
-     * @param customAction
-     * @param customChatId
-     * @param departmentName
-     * @param secretField
-     * @param callback
-     * @returns
-     */
-    initWithTrigger: (
-      customAction: string,
-      chatId?: string | null,
-      departmentName?: string | null,
-      secretField?: Object | null,
-      callback?: (error: CallbackError, result: SalesIQChat | null) => void
-    ) => void;
+//     /**
+//      *
+//      * @param customAction
+//      * @param customChatId
+//      * @param departmentName
+//      * @param secretField
+//      * @param callback
+//      * @returns
+//      */
+//     initWithTrigger: (
+//       customAction: string,
+//       chatId?: string | null,
+//       departmentName?: string | null,
+//       secretField?: Object | null,
+//       callback?: (error: CallbackError, result: SalesIQChat | null) => void
+//     ) => void;
 
     /**
      *

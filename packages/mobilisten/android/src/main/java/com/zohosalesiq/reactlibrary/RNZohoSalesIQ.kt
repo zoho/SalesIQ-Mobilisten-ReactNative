@@ -1841,24 +1841,24 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         }
     }
 
-    @ReactMethod
-    fun initNewChatWithTrigger(
-        customAction: String,
-        customChatId: String?,
-        departmentName: String?,
-        secretField: ReadableMap?,
-        callback: Callback?,
-    ) {
-        val attributes = RNZohoSalesIQCore.getConversationAttributes(departmentName, secretField)
-        val finalCallback = arrayOf(callback)
-
-        ZohoSalesIQ.Chat.startWithTrigger(
-            customAction, customChatId, attributes
-        ) {
-            result ->
-            finalCallback[0] = null
-        }
-    }
+//    @ReactMethod
+//    fun initNewChatWithTrigger(
+//        customAction: String,
+//        customChatId: String?,
+//        departmentName: String?,
+//        secretField: ReadableMap?,
+//        callback: Callback?,
+//    ) {
+//        val attributes = RNZohoSalesIQCore.getConversationAttributes(departmentName, secretField)
+//        val finalCallback = arrayOf(callback)
+//
+//        ZohoSalesIQ.Chat.startWithTrigger(
+//            customAction, customChatId, attributes
+//        ) {
+//            result ->
+//            finalCallback[0] = null
+//        }
+//    }
 
     @ReactMethod
     fun getChat(chatId: String, callback: Callback?) {
