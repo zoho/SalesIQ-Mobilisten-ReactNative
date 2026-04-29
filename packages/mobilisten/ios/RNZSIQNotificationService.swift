@@ -30,6 +30,7 @@ public class RNZSIQNotificationService: NSObject {
     }
 
     @objc
+    @MainActor
     public static func handlePushNotificationAction(actionIdentifier: String? = nil, userInfo: [AnyHashable: Any], responseText: String? = nil, completion: @escaping () -> Void) {
         RNZohoSalesIQMobilisten.handlePushNotificationAction(actionIdentifier: actionIdentifier, userInfo: userInfo, responseText: responseText, completion: completion)
     }

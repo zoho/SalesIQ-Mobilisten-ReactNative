@@ -13,7 +13,7 @@ import MobilistenCallsCore
 @objc(RNZohoSalesIQMobilistenCalls)
 class RNZohoSalesIQMobilistenCalls: RCTEventEmitter {
     
-    public static let sharedInstance = RNZohoSalesIQMobilistenCalls()
+    nonisolated(unsafe) public static let sharedInstance = RNZohoSalesIQMobilistenCalls()
     
     
     private var hasSIQEventListener = false
@@ -438,15 +438,13 @@ extension RNZohoSalesIQMobilistenCalls {
 }
 
 extension RNZohoSalesIQMobilistenCalls {
+    @MainActor
     func enableVoIP(_ token: String, isTestDevice: Bool, isProductionMode: Bool) {
-        Task { @MainActor in
-            ZohoSalesIQCalls.enableVoIP(token, isTestDevice: isTestDevice, mode: isProductionMode ? .production : .sandbox)
-        }
+        ZohoSalesIQCalls.enableVoIP(token, isTestDevice: isTestDevice, mode: isProductionMode ? .production : .sandbox)
     }
     
+    @MainActor
     func handleVoIPNotificationAction(_ info: [AnyHashable : Any], completion: @escaping () -> Void) {
-        Task { @MainActor in
-            ZohoSalesIQCalls.handleVOIPNotificationAction(info, completion: completion)
-        }
+        ZohoSalesIQCalls.handleVOIPNotificationAction(info, completion: completion)
     }
 }

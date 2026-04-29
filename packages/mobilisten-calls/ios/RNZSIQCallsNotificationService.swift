@@ -9,12 +9,14 @@ import Foundation
 
 @objc
 public class RNZSIQCallsNotificationService: NSObject {
-     @objc
+    @objc
+    @MainActor
     public static func enableVoIP(_ token: String, isTestDevice: Bool, isProductionMode: Bool) {
         RNZohoSalesIQMobilistenCalls.sharedInstance.enableVoIP(token, isTestDevice: isTestDevice, isProductionMode: isProductionMode)
     }
     
     @objc
+    @MainActor
     public static func handleVoIPNotificationAction(_ info: [AnyHashable : Any], completion: @escaping () -> Void) {
         RNZohoSalesIQMobilistenCalls.sharedInstance.handleVoIPNotificationAction(info, completion: completion)
     }

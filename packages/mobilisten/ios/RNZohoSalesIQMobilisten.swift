@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Mobilisten
+@preconcurrency import Mobilisten
 import MobilistenCore
 
 @objc(RNZohoSalesIQMobilisten)
@@ -642,10 +642,9 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         ZohoSalesIQ.handleNotificationAction(info, response: response)
     }
 
+    @MainActor
     static func handlePushNotificationAction(actionIdentifier: String? = nil, userInfo: [AnyHashable : Any], responseText: String? = nil, completion: @escaping () -> Void) {
-        Task { @MainActor in
-            ZohoSalesIQ.handlePushNotificationAction(actionIdentifier: actionIdentifier, userInfo: userInfo, responseText: responseText, completion: completion)
-        }
+        ZohoSalesIQ.handlePushNotificationAction(actionIdentifier: actionIdentifier, userInfo: userInfo, responseText: responseText, completion: completion)
     }
     
     func openNewChat() {
