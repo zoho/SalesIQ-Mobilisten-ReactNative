@@ -148,6 +148,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             constants["CHAT_OPENED"] = EVENT_CHAT_OPENED // No I18N
             constants["CHAT_CLOSED"] = EVENT_CHAT_CLOSED // No I18N
             constants["CHAT_REOPENED"] = EVENT_CHAT_REOPENED // No I18N
+            constants["CHAT_EXPIRED"] = EVENT_CHAT_EXPIRED // No I18N
             constants["FEEDBACK_RECEIVED"] = EVENT_FEEDBACK_RECEIVED // No I18N
             constants["RATING_RECEIVED"] = EVENT_RATING_RECEIVED // No I18N
             constants["PERFORM_CHATACTION"] = EVENT_PERFORM_CHATACTION // No I18N
@@ -1560,6 +1561,17 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             eventEmitter(EVENT_CHAT_REOPENED, visitorMap)
         }
 
+        override fun onChatExpired(chat: VisitorChat?) {
+            val visitorMap = chat?.let { getChatMapObject(it) }
+            eventEmitter(
+                CHAT_EVENT_LISTENER, RNZohoSalesIQCore.getEventEmitterObjectWithMap(
+                    EVENT_CHAT_EXPIRED, visitorMap?.copy()
+                )
+            )
+
+            eventEmitter(EVENT_CHAT_EXPIRED, visitorMap)
+        }
+
         override fun handleCustomAction(
             salesIQCustomAction: SalesIQCustomAction,
             salesIQCustomActionListener: SalesIQCustomActionListener,
@@ -2128,6 +2140,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         private const val EVENT_CHAT_OPENED = "EVENT_CHAT_OPENED" // No I18N
         private const val EVENT_CHAT_CLOSED = "EVENT_CHAT_CLOSED" // No I18N
         private const val EVENT_CHAT_REOPENED = "EVENT_CHAT_REOPENED" // No I18N
+        private const val EVENT_CHAT_EXPIRED = "EVENT_CHAT_EXPIRED" // No I18N
         private const val EVENT_ARTICLE_LIKED = "EVENT_ARTICLE_LIKED" // No I18N
         private const val EVENT_ARTICLE_DISLIKED = "EVENT_ARTICLE_DISLIKED" // No I18N
         private const val EVENT_ARTICLE_OPENED = "EVENT_ARTICLE_OPENED" // No I18N

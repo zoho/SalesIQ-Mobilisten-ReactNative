@@ -39,6 +39,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let ARTICLE_DISLIKED = "ARTICLE_DISLIKED"
     let CHAT_ATTENDED = "EVENT_CHAT_ATTENDED"
     let CHAT_CLOSED = "EVENT_CHAT_CLOSED"
+    let CHAT_EXPIRED = "EVENT_CHAT_EXPIRED"
     let FEEDBACK_RECEIVED = "EVENT_FEEDBACK_RECEIVED"
     let CHAT_MISSED = "EVENT_CHAT_MISSED"
     let CHAT_OPENED = "EVENT_CHAT_OPENED"
@@ -142,6 +143,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 FEEDBACK_RECEIVED,
                 CHAT_MISSED,
                 CHAT_OPENED,
+                CHAT_EXPIRED,
                 RATING_RECEIVED,
                 CHAT_REOPENED,
                 VISITOR_IPBLOCKED,
@@ -778,6 +780,12 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     func chatOpened(chat: SIQVisitorChat?) {
         if hasSIQEventListener, let chat {
             sendRCTEvent(withName:CHAT_EVENT_LISTENER, body: RNZohoSalesIQMobilisten.getEventEmitterObject(CHAT_OPENED, body: RNZohoSalesIQMobilisten.getChatObject(chat: chat)))
+        }
+    }
+    
+    func chatExpired(chat: SIQVisitorChat?) {
+        if hasSIQEventListener, let chat {
+            sendRCTEvent(withName:CHAT_EVENT_LISTENER, body: RNZohoSalesIQMobilisten.getEventEmitterObject(CHAT_EXPIRED, body: RNZohoSalesIQMobilisten.getChatObject(chat: chat)))
         }
     }
     

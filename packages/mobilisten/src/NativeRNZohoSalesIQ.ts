@@ -23,6 +23,7 @@ export interface Spec extends TurboModule {
     CHAT_REOPENED: string;
     ARTICLE_OPENED: string;
     CHAT_OPENED: string;
+    CHAT_EXPIRED: string;
     KNOWLEDGEBASE_EVENT_LISTENER: string;
     TYPE_WAITING: string;
     LAUNCHER_VISIBILITY_MODE_WHEN_ACTIVE_CHAT: string;

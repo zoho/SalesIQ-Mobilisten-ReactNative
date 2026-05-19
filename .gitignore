@@ -9,3 +9,6 @@ build/
 node_modules/
 dist/
 packages/mobilisten/android/.gradle
+/packages/mobilisten/lib
+/packages/mobilisten-core/lib
+*.tsbuildinfo

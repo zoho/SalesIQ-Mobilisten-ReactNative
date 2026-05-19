@@ -17,7 +17,8 @@ interface CommonChatEventPayload {
     | ChatListenerEvent.CHAT_MISSED
     | ChatListenerEvent.CHAT_QUEUE_POSITION_CHANGED
     | ChatListenerEvent.RATING_RECEIVED
-    | ChatListenerEvent.CHAT_REOPENED;
+    | ChatListenerEvent.CHAT_REOPENED
+    | ChatListenerEvent.CHAT_EXPIRED;
   body: SalesIQChat;
 }
 
@@ -130,4 +131,9 @@ export enum ChatListenerEvent {
    * Note: Android only
    */
   BOT_TRIGGER = 'EVENT_BOT_TRIGGER',
+
+  /**
+   * Invoked when a trigger chat has expired.
+   */
+  CHAT_EXPIRED = 'EVENT_CHAT_EXPIRED',
 }
