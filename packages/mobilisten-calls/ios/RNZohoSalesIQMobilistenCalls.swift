@@ -11,7 +11,7 @@ import MobilistenCore
 import MobilistenCallsCore
 
 @objc(RNZohoSalesIQMobilistenCalls)
-class RNZohoSalesIQMobilistenCalls: RCTEventEmitter {
+class RNZohoSalesIQMobilistenCalls: RCTEventEmitter, @unchecked Sendable {
     
     nonisolated(unsafe) public static let sharedInstance = RNZohoSalesIQMobilistenCalls()
     
@@ -20,10 +20,6 @@ class RNZohoSalesIQMobilistenCalls: RCTEventEmitter {
     private let ZSIQ_CALLS_EVENT_LISTENER = "ZSIQ_CALLS_EVENT_LISTENER"
     private let CALL_STATE_CHANGED = "EVENT_STATE_CHANGED"
     private let QUEUE_POSITION_CHANGED = "EVENT_QUEUE_POSITION_CHANGED"
-    
-    let onMain: (@escaping () -> Void) -> Void = { block in
-        Thread.isMainThread ? block() : DispatchQueue.main.async(execute: block)
-    }
     
     override func startObserving() {
         hasSIQEventListener = true
@@ -49,10 +45,12 @@ class RNZohoSalesIQMobilistenCalls: RCTEventEmitter {
     // }
 
     // MARK: - isEnabled
-    @MainActor @objc
+    @objc
     func initialiseForiOS() {
-        ZohoSalesIQCalls.initialise()
-        ZohoSalesIQCalls.delegate = self
+        Task { @MainActor in
+            ZohoSalesIQCalls.initialise()
+            ZohoSalesIQCalls.delegate = self
+        }
     }
     
     override func supportedEvents() -> [String]! {
@@ -65,79 +63,93 @@ class RNZohoSalesIQMobilistenCalls: RCTEventEmitter {
 
     
     // MARK: - isEnabled
-    @MainActor @objc
-    func isEnabled(_ resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-        resolve(ZohoSalesIQCalls.isEnabled)
+    @objc
+    func isEnabled(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        nonisolated(unsafe) let resolve = resolve
+        Task { @MainActor in
+            resolve(ZohoSalesIQCalls.isEnabled)
+        }
     }
     
     // MARK: - currentCallId
-    @MainActor @objc
-    func getCurrentCallId(_ resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-        resolve(ZohoSalesIQCalls.currentCallID)
+    @objc
+    func getCurrentCallId(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        nonisolated(unsafe) let resolve = resolve
+        Task { @MainActor in
+            resolve(ZohoSalesIQCalls.currentCallID)
+        }
     }
     
     // MARK: - enterFullScreenMode
-    @MainActor @objc
+    @objc
     func enterFullScreenMode() {
-        onMain {
+        Task { @MainActor in
             ZohoSalesIQCalls.switchToFullScreen()
         }
     }
     
     // MARK: - enterFloatingViewMode
-    @MainActor @objc
+    @objc
     func enterFloatingViewMode() {
-        onMain {
+        Task { @MainActor in
             ZohoSalesIQCalls.switchToFloatingScreen()
         }
     }
     
     // MARK: - currentCallState
-    @MainActor @objc
-    func getCurrentCallState(_ resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-        let currentState = ZohoSalesIQCalls.currentState
-        resolve(getCallStatus(currentState))
+    @objc
+    func getCurrentCallState(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        nonisolated(unsafe) let resolve = resolve
+        Task { @MainActor in
+            resolve(getCallStatus(ZohoSalesIQCalls.currentState))
+        }
     }
     
     // MARK: - setTitle
-    @MainActor @objc
+    @objc
     func setTitle(_ online: String?, offline: String?) {
-        ZohoSalesIQCalls.setTitle(online: online, offline: offline)
+        Task { @MainActor in
+            ZohoSalesIQCalls.setTitle(online: online, offline: offline)
+        }
     }
     
     // MARK: - setVisibility
-    @MainActor @objc
+    @objc
     func setVisibility(_ component: String, visible: Bool) {
         guard let component = getComponents(component) else {
             return
         }
-        ZohoSalesIQCalls.setVisibility(component, visible: visible)
+        Task { @MainActor in
+            ZohoSalesIQCalls.setVisibility(component, visible: visible)
+        }
     }
     
-        // MARK: - end
-    @MainActor @objc
+    // MARK: - end
+    @objc
     func end(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        onMain {
-            ZohoSalesIQCalls.end { [self] error, conversation in
+        nonisolated(unsafe) let resolve = resolve
+        nonisolated(unsafe) let reject = reject
+        Task { @MainActor in
+            ZohoSalesIQCalls.end { @Sendable [self] error, conversation in
                 if let error = error {
-                    reject("\(error.code)" ,error.message, nil)
+                    reject("\(error.code)", error.message, nil)
+                } else if let chatConversation = conversation as? SalesIQChat {
+                    resolve(self.getChatConversationDict(chatConversation))
+                } else if let callConversation = conversation as? SalesIQCall {
+                    resolve(self.getCallConversationDict(callConversation))
                 } else {
-                    if let chatConversation = conversation as? SalesIQChat {
-                        resolve(getChatConversationDict(chatConversation))
-                    } else if let callConversation = conversation as? SalesIQCall {
-                        resolve(getCallConversationDict(callConversation))
-                    } else {
-                        reject("401" ,"No ongoing call present", nil)
-                    }
+                    reject("401", "No ongoing call present", nil)
                 }
             }
         }
     }
     
-    @MainActor @objc
+    @objc
     func getList(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        onMain {
-            ZohoSalesIQCalls.getList { [self] error, conversations in
+        nonisolated(unsafe) let resolve = resolve
+        nonisolated(unsafe) let reject = reject
+        Task { @MainActor in
+            ZohoSalesIQCalls.getList { @Sendable [self] error, conversations in
                 if let error = error {
                     reject("\(error.code)" ,error.message, nil)
                 } else {
@@ -157,24 +169,27 @@ class RNZohoSalesIQMobilistenCalls: RCTEventEmitter {
         }
     }
 
-    @MainActor @objc
+    @objc
     func start(_ id: String?, displayActiveCall: Bool = false, attributes: [String: Any]?, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
-        onMain {
+        nonisolated(unsafe) let resolver = resolver
+        nonisolated(unsafe) let rejecter = rejecter
+        nonisolated(unsafe) let attributes = attributes
+        Task { @MainActor in
             var name: String? {
                 guard let name = attributes?["name"] as? String else { return nil }
                 return name
             }
-            
+
             var additionalInfo: String? {
                 guard let additionalInfo = attributes?["additionalInfo"] as? String else { return nil }
                 return additionalInfo
             }
-            
+
             var displayImage: String? {
                 guard let displayPicture = attributes?["displayPicture"] as? String else { return nil }
                 return displayPicture
             }
-            
+
             var departments: [SIQDepartment] {
                 if let departments = attributes?["departments"] as? [[String: Any]] {
                     var departmentsList: [SIQDepartment] = []
@@ -182,7 +197,8 @@ class RNZohoSalesIQMobilistenCalls: RCTEventEmitter {
                         let id = department["id"] as? String
                         let name = department["name"] as? String
                         if id?.isEmpty == false || name?.isEmpty == false {
-                            if let mode = department["communicationMode"] as? String, let communicationMode = self.getCommunicationMode(mode) {
+                            if let mode = department["communicationMode"] as? String,
+                               let communicationMode = getCommunicationMode(mode) {
                                 departmentsList.append(SIQDepartment(id: id, name: name, mode: communicationMode))
                             }
                         }
@@ -191,27 +207,27 @@ class RNZohoSalesIQMobilistenCalls: RCTEventEmitter {
                 }
                 return []
             }
-            
-            ZohoSalesIQCalls.start(id: id, name: name, additionalInfo: additionalInfo, displayImage: displayImage, departments: departments, displayActiveCall: displayActiveCall) { [self] error, conversation in
+
+            ZohoSalesIQCalls.start(id: id, name: name, additionalInfo: additionalInfo, displayImage: displayImage, departments: departments, displayActiveCall: displayActiveCall) { @Sendable [self] error, conversation in
                 if let error = error {
-                    rejecter("\(error.code)" ,error.message, nil)
-                } else {
-                    if let chatConversation = conversation as? SalesIQChat {
-                        resolver(getChatConversationDict(chatConversation))
-                    } else if let callConversation = conversation as? SalesIQCall {
-                        resolver(getCallConversationDict(callConversation))
-                    }
+                    rejecter("\(error.code)", error.message, nil)
+                } else if let chatConversation = conversation as? SalesIQChat {
+                    resolver(self.getChatConversationDict(chatConversation))
+                } else if let callConversation = conversation as? SalesIQCall {
+                    resolver(self.getCallConversationDict(callConversation))
                 }
             }
         }
     }
 
-    @MainActor @objc
+    @objc
     func setCallKitIcon(_ icon: String) {
-        ZohoSalesIQCalls.setCallKitIcon(icon: icon)
+        Task { @MainActor in
+            ZohoSalesIQCalls.setCallKitIcon(icon: icon)
+        }
     }
 
-    @MainActor @objc
+    @objc
     func setAndroidReplyMessages(_ messages: [String]) {
         
     }
@@ -438,13 +454,17 @@ extension RNZohoSalesIQMobilistenCalls {
 }
 
 extension RNZohoSalesIQMobilistenCalls {
-    @MainActor
     func enableVoIP(_ token: String, isTestDevice: Bool, isProductionMode: Bool) {
-        ZohoSalesIQCalls.enableVoIP(token, isTestDevice: isTestDevice, mode: isProductionMode ? .production : .sandbox)
+        Task { @MainActor in
+            ZohoSalesIQCalls.enableVoIP(token, isTestDevice: isTestDevice, mode: isProductionMode ? .production : .sandbox)
+        }
     }
-    
-    @MainActor
-    func handleVoIPNotificationAction(_ info: [AnyHashable : Any], completion: @escaping () -> Void) {
-        ZohoSalesIQCalls.handleVOIPNotificationAction(info, completion: completion)
+
+    func handleVoIPNotificationAction(_ info: [AnyHashable: Any], completion: @escaping () -> Void) {
+        nonisolated(unsafe) let info = info
+        nonisolated(unsafe) let completion = completion
+        Task { @MainActor in
+            ZohoSalesIQCalls.handleVOIPNotificationAction(info, completion: completion)
+        }
     }
 }
