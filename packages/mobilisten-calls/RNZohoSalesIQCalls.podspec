@@ -40,6 +40,6 @@ Pod::Spec.new do |s|
    end
   end 
 
-  s.dependency "Mobilisten", "10.4.6"
+  s.dependency "Mobilisten", "10.4.7"
   s.dependency "MobilistenCalls", "#{s.version}"
 end
