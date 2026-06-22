@@ -3,6 +3,7 @@ export { SalesIQUser, SalesIQGuestUser } from './components/auth';
 export { SalesIQAuth } from './components/auth/SalesIQAuth';
 export { ZSIQWrapper as ZohoSalesIQ } from "./components";
 export { ZSIQChatComponent } from './components/chat/types/Chat';
+export type { ZSIQVisitorInfo } from './types/ZSIQWrapperTypes';
 
 
 // {/**

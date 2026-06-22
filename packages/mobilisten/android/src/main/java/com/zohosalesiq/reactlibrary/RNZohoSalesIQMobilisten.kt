@@ -302,13 +302,25 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun registerVisitor(uniqueId: String, callback: Callback) {
+    override fun registerVisitor(uniqueId: String, callback: Callback?) {
         RNZohoSalesIQ.sharedInstance?.registerVisitor(uniqueId, callback)
     }
 
     @ReactMethod
-    override fun unregisterVisitor(callback: Callback) {
+    override fun unregisterVisitor(callback: Callback?) {
         RNZohoSalesIQ.sharedInstance?.unregisterVisitor(callback)
+    }
+
+    @ReactMethod
+    override fun registerVisitorNew(
+        uniqueId: String?, visitorInfo: ReadableMap?, callback: Callback?
+    ) {
+        RNZohoSalesIQ.sharedInstance?.registerVisitorNew(uniqueId, visitorInfo, callback)
+    }
+
+    @ReactMethod
+    override fun unregisterVisitorNew(registerAsGuest: Boolean, callback: Callback?) {
+        RNZohoSalesIQ.sharedInstance?.unregisterVisitorNew(registerAsGuest, callback)
     }
 
     @ReactMethod

@@ -20,7 +20,11 @@ def reactNativeArchitectures() {
 }
 
 def isNewArchitectureEnabled() {
-    return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
+    // RN 0.82+ enables New Architecture by default and may not expose newArchEnabled.
+    if (rootProject.hasProperty("newArchEnabled")) {
+        return rootProject.getProperty("newArchEnabled") == "true"
+    }
+    return true
 }
 
 apply plugin: "com.android.library"
@@ -135,7 +139,7 @@ dependencies {
     implementation "com.facebook.react:react-native:+"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api 'com.squareup.retrofit2:converter-gson:2.9.0'
-    api 'com.zoho.salesiq:mobilisten-core:0.0.3'
+    api 'com.zoho.salesiq:mobilisten-core:0.0.5'
 }
 
 if (isNewArchitectureEnabled()) {

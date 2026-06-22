@@ -1469,9 +1469,34 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     }
     
     @objc(registerVisitor:callback:)
-    func registerVisitor(_ uniqueID: String, callback: @escaping RCTResponseSenderBlock) {
+    func registerVisitor(_ uniqueID: String?, callback: @escaping RCTResponseSenderBlock) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.registerVisitor(uniqueID) { success in
+                callback([NSNull(), success])
+            }
+        }
+    }
+
+    @objc(registerVisitorNew:visitorInfo:callback:)
+    func registerVisitorNew(_ uniqueID: String?, visitorInfo: NSDictionary?, callback: @escaping RCTResponseSenderBlock) {
+        RNZohoSalesIQMobilisten.mainThread {
+            let visitorInfoObj = visitorInfo.flatMap { info -> ZSIQVisitorInfo? in
+                let visitorInfo = ZSIQVisitorInfo()
+                if let name = info["name"] as? String {
+                    visitorInfo.name = name
+                }
+                if let email = info["email"] as? String {
+                    visitorInfo.email = email
+                }
+                if let phone = info["phone"] as? String {
+                    visitorInfo.phone = phone
+                }
+                if let customInfo = info["customInfo"] as? [String: String] {
+                    visitorInfo.customInfo = customInfo
+                }
+                return visitorInfo
+            }
+            ZohoSalesIQ.registerVisitor(uniqueID, visitorInfo: visitorInfoObj) { success in
                 callback([NSNull(), success])
             }
         }
@@ -2136,6 +2161,15 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     func unregisterVisitor(callback: @escaping RCTResponseSenderBlock) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.unregisterVisitor { success in
+                callback([NSNull(), success])
+            }
+        }
+    }
+
+    @objc(unregisterVisitorNew:callback:)
+    func unregisterVisitorNew(_ registerAsGuest: Bool, callback: @escaping RCTResponseSenderBlock) {
+        RNZohoSalesIQMobilisten.mainThread {
+            ZohoSalesIQ.unregisterVisitor(registerGuest: registerAsGuest) { success in
                 callback([NSNull(), success])
             }
         }

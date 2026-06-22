@@ -61,6 +61,13 @@ export type CallbackError = {
   message?: string;
 };
 
+export type ZSIQVisitorInfo = {
+    name?: string;
+    email?: string;
+    phone?: string;
+    customInfo?: Record<string, string>;
+};
+
 export type Configuration = 'NeutralRatingDisabled' | 'TrackStorageSpace' | 'TrackAppInstalledTime' | 'TrackAppUpdatedTime' | 'ShowEndSessionInInAppNotification' | 'ChatBotCarousalCardPropertiesOrientation' | 'ChatBotCarousalCardImageVisibility'
 
 type VisitorLocationType = {
@@ -172,9 +179,9 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API lets you configure the visibility status of operator's profile picture in the chat window.
-   * 
+   *
    * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
+   *
    * @param visibility
    * @returns
    */
@@ -182,9 +189,9 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API lets you control the visibility of the feedback form which would appear right after a chat session concludes.
-   * 
+   *
    * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
+   *
    * @param visibility
    * @returns
    */
@@ -192,9 +199,9 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API would let you control the visibility of the rating option right after a chat session concludes.
-   * 
+   *
    * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
+   *
    * @param visibility
    * @returns
    */
@@ -385,14 +392,22 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API allows you to register a user using a unique ID with the SalesIQ SDK. If your application has login and logout life cycles, you can enroll your visitor and their activity in the SDK will be synchronized across multiple platforms.
-   * @param visitorId
-   * @param callback
+   *
+   * @overload
+   * @param visitorId - Unique visitor ID
+   * @param callback - Callback with error and result
+   * @returns
+   *
+   * @overload
+   * @param visitorId - Unique visitor ID
+   * @param visitorInfo - Optional visitor information (name, email, phone, customInfo)
+   * @param callback - Callback with error and result
    * @returns
    */
-  registerVisitor: (
-    visitorId: string,
-    callback?: (error: CallbackError, result: boolean) => void
-  ) => void;
+  registerVisitor: {
+    (visitorId: string, callback?: (error: CallbackError, result: boolean) => void): void;
+    (visitorId: string | null, visitorInfo?: ZSIQVisitorInfo | null, callback?: (error: CallbackError, result: boolean) => void): void;
+  };
 
   /**
    * You can change the default SDK theme color using the .setThemeColorforiOS() property. The default theme Color of the SDK is a shade of blue. Any modifications to the .setThemeColorforiOS() property will be applied across all screens in the Mobilisten UI for iOS devices.
@@ -403,9 +418,9 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API allows you to display the visitor's name if available as the message sender name for all outgoing messages within the chat window.
-   * 
+   *
    * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
+   *
    * @param visible
    * @returns
    */
@@ -413,14 +428,14 @@ export interface ZSIQWrapperTypes {
 
   /**
    * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
-   * This API allows you to enable pre-chat forms before initiating a chat.  
+   *
+   * This API allows you to enable pre-chat forms before initiating a chat.
    */
   enablePreChatForms: () => void;
 
   /**
    * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
-   * 
+   *
    * This API allows you to disable pre-chat forms before initiating a chat.
    * @returns
    */
@@ -428,7 +443,7 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API allows you to enable the ability to capture and send screenshots.
-   * 
+   *
    * @deprecated This API is deprecated since {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v10.0.3 10.0.3}. Use {@link ChatTypes.Chat ZohoSalesIQ.Chat.setVisibility()} instead.
    *
    * Note: The option to capture and send screenshots is enabled by default.
@@ -460,10 +475,20 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API allows you to unregister a user once they are registered using the .registerVisitor() API. If your application has login and logout life cycles, you can unregister a visitor during a session logout which would clear any data the SDK may hold such as past conversations had by the registered user.
-   * @param callback
+   *
+   * @overload
+   * @param callback - Callback with error (default registerAsGuest: true)
+   * @returns
+   *
+   * @overload
+   * @param registerAsGuest - Whether to register user as guest (true) or clear all data (false)
+   * @param callback - Callback with error
    * @returns
    */
-  unregisterVisitor: (callback?: (error: CallbackError) => void) => void;
+  unregisterVisitor: {
+    (callback?: (error: CallbackError) => void): void;
+    (registerAsGuest: boolean, callback?: (error: CallbackError) => void): void;
+  };
 
   /**
    * This API lets you set an apt title for each and every screen in your application, thus making it easy for you to track down the trail of your visitors when they navigate through the screens of your mobile app.
@@ -572,15 +597,15 @@ export interface ZSIQWrapperTypes {
 
   /**
    * @deprecated
-   * 
-   * Note: This API was deprecated in version {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v9.4.0 9.4.0}. 
-   * Use, 
+   *
+   * Note: This API was deprecated in version {@link https://github.com/zoho/SalesIQ-Mobilisten-ReactNative/releases/tag/v9.4.0}.
+   * Use,
    * - ZohoSalesIQ.addListener(),
    * - ZohoSalesIQ.Chat.addListener() for chat events,
    * - ZohoSalesIQ.KnowledgeBase.addListener() for KnowledgeBase events,
    * - ZohoSalesIQ.Notification.addListener() for Notification events,
    * - ZohoSalesIQ.Launcher.addListener() for Launcher events
-   * 
+   *
    * The Mobilisten React-Native SDK provides various events that developers can use to perform customized actions.
    * @param type
    * @param listener
@@ -593,7 +618,7 @@ export interface ZSIQWrapperTypes {
 
   /**
    * This API allows you to sync the SalesIQ theme mode with the device's theme.
-   * 
+   *
    * Note: Android only
    * @param sync
    * @returns
@@ -688,7 +713,7 @@ export interface ZSIQWrapperTypes {
 
   /**
    * The themeColor property allows you to change the default SDK theme color to a shade of blue. Any modifications to the themeColor property will be applied across all screens in the Mobilisten UI.
-   * 
+   *
    * @see {@link https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-ui-theme-color.html}
    * @param value
    * @returns
@@ -728,10 +753,10 @@ export interface ZSIQWrapperTypes {
   addListener: (callback: (callbackData: Listeners) => void) => EmitterSubscription;
 
   /**
-   * 
+   *
    * @param configuration
-   * @param value 
-   * @returns 
+   * @param value
+   * @returns
    */
   updateConfiguration: (configuration: Configuration, value: string | number | boolean) => void;
 

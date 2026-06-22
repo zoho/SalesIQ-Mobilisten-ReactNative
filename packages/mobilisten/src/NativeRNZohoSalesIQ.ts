@@ -108,8 +108,10 @@ export interface Spec extends TurboModule {
   setConversationVisibility(visible: boolean): void;
   setConversationListTitle(title: string): void;
   setFAQVisibility(visible: boolean): void;
-  registerVisitor(uniqueId: string, callback: () => void): void;
-  unregisterVisitor(callback: () => void): void;
+  registerVisitor(uniqueId: string, callback?: () => void): void;
+  registerVisitorNew(uniqueId?: string, visitorInfo?: Object, callback?: () => void): void;
+  unregisterVisitor(callback?: () => void): void;
+  unregisterVisitorNew(registerAsGuest: boolean, callback?: () => void): void;
   setPageTitle(title: string): void;
   setCustomAction(actionName: string): void;
   performCustomAction(actionName: string, shouldOpenChatWindow: boolean): void;

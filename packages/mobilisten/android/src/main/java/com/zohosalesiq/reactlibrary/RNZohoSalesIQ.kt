@@ -86,6 +86,7 @@ import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.ResourceList
 import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.ResourcesListener
 import com.zoho.livechat.android.modules.knowledgebase.ui.listeners.SalesIQKnowledgeBaseListener
 import com.zoho.livechat.android.modules.notifications.sdk.entities.SalesIQNotificationPayload
+import com.zoho.livechat.android.modules.visitor.SalesIQVisitorInfo
 import com.zoho.livechat.android.operation.SalesIQApplicationManager
 import com.zoho.livechat.android.utils.LiveChatUtil
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore
@@ -789,34 +790,95 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     }
 
     @ReactMethod
-    fun registerVisitor(uniqueid: String, callback: Callback) {
+    fun registerVisitor(uniqueid: String, callback: Callback?) {
         HANDLER.post {
             ZohoSalesIQ.registerVisitor(uniqueid, object : RegisterListener {
                 override fun onSuccess() {
-                    callback.invoke(null, java.lang.Boolean.TRUE)
+                    if (callback != null) {
+                        callback.invoke(null, java.lang.Boolean.TRUE)
+                    }
                 }
 
                 override fun onFailure(code: Int, message: String) {
-                    callback.invoke(
-                        RNZohoSalesIQCore.getErrorMap(code, message), java.lang.Boolean.FALSE
-                    )
+                    if (callback != null) {
+                        callback.invoke(
+                            RNZohoSalesIQCore.getErrorMap(code, message), java.lang.Boolean.FALSE
+                        )
+                    }
                 }
             })
         }
     }
 
     @ReactMethod
-    fun unregisterVisitor(callback: Callback) {
+    fun unregisterVisitor(callback: Callback?) {
         HANDLER.post {
             ZohoSalesIQ.unregisterVisitor(currentActivity, object : UnRegisterListener {
                 override fun onSuccess() {
-                    callback.invoke(null, java.lang.Boolean.TRUE)
+                    if (callback != null) {
+                        callback.invoke(null, true)
+                    }
                 }
 
                 override fun onFailure(code: Int, message: String) {
-                    callback.invoke(
-                        RNZohoSalesIQCore.getErrorMap(code, message), java.lang.Boolean.FALSE
+                    if (callback != null) {
+                        callback.invoke(
+                            RNZohoSalesIQCore.getErrorMap(code, message), java.lang.Boolean.FALSE
+                        )
+                    }
+                }
+            })
+        }
+    }
+
+    @ReactMethod
+    fun registerVisitorNew(uniqueId: String?, visitorInfo: ReadableMap?, callback: Callback?) {
+        HANDLER.post {
+            val salesIQVisitorInfo = visitorInfo?.let { visitorInfo ->
+                val name = visitorInfo.getString("name")
+                val email = visitorInfo.getString("email")
+                val phone = visitorInfo.getString("phone")
+                val customInfoMap =
+                    visitorInfo.getMap("customInfo")?.toMap()?.mapValues { (_, v) -> v as String }
+                SalesIQVisitorInfo(name, email, phone, customInfoMap)
+            }
+
+            val listener = (object : RegisterListener {
+                override fun onSuccess() {
+                    callback?.invoke(null, true)
+                }
+
+                override fun onFailure(code: Int, message: String) {
+                    callback?.invoke(
+                        RNZohoSalesIQCore.getErrorMap(code, message), false
                     )
+                }
+            }).takeIf { callback != null }
+
+            if (uniqueId == null) {
+                ZohoSalesIQ.registerGuestVisitor(salesIQVisitorInfo, listener)
+                return@post
+            }
+            ZohoSalesIQ.registerVisitor(uniqueId, salesIQVisitorInfo, listener)
+        }
+    }
+
+    @ReactMethod
+    fun unregisterVisitorNew(registerAsGuest: Boolean, callback: Callback?) {
+        HANDLER.post {
+            ZohoSalesIQ.unregisterVisitor(registerAsGuest, object : UnRegisterListener {
+                override fun onSuccess() {
+                    if (callback != null) {
+                        callback.invoke(null, true)
+                    }
+                }
+
+                override fun onFailure(code: Int, message: String) {
+                    if (callback != null) {
+                        callback.invoke(
+                            RNZohoSalesIQCore.getErrorMap(code, message), false
+                        )
+                    }
                 }
             })
         }
@@ -1284,7 +1346,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
     class RNZohoSalesIQListener : SalesIQListener, SalesIQChatListener,
         SalesIQKnowledgeBaseListener, SalesIQActionListener, NotificationListener {
-        override fun handleFeedback(visitorChat: VisitorChat) {
+        override fun handleFeedback(visitorChat: VisitorChat?) {
             val visitorMap = getChatMapObject(visitorChat)
             eventEmitter(EVENT_FEEDBACK_RECEIVED, visitorMap.copy())
             eventEmitter(
@@ -1293,7 +1355,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             )
         }
 
-        override fun handleQueuePositionChange(visitorChat: VisitorChat) {
+        override fun handleQueuePositionChange(visitorChat: VisitorChat?) {
             val visitorMap = getChatMapObject(visitorChat)
             eventEmitter(EVENT_CHAT_QUEUE_POSITION_CHANGED, visitorMap.copy())
             eventEmitter(
@@ -1303,7 +1365,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             )
         }
 
-        override fun handleRating(visitorChat: VisitorChat) {
+        override fun handleRating(visitorChat: VisitorChat?) {
             val visitorMap = getChatMapObject(visitorChat)
             eventEmitter(
                 CHAT_EVENT_LISTENER, RNZohoSalesIQCore.getEventEmitterObjectWithMap(
@@ -1509,7 +1571,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             return null
         }
 
-        override fun handleChatOpened(visitorChat: VisitorChat) {
+        override fun handleChatOpened(visitorChat: VisitorChat?) {
             val visitorMap = getChatMapObject(visitorChat)
             eventEmitter(
                 CHAT_EVENT_LISTENER,
@@ -1519,7 +1581,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             eventEmitter(EVENT_CHAT_OPENED, visitorMap)
         }
 
-        override fun handleChatClosed(visitorChat: VisitorChat) {
+        override fun handleChatClosed(visitorChat: VisitorChat?) {
             val visitorMap = getChatMapObject(visitorChat)
             eventEmitter(
                 CHAT_EVENT_LISTENER,
@@ -1529,7 +1591,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             eventEmitter(EVENT_CHAT_CLOSED, visitorMap)
         }
 
-        override fun handleChatAttended(visitorChat: VisitorChat) {
+        override fun handleChatAttended(visitorChat: VisitorChat?) {
             val visitorMap = getChatMapObject(visitorChat)
             eventEmitter(
                 CHAT_EVENT_LISTENER, RNZohoSalesIQCore.getEventEmitterObjectWithMap(
@@ -1540,7 +1602,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             eventEmitter(EVENT_CHAT_ATTENDED, visitorMap)
         }
 
-        override fun handleChatMissed(visitorChat: VisitorChat) {
+        override fun handleChatMissed(visitorChat: VisitorChat?) {
             val visitorMap = getChatMapObject(visitorChat)
             eventEmitter(
                 CHAT_EVENT_LISTENER,
@@ -1550,7 +1612,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             eventEmitter(EVENT_CHAT_MISSED, visitorMap)
         }
 
-        override fun handleChatReOpened(visitorChat: VisitorChat) {
+        override fun handleChatReOpened(visitorChat: VisitorChat?) {
             val visitorMap = getChatMapObject(visitorChat)
             eventEmitter(
                 CHAT_EVENT_LISTENER, RNZohoSalesIQCore.getEventEmitterObjectWithMap(
@@ -1637,7 +1699,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             }
         }
 
-        override fun handleUri(uri: Uri, visitorChat: VisitorChat): Boolean {
+        override fun handleUri(uri: Uri?, visitorChat: VisitorChat?): Boolean {
             val visitorChatMap = getChatMapObject(visitorChat)
             val chatMap: WritableMap = WritableNativeMap()
             chatMap.putMap("chat", visitorChatMap.copy()) // No I18N
@@ -2420,7 +2482,10 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
         private var pendingEvents: HashMap<String, Any?>? = null
 
-        fun getChatMapObject(chat: VisitorChat): WritableMap {
+        fun getChatMapObject(chat: VisitorChat?): WritableMap {
+            if (chat == null) {
+                return WritableNativeMap()
+            }
             val visitorMap: WritableMap = WritableNativeMap()
             visitorMap.putString("id", chat.chatID) // No I18N
             visitorMap.putInt("unreadCount", chat.unreadCount) // No I18N
@@ -2589,7 +2654,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                 if ("registered_visitor" == type) {
                     if (userId != null && !TextUtils.isEmpty(userId)) {
                         LiveChatUtil.log("MobilistenEncryptedSharedPreferences- re-registering visitor") // No I18N
-                        LiveChatUtil.registerVisitor(userId, object : RegisterListener {
+                        LiveChatUtil.registerVisitor(userId, null, object : RegisterListener {
                             override fun onSuccess() {
                                 logDebugInfo(
                                     DebugInfoData.VisitorFailureReRegistrationAcknowledged(userId)

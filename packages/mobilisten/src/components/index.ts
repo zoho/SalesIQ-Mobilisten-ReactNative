@@ -132,8 +132,23 @@ export const ZSIQWrapper = {
   fetchAttenderImage: function (atttenderId, fetchDefaultImage, callback) {
     RNZohoSalesIQ.fetchAttenderImage(atttenderId, fetchDefaultImage, callback);
   },
-  registerVisitor: function (visitorId, callback = () => { }) {
-    RNZohoSalesIQ.registerVisitor(visitorId, callback);
+  registerVisitor: function (visitorId, visitorInfoOrCallback?: any, callback?: any) {
+    // Backward compatible overload handling:
+    // Old: registerVisitor(visitorId, callback?)
+    // New: registerVisitor(visitorId, visitorInfo?, callback?)
+    
+    if (typeof visitorInfoOrCallback === 'function') {
+      // Old signature: registerVisitor(visitorId, callback)
+      RNZohoSalesIQ.registerVisitor(visitorId, visitorInfoOrCallback);
+    } else if (visitorInfoOrCallback === undefined || visitorInfoOrCallback === null) {
+      // New signature without visitorInfo: registerVisitor(visitorId, null, callback)
+      // or Old signature without callback: registerVisitor(visitorId)
+      RNZohoSalesIQ.registerVisitorNew(visitorId, null, callback);
+    } else {
+      // New signature with visitorInfo: registerVisitor(visitorId, visitorInfo, callback?)
+      // Pass all three arguments to native layer
+      RNZohoSalesIQ.registerVisitorNew(visitorId, visitorInfoOrCallback, callback);
+    }
   },
   setThemeColorforiOS: function (colorCode) {
     RNZohoSalesIQ.setThemeColorforiOS(colorCode);
@@ -159,8 +174,22 @@ export const ZSIQWrapper = {
   disableInAppNotification: function () {
     RNZohoSalesIQ.disableInAppNotification();
   },
-  unregisterVisitor: function (callback = () => { }) {
-    RNZohoSalesIQ.unregisterVisitor(callback);
+  unregisterVisitor: function (registerAsGuestOrCallback?: any, callback?: any) {
+    // Backward compatible overload handling:
+    // Old: unregisterVisitor(callback?)
+    // New: unregisterVisitor(registerAsGuest?, callback?)
+    
+    if (typeof registerAsGuestOrCallback === 'function') {
+      // Old signature: unregisterVisitor(callback)
+      RNZohoSalesIQ.unregisterVisitor(registerAsGuestOrCallback);
+    } else if (registerAsGuestOrCallback === undefined) {
+      // Old signature without callback: unregisterVisitor()
+      // or New signature with default registerAsGuest: unregisterVisitor(undefined, callback)
+      RNZohoSalesIQ.unregisterVisitor(callback);
+    } else {
+      // New signature with registerAsGuest boolean: unregisterVisitor(boolean, callback?)
+      RNZohoSalesIQ.unregisterVisitorNew(registerAsGuestOrCallback, callback);
+    }
   },
   setPageTitle: function (title) {
     RNZohoSalesIQ.setPageTitle(title);
