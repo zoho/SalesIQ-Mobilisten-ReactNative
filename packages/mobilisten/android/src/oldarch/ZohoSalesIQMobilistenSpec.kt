@@ -146,6 +146,8 @@ abstract class ZohoSalesIQMobilistenSpec internal constructor(context: ReactAppl
     )
 
     abstract fun updateConfiguration(key: String?, value: ReadableMap?)
+    abstract fun refreshData(data: ReadableMap, promise: Promise)
+    abstract fun setDataProvider(config: ReadableMap)
     abstract fun registerLocalizationFile(fileName: String?)
     abstract fun setAttributes(attributesMap: ReadableMap, promise: Promise)
     abstract fun getCommunicationMode(promise: Promise)

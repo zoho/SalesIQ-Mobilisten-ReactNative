@@ -1,5 +1,6 @@
 import type {
   ZSIQWrapperTypes,
+  SalesIQData,
 } from '../types/ZSIQWrapperTypes';
 import { Dimensions, Platform } from 'react-native'; //No I18N
 import RNZohoSalesIQ, { RNZohoSalesIQEmitter } from '../commons/utils';
@@ -19,7 +20,7 @@ import type { ZSIQKnowledgeBaseTypes } from './knowledgebase/types/KnowledgeBase
 import type { ZSIQLauncherTypes } from './launcher/types/Launcher';
 import type { ChatTypes } from './chat/types/Chat';
 import { ZSIQLogger } from './logger';
-import { ZSIQConversation } from './conversation';
+import { ZSIQConversationAPI } from './conversation';
 import { ZSIQConversationTypes } from './conversation/types/Conversation';
 import { SalesIQCallsHelper, SalesIQCallViewMode } from '@react-native-zohosalesiq/mobilisten-core';
 
@@ -310,11 +311,25 @@ export const ZSIQWrapper = {
     RNZohoSalesIQ.updateConfiguration(configuration, payload);
   },
 
+  refreshData: function (data: SalesIQData): Promise<void> {
+    // Normalize input once so both platforms receive identical values:
+    // canonicalize the type casing (native Android matches exact-case).
+    const conversationId = (data.conversationId ?? '').trim();
+    const rawType = (data.type ?? '').toLowerCase();
+    const type =
+      rawType === 'secretfields'
+        ? 'secretFields'
+        : rawType === 'displayfields'
+          ? 'displayFields'
+          : data.type;
+    return RNZohoSalesIQ.refreshData({ type, conversationId });
+  },
+
   ...ZSIQNotification,
   ...ZSIQLogger,
   ...ZSIQLauncher,
   ...ZSIQKnowledgeBase,
-  ...ZSIQConversation,
+  ...ZSIQConversationAPI,
 } as ZSIQWrapperTypes &
   ZSIQConstantsTypes &
   ZSIQListenerEventsType &

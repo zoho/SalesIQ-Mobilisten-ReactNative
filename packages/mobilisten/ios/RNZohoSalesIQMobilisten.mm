@@ -130,6 +130,10 @@ RCT_EXTERN_METHOD(setChatConversationTitle:(NSString *)online offline:(NSString 
 RCT_EXTERN_METHOD(getCommunicationMode:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(initialize:(NSDictionary *)configuration resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject);
 
+
+RCT_EXTERN_METHOD(refreshData:(NSDictionary *)data resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject);
+RCT_EXTERN_METHOD(setDataProvider:(NSDictionary *)config);
+
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params

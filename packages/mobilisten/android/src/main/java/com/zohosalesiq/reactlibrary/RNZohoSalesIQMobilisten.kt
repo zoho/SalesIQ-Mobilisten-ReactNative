@@ -624,6 +624,16 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     }
 
     @ReactMethod
+    override fun refreshData(data: ReadableMap, promise: Promise) {
+        RNZohoSalesIQ.sharedInstance?.refreshData(data, promise)
+    }
+
+    @ReactMethod
+    override fun setDataProvider(config: ReadableMap) {
+        RNZohoSalesIQ.sharedInstance?.setDataProvider(config)
+    }
+
+    @ReactMethod
     override fun registerLocalizationFile(fileName: String?) {
         // This method is only for iOS
     }

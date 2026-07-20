@@ -62,6 +62,9 @@ import com.zoho.livechat.android.listeners.SalesIQListener
 import com.zoho.livechat.android.listeners.UnRegisterListener
 import com.zoho.livechat.android.models.SalesIQArticle
 import com.zoho.livechat.android.models.SalesIQArticleCategory
+import com.zoho.livechat.android.modules.conversations.models.SalesIQConversation
+import com.zoho.livechat.android.modules.conversations.providers.DataProviderCallback
+import com.zoho.livechat.android.modules.conversations.providers.SalesIQConversationDataProvider
 import com.zoho.livechat.android.modules.common.DataModule.sharedPreferences
 import com.zoho.livechat.android.modules.common.data.local.MobilistenEncryptedSharedPreferences
 import com.zoho.livechat.android.modules.common.domain.entities.DebugInfoData
@@ -89,8 +92,12 @@ import com.zoho.livechat.android.modules.notifications.sdk.entities.SalesIQNotif
 import com.zoho.livechat.android.modules.visitor.SalesIQVisitorInfo
 import com.zoho.livechat.android.operation.SalesIQApplicationManager
 import com.zoho.livechat.android.utils.LiveChatUtil
+import com.zoho.salesiq.core.config.SalesIQConfig
+import com.zoho.salesiq.core.models.SalesIQData
+import com.zoho.salesiq.core.models.SalesIQTimeoutType
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.sendPromise
+import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toSalesIQConversationMap
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toMap
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toWritableArray
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toWritableMap
@@ -103,11 +110,60 @@ import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.util.Hashtable
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 
 class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     private val currentActivity: Activity?
         get() = reactContext!!.currentActivity
+
+    private val pendingSecretFieldsCallbacks =
+        ConcurrentHashMap<String, DataProviderCallback<Map<String, String>>>()
+    private val pendingDisplayFieldsCallbacks =
+        ConcurrentHashMap<String, DataProviderCallback<Map<String, String>>>()
+
+    @Volatile
+    private var isSecretFieldsProviderEnabled = false
+    @Volatile
+    private var isDisplayFieldsProviderEnabled = false
+
+    private val conversationDataProvider = object : SalesIQConversationDataProvider {
+        override fun getSecretFields(
+            conversation: SalesIQConversation,
+            callback: DataProviderCallback<Map<String, String>>,
+        ) {
+            if (!isSecretFieldsProviderEnabled) {
+                callback.onResult(null)
+                return
+            }
+
+            val requestId = UUID.randomUUID().toString()
+            pendingSecretFieldsCallbacks[requestId] = callback
+
+            val eventMap = WritableNativeMap()
+            eventMap.putString("requestId", requestId) // No I18N
+            eventMap.putMap("chat", conversation.toSalesIQConversationMap()) // No I18N
+            eventEmitter(CONVERSATION_SECRET_FIELDS_REQUEST, eventMap)
+        }
+
+        override fun getDisplayFields(
+            conversation: SalesIQConversation,
+            callback: DataProviderCallback<Map<String, String>>,
+        ) {
+            if (!isDisplayFieldsProviderEnabled) {
+                callback.onResult(null)
+                return
+            }
+
+            val requestId = UUID.randomUUID().toString()
+            pendingDisplayFieldsCallbacks[requestId] = callback
+
+            val eventMap = WritableNativeMap()
+            eventMap.putString("requestId", requestId) // No I18N
+            eventMap.putMap("chat", conversation.toSalesIQConversationMap()) // No I18N
+            eventEmitter(CONVERSATION_DISPLAY_FIELDS_REQUEST, eventMap)
+        }
+    }
 
     internal class Font {
         var regular: String? = null
@@ -1756,6 +1812,32 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                         handleVisitorRegistrationFailure(auth)
                     }
                 }
+
+                "conversationSecretFieldsResponse" -> if (objects.size() > 0) { // No I18N
+                    val payload = objects.getMap(0)
+                    if (payload != null) {
+                        val requestId = payload.getString("requestId") // No I18N
+                        val fieldsMap = payload.getMap("fields") // No I18N
+                        if (requestId != null) {
+                            pendingSecretFieldsCallbacks.remove(requestId)?.onResult(
+                                fieldsMap?.let { getStringMap(it) } ?: emptyMap()
+                            )
+                        }
+                    }
+                }
+
+                "conversationDisplayFieldsResponse" -> if (objects.size() > 0) { // No I18N
+                    val payload = objects.getMap(0)
+                    if (payload != null) {
+                        val requestId = payload.getString("requestId") // No I18N
+                        val fieldsMap = payload.getMap("fields") // No I18N
+                        if (requestId != null) {
+                            pendingDisplayFieldsCallbacks.remove(requestId)?.onResult(
+                                fieldsMap?.let { getStringMap(it) } ?: emptyMap()
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -2167,12 +2249,112 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             "ChatBotCarousalCardImageVisibility" -> {
                 configurationKey = "chat_bot_carousal_card_image_visibility"
             }
+            "ChatFallbackDepartmentsOnReopenIfOffline" -> {
+                configurationKey = "fallbackDepartmentsOnReopenIfOffline"
+            }
         }
         if (configurationKey != null) {
             System.setProperty(configurationKey, value.toString())
         } else {
-            LiveChatUtil.log("MobilistenPlugin - Invalid configuration key: $key")
+            when (key) {
+                "IncludeVisitorInfoInConversationInfo" -> {
+                    ZohoSalesIQ.setConfig(
+                        SalesIQConfig.IncludeVisitorInfoWithDisplayFields(LiveChatUtil.getBoolean(value))
+                    )
+                }
+
+                "HideCreditCardMaskingConsentAlert" -> {
+                    ZohoSalesIQ.setConfig(
+                        SalesIQConfig.BypassCreditCardMaskingConsent(LiveChatUtil.getBoolean(value))
+                    )
+                }
+
+                "SecretFieldsProviderTimeout" -> {
+                    ZohoSalesIQ.setTimeout(SalesIQTimeoutType.SECRET_FIELDS, LiveChatUtil.getLong(value))
+                }
+
+                "DisplayFieldsProviderTimeout" -> {
+                    ZohoSalesIQ.setTimeout(SalesIQTimeoutType.DISPLAY_FIELDS, LiveChatUtil.getLong(value))
+                }
+
+                else -> {
+                    LiveChatUtil.log("MobilistenPlugin - Invalid configuration key: $key")
+                }
+            }
         }
+    }
+
+    @ReactMethod
+    fun refreshData(data: ReadableMap, promise: Promise) {
+        val type = data.getString("type")?.takeIf { it.isNotBlank() }
+        if (type == null) {
+            promise.reject("1200", "Missing refresh data type")
+            return
+        }
+
+        val conversationId = (when {
+            data.hasKey("conversationId") -> data.getString("conversationId")
+            data.hasKey("id") -> data.getString("id")
+            else -> null
+        })?.takeIf { it.isNotBlank() }
+        if (conversationId == null) {
+            promise.reject("1201", "Missing conversation identifier")
+            return
+        }
+
+        val refreshData = when (type) {
+            "secretFields" -> SalesIQData.SecretFields(conversationId)
+            "displayFields" -> SalesIQData.DisplayFields(conversationId)
+            else -> null
+        }
+        if (refreshData == null) {
+            promise.reject("1202", "Unsupported refresh data type")
+            return
+        }
+
+        ZohoSalesIQ.refreshData(refreshData) { result ->
+            if (result.isSuccess) {
+                promise.resolve(null)
+            } else {
+                val error = result.error
+                promise.reject(
+                    (error?.code ?: 1203).toString(),
+                    error?.message ?: "Failed to refresh provider data"
+                )
+            }
+        }
+    }
+
+    @ReactMethod
+    fun setDataProvider(config: ReadableMap) {
+        isSecretFieldsProviderEnabled = config.hasKey("secretFieldsEnabled") && config.getBoolean("secretFieldsEnabled")
+        isDisplayFieldsProviderEnabled = config.hasKey("customInfoEnabled") && config.getBoolean("customInfoEnabled")
+
+        HANDLER.post {
+            if (isSecretFieldsProviderEnabled || isDisplayFieldsProviderEnabled) {
+                ZohoSalesIQ.Conversation.setDataProvider(conversationDataProvider)
+            } else {
+                clearPendingConversationProviderCallbacks()
+                ZohoSalesIQ.Conversation.setDataProvider(null)
+            }
+        }
+    }
+
+    private fun clearPendingConversationProviderCallbacks() {
+        pendingSecretFieldsCallbacks.values.forEach { it.onResult(null) }
+        pendingDisplayFieldsCallbacks.values.forEach { it.onResult(null) }
+        pendingSecretFieldsCallbacks.clear()
+        pendingDisplayFieldsCallbacks.clear()
+    }
+
+    private fun getStringMap(fields: ReadableMap): Map<String, String> {
+        val stringMap = HashMap<String, String>()
+        for ((key, value) in fields.toHashMap()) {
+            if (value != null) {
+                stringMap[key] = value.toString()
+            }
+        }
+        return stringMap
     }
 
     private fun executeIfResourceTypeIsValid(
@@ -2225,6 +2407,8 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             "EVENT_CHAT_UNREAD_COUNT_CHANGED" // No I18N
 
         private const val EVENT_NOTIFICATION_CLICKED = "EVENT_NOTIFICATION_CLICKED" // No I18N
+        private const val CONVERSATION_SECRET_FIELDS_REQUEST = "conversationSecretFieldsRequest" // No I18N
+        private const val CONVERSATION_DISPLAY_FIELDS_REQUEST = "conversationDisplayFieldsRequest" // No I18N
 
         private const val TYPE_OPEN = "OPEN" // No I18N
         private const val TYPE_CONNECTED = "CONNECTED" // No I18N

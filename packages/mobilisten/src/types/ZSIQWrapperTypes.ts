@@ -61,6 +61,26 @@ export type CallbackError = {
   message?: string;
 };
 
+export type SalesIQDataType = 'secretFields' | 'displayFields';
+
+export type SalesIQBaseData = {};
+
+export type SecretFieldsSalesIQData = SalesIQBaseData & {
+  type: 'secretFields';
+  /** Conversation identifier. */
+  conversationId: string;
+};
+
+export type DisplayFieldsSalesIQData = SalesIQBaseData & {
+  type: 'displayFields';
+  /** Conversation identifier. */
+  conversationId: string;
+};
+
+export type SalesIQData =
+  | SecretFieldsSalesIQData
+  | DisplayFieldsSalesIQData;
+
 export type ZSIQVisitorInfo = {
     name?: string;
     email?: string;
@@ -759,6 +779,14 @@ export interface ZSIQWrapperTypes {
    * @returns
    */
   updateConfiguration: (configuration: Configuration, value: string | number | boolean) => void;
+
+  /**
+   * This API is used to refresh the provider data (secret fields or display fields) for a specific conversation.
+   *
+   * @param data - {@link SalesIQData} describing the data type and conversation to refresh.
+   * @returns A promise that resolves once the data is refreshed and rejects with a {@link CallbackError} on failure.
+   */
+  refreshData: (data: SalesIQData) => Promise<void>;
 
   getCommunicationMode: () => Promise<CommunicationMode | null>;
 

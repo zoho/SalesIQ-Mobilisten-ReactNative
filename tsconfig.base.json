@@ -16,7 +16,7 @@
     "lib": [
       "esnext"
     ],
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "baseUrl": ".",
     "esModuleInterop": true,
     "skipLibCheck": true,

@@ -9,12 +9,11 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.bridge.WritableArray
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import com.zoho.livechat.android.modules.conversations.models.SalesIQConversation
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.sendPromise
-import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toWritableArray
+import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toSalesIQConversationMap
+import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toSalesIQConversationWritableArray
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toWritableMap
 import com.zoho.salesiq.mobilisten.calls.apis.ZohoSalesIQCalls
 import com.zoho.salesiq.mobilisten.calls.apis.interfaces.SalesIQCallsListener
@@ -109,14 +108,14 @@ class RNZohoSalesIQCalls private constructor(reactContext: ReactApplicationConte
             displayActiveCall ?: true,
             RNZohoSalesIQCore.getConversationAttributes(attributes)
         ) {
-            it.sendPromise(promise, it.data?.toCallConversationMap())
+            it.sendPromise(promise, it.data?.toSalesIQConversationMap())
         }
     }
 
     @ReactMethod
     fun end(promise: Promise) {
         ZohoSalesIQCalls.end {
-            it.sendPromise(promise, it.data?.toCallConversationMap())
+            it.sendPromise(promise, it.data?.toSalesIQConversationMap())
         }
     }
 
@@ -141,7 +140,7 @@ class RNZohoSalesIQCalls private constructor(reactContext: ReactApplicationConte
     @ReactMethod
     fun getList(promise: Promise) {
         ZohoSalesIQCalls.getList { result ->
-            result.sendPromise(promise, result.data?.toCallConversationWritableArray())
+            result.sendPromise(promise, result.data?.toSalesIQConversationWritableArray())
         }
     }
 
@@ -217,36 +216,6 @@ class RNZohoSalesIQCalls private constructor(reactContext: ReactApplicationConte
                 else -> {}
             }
             return chatComponent
-        }
-
-        internal fun SalesIQConversation?.toCallConversationMap() = this.toWritableMap().apply {
-            when (this@toCallConversationMap) {
-                is SalesIQConversation.Call -> {
-                    putString("type", "call")
-                }
-
-                is SalesIQConversation.Chat -> {
-                    putString("type", "chat")
-                    val lastSalesIQMessage = getMap("lastSalesIQMessage")
-                    val lastMessageMap = lastSalesIQMessage?.toHashMap()
-                    lastMessageMap?.let {
-                        it.put(
-                            "senderId", this@toCallConversationMap.lastSalesIQMessage?.senderId
-                        )
-                        putMap("lastSalesIQMessage", it.toWritableMap())
-                    }
-                }
-
-                else -> {
-                    putString("type", "unknown")
-                }
-            }
-        }
-
-        internal fun List<SalesIQConversation>?.toCallConversationWritableArray(): WritableArray {
-            return this?.map { conversation ->
-                conversation.toCallConversationMap()
-            }.toWritableArray()
         }
 
         private var hasAnyEventListeners = false

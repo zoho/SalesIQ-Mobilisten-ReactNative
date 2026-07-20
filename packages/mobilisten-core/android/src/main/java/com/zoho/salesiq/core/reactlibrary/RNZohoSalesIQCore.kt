@@ -9,7 +9,6 @@ import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
@@ -24,6 +23,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.zoho.livechat.android.SIQDepartment
 import com.zoho.livechat.android.modules.common.ui.result.entities.SalesIQResult
+import com.zoho.livechat.android.modules.conversations.models.SalesIQConversation
 import com.zoho.livechat.android.modules.conversations.models.CommunicationMode
 import com.zoho.salesiq.core.modules.conversations.models.SalesIQConversationAttributes
 import com.zoho.salesiq.mobilisten.core.enums.ResultType
@@ -131,17 +131,17 @@ class RNZohoSalesIQCore private constructor(reactContext: ReactApplicationContex
                 (map.getString("name"))?.let { setName(it) }
                 (map.getString("additionalInfo"))?.let { setAdditionalInfo(it) }
                 map.getString("displayPicture")?.let { setDisplayPicture(it) }
-                (map.getArray("departments")
-                    ?.toArrayList() as? List<Map<String, Any?>>)?.map { departmentMap ->
-                    SIQDepartment(
-                        id = departmentMap["id"] as? String?,
-                        name = departmentMap["name"] as? String?,
-                        communicationMode = (departmentMap["communicationMode"] as? Int?)?.let {
-                            CommunicationMode.entries[it]
-                        })
-                }?.let {
-                    setDepartments(it)
-                }
+                map.getArray("departments")?.let { deptArray ->
+                    (0 until deptArray.size()).mapNotNull { deptArray.getMap(it) }
+                        .map { departmentMap ->
+                            SIQDepartment(
+                                id = departmentMap.getString("id"),
+                                name = departmentMap.getString("name"),
+                                communicationMode = if (departmentMap.hasKey("communicationMode"))
+                                    CommunicationMode.entries[departmentMap.getInt("communicationMode")] else null
+                            )
+                        }
+                }?.let { setDepartments(it) }
             }.build()
         }
 
@@ -219,17 +219,61 @@ class RNZohoSalesIQCore private constructor(reactContext: ReactApplicationContex
             }
         }
 
+        // Builds a WritableNativeMap from a plain Kotlin map using only the stable
+        // WritableNativeMap.putX / WritableNativeArray.pushX instance APIs, so it does
+        // not depend on the version-fragile Arguments.makeNativeMap factory (whose
+        // signature changed when react-android migrated from Java to Kotlin).
+        private fun Map<String, Any?>?.toWritableNativeMap(): WritableNativeMap {
+            val result = WritableNativeMap()
+            this?.forEach { (rawKey, value) ->
+                val key = convertToCamelCase(rawKey)
+                when (value) {
+                    null -> result.putNull(key)
+                    is String -> result.putString(key, value)
+                    is Boolean -> result.putBoolean(key, value)
+                    is Int -> result.putInt(key, value)
+                    is Number -> result.putDouble(key, value.toDouble())
+                    is Map<*, *> -> {
+                        @Suppress("UNCHECKED_CAST")
+                        result.putMap(key, (value as Map<String, Any?>).toWritableNativeMap())
+                    }
+                    is List<*> -> result.putArray(key, value.toWritableNativeArray())
+                    // unsupported types are skipped, matching the entryIterator loop's fall-through
+                }
+            }
+            return result
+        }
+
+        private fun List<*>?.toWritableNativeArray(): WritableNativeArray {
+            val result = WritableNativeArray()
+            this?.forEach { value ->
+                when (value) {
+                    null -> result.pushNull()
+                    is String -> result.pushString(value)
+                    is Boolean -> result.pushBoolean(value)
+                    is Int -> result.pushInt(value)
+                    is Number -> result.pushDouble(value.toDouble())
+                    is Map<*, *> -> {
+                        @Suppress("UNCHECKED_CAST")
+                        result.pushMap((value as Map<String, Any?>).toWritableNativeMap())
+                    }
+                    is List<*> -> result.pushArray(value.toWritableNativeArray())
+                }
+            }
+            return result
+        }
+
         fun Any?.toWritableMap(): WritableMap {
             if (this == null) {
                 return WritableNativeMap()
             }
-            val writableNativeMap = WritableNativeMap()
-            var map: Map<String?, Any?>? = null
             if (this !is ReadableMap) {
-                val mapType = object : TypeToken<Map<String?, Any?>?>() {}.type
-                map = gson.fromJson<Map<String?, Any?>>(gson.toJson(this), mapType)
+                val mapType = object : TypeToken<Map<String, Any?>?>() {}.type
+                val map: Map<String, Any?>? = gson.fromJson(gson.toJson(this), mapType)
+                return map.toWritableNativeMap()
             }
-            val readableMap = this as? ReadableMap ?: Arguments.makeNativeMap(map)
+            val writableNativeMap = WritableNativeMap()
+            val readableMap: ReadableMap = this
             val it = (readableMap).entryIterator
             while (it.hasNext()) {
                 val entry = it.next()
@@ -262,17 +306,11 @@ class RNZohoSalesIQCore private constructor(reactContext: ReactApplicationContex
             }
             val finalWritableNativeArray = WritableNativeArray()
 
-            val mapType = object : TypeToken<List<Map<String?, Any?>?>?>() {}.type
+            val listType = object : TypeToken<List<Map<String, Any?>?>?>() {}.type
             runCatching {
-                val mapList = gson.fromJson<List<Map<String, Any>?>>(
-                    gson.toJson(this), mapType
-                )
-                val writableNativeArray = Arguments.makeNativeArray(mapList)
-                val size = writableNativeArray.size()
-                for (index in 0 until size) {
-                    finalWritableNativeArray.pushMap(
-                        writableNativeArray.getMap(index).toWritableMap()
-                    )
+                val mapList: List<Map<String, Any?>?>? = gson.fromJson(gson.toJson(this), listType)
+                mapList?.forEach { element ->
+                    finalWritableNativeArray.pushMap(element.toWritableNativeMap())
                 }
             }
             return finalWritableNativeArray
@@ -289,6 +327,35 @@ class RNZohoSalesIQCore private constructor(reactContext: ReactApplicationContex
                 }
             }
             return finalWritableNativeArray
+        }
+
+        fun SalesIQConversation?.toSalesIQConversationMap() = this.toWritableMap().apply {
+            when (this@toSalesIQConversationMap) {
+                is SalesIQConversation.Call -> {
+                    putString("type", "call") // No I18N
+                }
+
+                is SalesIQConversation.Chat -> {
+                    putString("type", "chat") // No I18N
+                    val lastSalesIQMessage = getMap("lastSalesIQMessage") // No I18N
+                    val lastMessageMap = lastSalesIQMessage?.toHashMap()
+                    lastMessageMap?.let {
+                        it["senderId"] =
+                            this@toSalesIQConversationMap.lastSalesIQMessage?.senderId // No I18N
+                        putMap("lastSalesIQMessage", it.toWritableMap()) // No I18N
+                    }
+                }
+
+                else -> {
+                    putString("type", "unknown") // No I18N
+                }
+            }
+        }
+
+        fun List<SalesIQConversation>?.toSalesIQConversationWritableArray(): WritableArray {
+            return this?.map { conversation ->
+                conversation.toSalesIQConversationMap()
+            }.toWritableArray()
         }
 
         internal fun convertToCamelCase(input: String?): String {

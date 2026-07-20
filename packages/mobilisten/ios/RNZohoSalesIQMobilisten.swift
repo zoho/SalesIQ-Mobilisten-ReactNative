@@ -10,7 +10,7 @@ import Foundation
 import MobilistenCore
 
 @objc(RNZohoSalesIQMobilisten)
-class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQFAQDelegate, ZohoSalesIQKnowledgeBaseDelegate {
+class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQFAQDelegate, ZohoSalesIQKnowledgeBaseDelegate, ZohoSalesIQConversationDelegate {
     
     
     override class func requiresMainQueueSetup() -> Bool {
@@ -21,6 +21,12 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     private var hasSIQEventListener = false
     private var handleURI = true
     private var actionDictionary: [String: SIQActionHandler] = [:]
+    
+    // Store pending completion handlers for conversation delegate callbacks
+    private var pendingSecretFieldsCompletions: [String: ([String: Any]) -> Void] = [:]
+    private var pendingDisplayFieldsCompletions: [String: ([String: Any]) -> Void] = [:]
+    private var isSecretFieldsEnabled = false
+    private var isDisplayFieldsEnabled = false
     
     private func performAdditionalSetup() {
         // Perform additional setup here
@@ -86,6 +92,8 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let KNOWLEDGEBASE_EVENT_LISTENER = "KNOWLEDGEBASE_EVENT_LISTENER"
     let NOTIFICATION_EVENT_LISTENER = "NOTIFICATION_EVENT_LISTENER"
     let LAUNCHER_EVENT_LISTENER = "LAUNCHER_EVENT_LISTENER"
+    let CONVERSATION_SECRET_FIELDS_REQUEST = "conversationSecretFieldsRequest"
+    let CONVERSATION_DISPLAY_FIELDS_REQUEST = "conversationDisplayFieldsRequest"
     let OPERATOR_IMAGE = "OPERATOR_IMAGE"
     let RATING = "RATING"
     let FEEDBACK = "FEEDBACK"
@@ -115,6 +123,11 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let SHOW_END_SESSION_IN_INAPP_NOTIFICATION = "ShowEndSessionInInAppNotification"
     let CHAT_BOT_CAROUSEL_CARD_ORIENTATION = "ChatBotCarousalCardPropertiesOrientation"
     let CHAT_BOT_CAROUSEL_CARD_IMAGE_VISIBILITY = "ChatBotCarousalCardImageVisibility"
+    let CHAT_FALLBACK_DEPARTMENTS_ON_REOPEN_IF_OFFLINE = "ChatFallbackDepartmentsOnReopenIfOffline"
+    let HIDE_CREDIT_CARD_MASKING_CONSENT_ALERT = "HideCreditCardMaskingConsentAlert"
+    let INCLUDE_VISITOR_INFO_IN_CONVERSATION_INFO = "IncludeVisitorInfoInConversationInfo"
+    let SECRET_FIELDS_PROVIDER_TIMEOUT = "SecretFieldsProviderTimeout"
+    let DISPLAY_FIELDS_PROVIDER_TIMEOUT = "DisplayFieldsProviderTimeout"
     
     func sendRCTEvent(withName eventName: String, body: Any?) {
         if hasSIQEventListener {
@@ -178,7 +191,9 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 KNOWLEDGEBASE_EVENT_LISTENER,
                 LAUNCHER_EVENT_LISTENER,
                 ZSIQ_EVENT_LISTENER,
-                NOTIFICATION_EVENT_LISTENER];
+                NOTIFICATION_EVENT_LISTENER,
+                CONVERSATION_SECRET_FIELDS_REQUEST,
+                CONVERSATION_DISPLAY_FIELDS_REQUEST];
     }
     
     override func constantsToExport() -> [AnyHashable : Any]! {
@@ -242,7 +257,9 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             "KNOWLEDGEBASE_EVENT_LISTENER": KNOWLEDGEBASE_EVENT_LISTENER,
             "NOTIFICATION_EVENT_LISTENER": NOTIFICATION_EVENT_LISTENER,
             "LAUNCHER_EVENT_LISTENER": LAUNCHER_EVENT_LISTENER,
-            "ZSIQ_EVENT_LISTENER": ZSIQ_EVENT_LISTENER
+            "ZSIQ_EVENT_LISTENER": ZSIQ_EVENT_LISTENER,
+            "CONVERSATION_SECRET_FIELDS_REQUEST": CONVERSATION_SECRET_FIELDS_REQUEST,
+            "CONVERSATION_DISPLAY_FIELDS_REQUEST": CONVERSATION_DISPLAY_FIELDS_REQUEST
         ]
     }
     
@@ -886,6 +903,43 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
     
+    // MARK: - Conversation Delegate Methods
+    func getSecretFields(chat: SIQVisitorChat?, completion: @escaping ([String : Any]) -> Void) -> [String : Any]? {
+        // Serialize all access to the flag and the pending-completions dictionary on the
+        // main thread, matching setDataProvider and the sendEvent response handler.
+        RNZohoSalesIQMobilisten.mainThread {
+            guard self.isSecretFieldsEnabled else { return }
+
+            let requestId = UUID().uuidString
+            self.pendingSecretFieldsCompletions[requestId] = completion
+            var chatDict: [String: Any] = [:]
+            if let chat = chat {
+                chatDict = RNZohoSalesIQMobilisten.getChatObject(chat: chat)
+            }
+            self.sendRCTEvent(withName: self.CONVERSATION_SECRET_FIELDS_REQUEST, body: ["requestId": requestId, "chat": chatDict])
+        }
+
+        return nil
+    }
+
+    func getDisplayFields(chat: SIQVisitorChat?, completion: @escaping ([String : Any]) -> Void) -> [String : Any]? {
+        // Serialize all access to the flag and the pending-completions dictionary on the
+        // main thread, matching setDataProvider and the sendEvent response handler.
+        RNZohoSalesIQMobilisten.mainThread {
+            guard self.isDisplayFieldsEnabled else { return }
+
+            let requestId = UUID().uuidString
+            self.pendingDisplayFieldsCompletions[requestId] = completion
+            var chatDict: [String: Any] = [:]
+            if let chat = chat {
+                chatDict = RNZohoSalesIQMobilisten.getChatObject(chat: chat)
+            }
+            self.sendRCTEvent(withName: self.CONVERSATION_DISPLAY_FIELDS_REQUEST, body: ["requestId": requestId, "chat": chatDict])
+        }
+
+        return nil
+    }
+    
     //MARK: Delegate functions ends here
     
     
@@ -908,6 +962,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.Chat.delegate = self
             ZohoSalesIQ.FAQ.delegate = self
             ZohoSalesIQ.KnowledgeBase.delegate = self
+            ZohoSalesIQ.Conversation.delegate = self
             self.performAdditionalSetup()
         }
     }
@@ -924,6 +979,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.Chat.delegate = self
             ZohoSalesIQ.FAQ.delegate = self
             ZohoSalesIQ.KnowledgeBase.delegate = self
+            ZohoSalesIQ.Conversation.delegate = self
             self.performAdditionalSetup()
         }
     }
@@ -946,6 +1002,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.Chat.delegate = self
             ZohoSalesIQ.FAQ.delegate = self
             ZohoSalesIQ.KnowledgeBase.delegate = self
+            ZohoSalesIQ.Conversation.delegate = self
             self.performAdditionalSetup()
         }
     }
@@ -1540,10 +1597,26 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                     }
                     self.actionDictionary.removeValue(forKey: uuid)
                 }
+            } else if eventName == "conversationSecretFieldsResponse" { // No I18N
+                if let payload = values.first as? [String: Any],
+                   let requestId = payload["requestId"] as? String { // No I18N
+                    let fields = payload["fields"] as? [String: Any] ?? [:] // No I18N
+                    if let completion = self.pendingSecretFieldsCompletions.removeValue(forKey: requestId) {
+                        completion(fields)
+                    }
+                }
+            } else if eventName == "conversationDisplayFieldsResponse" { // No I18N
+                if let payload = values.first as? [String: Any],
+                   let requestId = payload["requestId"] as? String { // No I18N
+                    let fields = payload["fields"] as? [String: Any] ?? [:] // No I18N
+                    if let completion = self.pendingDisplayFieldsCompletions.removeValue(forKey: requestId) {
+                        completion(fields)
+                    }
+                }
             }
         }
     }
-    
+
     @objc(setChatActionTimeout:)
     func setChatActionTimeout(_ timeout: NSNumber) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -2142,6 +2215,60 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
 
     @objc(syncThemeWithOsForAndroid:)
     func syncThemeWithOsForAndroid(_ sync: Bool) {}
+
+    
+    @objc(refreshData:resolver:rejecter:)
+    func refreshData(_ data: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        RNZohoSalesIQMobilisten.mainThread {
+            guard let type = data["type"] as? String else {
+                reject("1200", "Missing refresh data type", nil)
+                return
+            }
+            guard let conversationId = (data["conversationId"] as? String) ?? (data["id"] as? String), !conversationId.isEmpty else {
+                reject("1201", "Missing conversation identifier", nil)
+                return
+            }
+            let refreshType = type.lowercased()
+
+            // Shared response handler for all refresh types
+            let handleRefreshResponse: (SIQError?) -> Void = { error in
+                if let error = error {
+                    reject("\(error.code)", error.message, nil)
+                } else {
+                    resolve(nil)
+                }
+            }
+
+            // Map type string to appropriate refresh call
+            if refreshType == "displayfields" {
+                ZohoSalesIQ.refreshData(.displayFields(conversationId), completion: handleRefreshResponse)
+            } else if refreshType == "secretfields" {
+                ZohoSalesIQ.refreshData(.secretFields(conversationId), completion: handleRefreshResponse)
+            } else {
+                reject("1202", "Unsupported refresh data type", nil)
+            }
+        }
+    }
+
+    @objc(setDataProvider:)
+    func setDataProvider(_ config: NSDictionary) {
+        RNZohoSalesIQMobilisten.mainThread {
+            self.isSecretFieldsEnabled = config["secretFieldsEnabled"] as? Bool ?? false
+            self.isDisplayFieldsEnabled = config["customInfoEnabled"] as? Bool ?? false
+
+            if self.isSecretFieldsEnabled || self.isDisplayFieldsEnabled {
+                ZohoSalesIQ.Conversation.delegate = self
+            } else {
+                let secretCompletions = self.pendingSecretFieldsCompletions
+                let displayCompletions = self.pendingDisplayFieldsCompletions
+                self.pendingSecretFieldsCompletions.removeAll()
+                self.pendingDisplayFieldsCompletions.removeAll()
+                secretCompletions.values.forEach { $0([:]) }
+                displayCompletions.values.forEach { $0([:]) }
+                ZohoSalesIQ.Conversation.delegate = nil
+            }
+        }
+    }
     
     @objc(unregisterAllChatActions)
     func unregisterAllChatActions() {
@@ -2231,6 +2358,16 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 flag = .inputCarouselCardOrientation
             case self.CHAT_BOT_CAROUSEL_CARD_IMAGE_VISIBILITY:
                 flag = .showInputCarouselCardImage
+            case self.CHAT_FALLBACK_DEPARTMENTS_ON_REOPEN_IF_OFFLINE:
+                flag = .fallbackDepartmentsOnReopenIfOffline
+            case self.HIDE_CREDIT_CARD_MASKING_CONSENT_ALERT:
+                flag = .hideCreditCardMaskingConsentAlert
+            case self.INCLUDE_VISITOR_INFO_IN_CONVERSATION_INFO:
+                flag = .includeVisitorInfoInDisplayFields
+            case self.SECRET_FIELDS_PROVIDER_TIMEOUT:
+                flag = .getSecretFieldsTimeout
+            case self.DISPLAY_FIELDS_PROVIDER_TIMEOUT:
+                flag = .getDisplayFieldsTimeout
             default:
                 flag = nil
             }

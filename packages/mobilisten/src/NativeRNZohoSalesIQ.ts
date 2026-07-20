@@ -182,6 +182,8 @@ export interface Spec extends TurboModule {
   setChatConversationTitle(online?: string, offline?: string): void;
   setAttributes(attributes: Object): Promise<void>;
   fetchDepartments(): Promise<Object[]>;
+  refreshData(data: Object): Promise<void>;
+  setDataProvider(config: Object): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNZohoSalesIQMobilisten');
