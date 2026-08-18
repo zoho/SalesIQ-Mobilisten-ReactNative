@@ -9,7 +9,7 @@
 // Any extra args are forwarded, and an explicit `--mode=...` wins over the configured default:
 //   npm run android                     → uses PUSH_MODE from config/push.ts
 //   npm run android -- --mode=jsPushDebug  → forces that variant
-import {readFileSync} from 'node:fs';
+import {readFileSync, writeFileSync} from 'node:fs';
 import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
@@ -28,7 +28,21 @@ function readPushMode() {
   }
 }
 
+/** Writes PUSH_MODE back to config/push.ts so the JS layer stays in sync with the native layer. */
+function writePushMode(mode) {
+  const src = readFileSync(configPath, 'utf8');
+  const updated = src.replace(
+    /PUSH_MODE\s*=\s*'(native|js)'\s*as\s*PushMode/,
+    `PUSH_MODE = '${mode}' as PushMode`,
+  );
+  if (updated !== src) {
+    writeFileSync(configPath, updated, 'utf8');
+    console.log(`[run-android] config/push.ts updated: PUSH_MODE="${mode}"`);
+  }
+}
+
 const passthrough = process.argv.slice(2);
+const explicitModeArg = passthrough.find(arg => arg.startsWith('--mode='));
 const hasExplicitMode = passthrough.some(arg => arg === '--mode' || arg.startsWith('--mode='));
 
 const args = ['react-native', 'run-android'];
@@ -37,6 +51,12 @@ if (!hasExplicitMode) {
   const variant = mode === 'js' ? 'jsPushDebug' : 'nativePushDebug';
   console.log(`[run-android] PUSH_MODE="${mode}" (config/push.ts) → building "${variant}"`);
   args.push(`--mode=${variant}`);
+} else if (explicitModeArg) {
+  // Sync config/push.ts so the JS layer matches the explicit native flavor.
+  const variant = explicitModeArg.split('=')[1];
+  const mode = variant.startsWith('js') ? 'js' : 'native';
+  writePushMode(mode);
+  console.log(`[run-android] explicit --mode="${variant}" → PUSH_MODE="${mode}"`);
 }
 args.push(...passthrough);
 

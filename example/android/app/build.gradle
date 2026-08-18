@@ -2,6 +2,9 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// Monorepo: lets react-native-screens (safeAppExtGet) find RN without invoking node
+project.ext.REACT_NATIVE_NODE_MODULES_DIR = new File(rootDir, "../../node_modules/react-native").canonicalPath
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -133,7 +136,8 @@ dependencies {
     }
 }
 
-apply plugin: 'com.google.gms.google-services'
+// Uncomment the line below to apply the Google Services Gradle plugin, which is required for Firebase
+// apply plugin: 'com.google.gms.google-services'
 
 /* react-native-vector-icons — bundle only the icon set used by the sample app.
  * node_modules is hoisted to the monorepo root, so point iconFontsDir there explicitly —

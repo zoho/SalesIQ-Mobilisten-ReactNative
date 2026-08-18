@@ -38,8 +38,14 @@ static BOOL SIQNativePushMode(void) {
   // Skipped in 'native' mode — that path never touches Firebase.
   NSLog(@"[SIQ-Push] App launching. Push mode = %@", SIQNativePushMode() ? @"native" : @"js");
   if (!SIQNativePushMode() && [FIRApp defaultApp] == nil) {
-    [FIRApp configure];
-    NSLog(@"[SIQ-Push] Firebase [FIRApp configure] done (js mode) — default app: %@", [FIRApp defaultApp] ? @"created" : @"still nil!");
+    // Only configure Firebase when GoogleService-Info.plist is present in the bundle.
+    // Without the file (native push mode), skip this to avoid a runtime crash.
+    if ([[NSBundle mainBundle] pathForResource:@"GoogleService-Info" ofType:@"plist"] != nil) {
+      [FIRApp configure];
+      NSLog(@"[SIQ-Push] Firebase [FIRApp configure] done (js mode) — default app: %@", [FIRApp defaultApp] ? @"created" : @"still nil!");
+    } else {
+      NSLog(@"[SIQ-Push] GoogleService-Info.plist not found — Firebase not configured. Add the file and set SIQPushMode=js for Firebase push.");
+    }
   }
 
   self.moduleName = @"mobilistensampleapp";

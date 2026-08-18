@@ -8,6 +8,8 @@ buildscript {
         kotlinVersion = "2.0.21"
         androidXAnnotation = "1.2.0"
         androidXBrowser = "1.3.0"
+        // Monorepo: absolute path so sub-project file() calls resolve correctly
+        REACT_NATIVE_NODE_MODULES_DIR = new File(rootDir, "../../node_modules/react-native").canonicalPath
     }
     repositories {
         google()

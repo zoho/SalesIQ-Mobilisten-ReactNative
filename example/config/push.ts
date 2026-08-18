@@ -31,7 +31,7 @@ export type PushMode = 'native' | 'js';
  * (`as PushMode` keeps the type the union rather than narrowing to the literal, so both derived flags below
  * compile whichever value is set.)
  */
-export const PUSH_MODE = 'native' as PushMode;
+export const PUSH_MODE = 'js' as PushMode;
 
 /** Whether the sample should wire the JavaScript (`@react-native-firebase/messaging`) push flow. */
 export const isJsPush = PUSH_MODE === 'js';

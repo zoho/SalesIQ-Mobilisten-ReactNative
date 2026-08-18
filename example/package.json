@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "android": "node scripts/run-android.mjs",
-    "android:js": "react-native run-android --mode=jsPushDebug",
-    "android:native": "react-native run-android --mode=nativePushDebug",
-    "ios": "react-native run-ios",
+    "android:js": "node scripts/run-android.mjs --mode=jsPushDebug",
+    "android:native": "node scripts/run-android.mjs --mode=nativePushDebug",
+    "ios": "node scripts/run-ios.mjs",
+    "ios:native": "node scripts/run-ios.mjs --push-mode=native",
+    "ios:js": "node scripts/run-ios.mjs --push-mode=js",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"
