@@ -33,4 +33,6 @@ abstract class ZohoSalesIQMobilistenCallsSpec internal constructor(context: Reac
     abstract fun addListener(eventName: String)
     abstract fun removeListeners(count: Double)
     abstract fun setCallKitIcon(icon: String?)
+    abstract fun enableVoIP(token: String?, isTestDevice: Boolean, mode: String?)
+    abstract fun handleVOIPNotificationAction(info: ReadableMap?, promise: Promise)
 }

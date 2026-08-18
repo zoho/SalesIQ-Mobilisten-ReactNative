@@ -1,4 +1,4 @@
 export class SIQBannerColorTheme {
-    backgroundColor = "null";
-    textColor = "null";
+  backgroundColor = 'null';
+  textColor = 'null';
 }

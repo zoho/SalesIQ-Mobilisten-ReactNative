@@ -1,106 +1,118 @@
-import React, { useEffect } from 'react';
-import { Platform, StatusBar } from "react-native";
-import { addListeners } from "./scripts/listeners";
+import React, {useEffect, useRef} from 'react';
+import {AppState, Platform} from 'react-native';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {ZohoSalesIQ} from '@react-native-zohosalesiq/mobilisten';
+import {SalesIQCallViewMode} from '@react-native-zohosalesiq/mobilisten-core';
 
-import { ZohoSalesIQ } from "@react-native-zohosalesiq/mobilisten";
-import Main from "./screens/Main";
+import ThemeProvider from './theme/ThemeProvider';
+import AppNavigator from './navigation';
+import ToastHost from './components/ui/Toast';
+import {addListeners} from './scripts/listeners';
+import {setupJsPush, announceNativePush} from './scripts/push';
+import {
+  requestNotificationPermission,
+  getNotificationPermissionStatus,
+} from './scripts/permissions';
+import {setPushPermission} from './state/pushStatus';
+import {loadDepartments} from './state/departments';
+import {hasPlaceholderKeys, setInitStatus, useSettings} from './state/settings';
 
-const App: React.FC = () => {
-    function initSalesIQ() {
-        /*
-            Follow the steps outlined in https://www.zoho.com/salesiq/help/developer-guides/android-mobile-sdk-installation-2.0.html 
-            to obtain a distinct app key and access key for Android and iOS for your application from the SalesIQ portal.
-        */
-        const androidAppKey = "<YOUR_ANDROID_APP_KEY>";
-        const androidAccessKey = "<YOUR_ANDROID_ACCESS_KEY>";
+let listenersAttached = false;
 
-        const iosAppKey = "<YOUR_IOS_APP_KEY>";
-        const iosAccessKey = "<YOUR_IOS_ACCESS_KEY>";
+/** Initializes the SDK with the given keys and applies the sample app's default runtime config. */
+const initializeSalesIQ = (appKey: string, accessKey: string) => {
+  if (!listenersAttached) {
+    listenersAttached = true;
+    addListeners();
+  }
 
-        let appkey = "";
-        let accesskey = "";
+  // Start the SDK with your portal's app key + access key; must succeed before any other API works.
+  ZohoSalesIQ.initialize({
+    appKey,
+    accessKey,
+    androidCallViewMode: SalesIQCallViewMode.FLOATING,
+  })
+    .then(() => {
+      setInitStatus('initialized');
+      // Show the floating chat launcher button, and keep it always visible.
+      ZohoSalesIQ.Launcher.show(ZohoSalesIQ.Launcher.VisibilityMode.ALWAYS);
+      // Let the user drag the launcher to a dismiss target to hide it.
+      ZohoSalesIQ.Launcher.enableDragToDismiss(true);
+      // Show the connected operator's photo on the launcher.
+      ZohoSalesIQ.Launcher.showOperatorImage(true);
+      // Let visitors leave a message when all operators are offline.
+      ZohoSalesIQ.showOfflineMessage(true);
+      // Show chat/notification banners while the app is in the foreground.
+      ZohoSalesIQ.Notification.enableInAppNotification(true);
+      // Push: in 'js' mode wire @react-native-firebase/messaging → SDK; no-op in 'native' mode
+      // (the native FirebaseMessagingService / AppDelegate forward push instead). See config/push.ts.
+      setupJsPush();
+      // Native mode: surface once that the native layer owns push (no-op in 'js' mode).
+      announceNativePush();
+      // Fetch departments once init succeeds, so the Chat screen's attribute pickers can offer them.
+      loadDepartments();
+      if (Platform.OS === 'android') {
+        // Android only: stop the SDK UI from following the OS light/dark theme.
+        ZohoSalesIQ.syncThemeWithOsForAndroid(false);
+      }
+    })
+    .catch((error: {message?: string}) => {
+      setInitStatus('failed', error?.message ?? 'Unknown initialization error');
+    });
+};
 
-        if (Platform.OS === "android") {
-            appkey = androidAppKey;
-            accesskey = androidAccessKey;
-        } else if (Platform.OS === "ios") {
-            appkey = iosAppKey;
-            accesskey = iosAccessKey;
-        }
+/**
+ * SDK bootstrap + app shell. Initialization and push registration are automatic — there
+ * are no manual "init" or "register push" buttons anywhere in the UI (see Core &
+ * Notifications screens), matching the design system's automatic-startup rule.
+ *
+ * Re-runs whenever the stored credentials change (e.g. after Settings → Save keys), so
+ * pasting real keys over the shipped placeholders initializes the SDK without a rebuild.
+ */
+const App = () => {
+  const {appKey, accessKey} = useSettings();
+  const initializedFor = useRef<string | null>(null);
 
-        /*
-            The Mobilisten React-Native SDK provides various events that developers can use to perform customized actions. 
-            Refer ./scripts/listeners file
-        */
-        addListeners();
+  // Notification permission: request it once at startup (Android 13+ runtime prompt; no-op on iOS, where
+  // the AppDelegate already requests it), then publish the resulting status to the app-wide push-status
+  // store. Re-read on every foreground so the global header warning + Notifications banner clear right
+  // after the user enables notifications in Settings and returns. Independent of SDK init.
+  useEffect(() => {
+    const refreshStatus = () =>
+      getNotificationPermissionStatus().then(setPushPermission);
+    requestNotificationPermission().finally(refreshStatus);
+    const sub = AppState.addEventListener('change', state => {
+      if (state === 'active') {
+        refreshStatus();
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
-        ZohoSalesIQ.printDebugLogsForAndroid(true);
-
-        //This API is used to initialize the SalesIQ SDK with callback.
-        ZohoSalesIQ.initWithCallback(appkey, accesskey, (success) => {
-            if (success) {
-                /*
-                        ThisAPI allows managing the visibility of the mobilisten launcher according to your visibility mode. 
-                        The three available visibility modes are ALWAYS, NEVER, WHEN_ACTIVE_CHAT.
-                    */
-                ZohoSalesIQ.Launcher.show(
-                    ZohoSalesIQ.Launcher.VisibilityMode.ALWAYS
-                );
-                ZohoSalesIQ.Launcher.enableDragToDismiss(true);
-
-                /*
-                        SalesIQ Android SDK follows the system theme by default. You can opt-out of this option by setting the value to false.
-                        Refer android/app/main/res/values/styles.xml and https://www.zoho.com/salesiq/help/developer-guides/android-mobile-sdk-theme-customization-2.0.html
-                    */
-                ZohoSalesIQ.syncThemeWithOsForAndroid(false);
-
-                ZohoSalesIQ.showOperatorImageInLauncher(true); //This API can be used to set the operator image in the launcher
-
-                /*
-                        This API will set offline banner in chat window when the brand is offline.
-                        Refer https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-chat-show-offline-message.html
-                    */
-                ZohoSalesIQ.showOfflineMessage(true);
-
-                /*
-                        Chat Actions allows you to define custom actions that can be invoked when a user clicks on them inside the chat.
-                        Refer https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-chatactions-v2.html
-                    */
-                ZohoSalesIQ.registerChatAction("book_ticket"); //This API allows you to register any custom action that you have created.
-                ZohoSalesIQ.setChatActionTimeout(10); //This API allows you to set the timeout value until which loader needs to be shown. Value in seconds
-
-                /*
-                        This API allows you to set an icon for the SalesIQ Android SDK notifications.
-                        Refer https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-notification-android.html
-                    */
-                ZohoSalesIQ.Notification.setIconForAndroid("salesiq_logo");
-
-                /*
-                        You can use this API to enable/disable the conversation history option in the SalesIQ SDK.
-                        Refer https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-set-conversation-visibility.html
-                    */
-                ZohoSalesIQ.setConversationVisibility(true);
-                ZohoSalesIQ.setConversationListTitle("Mobilisten Live Support"); // This API is used to set title in the header of the conversation history section
-
-                /*
-                        You can use this API to show/hide the Knowledgebase option in the SalesIQ SDK.
-                        Refer https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-set-faq-visibility.html
-                    */
-                ZohoSalesIQ.setFAQVisibility(true);
-
-                ZohoSalesIQ.enableInAppNotification();
-            } else {
-                console.log("ERROR WHILE initwithcallback");
-            }
-        });
+  useEffect(() => {
+    if (hasPlaceholderKeys(appKey, accessKey)) {
+      setInitStatus('keysRequired');
+      return;
     }
+    const credentialsKey = `${appKey}:${accessKey}`;
+    if (initializedFor.current === credentialsKey) {
+      return;
+    }
+    initializedFor.current = credentialsKey;
+    initializeSalesIQ(appKey, accessKey);
+  }, [appKey, accessKey]);
 
-    useEffect(() => {
-        initSalesIQ();
-        Platform.OS == 'android' && StatusBar.setBackgroundColor("#007AFF");
-    }, []);
-
-    return <Main />;
+  return (
+    <GestureHandlerRootView style={{flex: 1}}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AppNavigator />
+          <ToastHost />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
 };
 
 export default App;

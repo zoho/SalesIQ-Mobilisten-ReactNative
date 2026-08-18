@@ -1,5 +1,5 @@
-import { SIQFAQBottomBarTheme } from "./SIQFAQBottomBarTheme";
+import { SIQFAQBottomBarTheme } from './SIQFAQBottomBarTheme';
 
 export class SIQArticleTheme {
-    Toolbar = new SIQFAQBottomBarTheme();
+  Toolbar = new SIQFAQBottomBarTheme();
 }

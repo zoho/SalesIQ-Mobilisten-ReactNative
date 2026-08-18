@@ -1,23 +1,22 @@
 {
-  "extends": "../tsconfig.base.json",
+  "extends": "@react-native/typescript-config",
   "compilerOptions": {
-    "rootDir": "src",
     "noEmit": true,
-    // Example app usually runs directly, no build output
-    "types": [
-      "react",
-      "react-native"
-    ]
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": ["react-native", "jest"]
   },
   "include": [
-    "src"
+    "App.tsx",
+    "index.js",
+    "components/**/*",
+    "constants/**/*",
+    "navigation/**/*",
+    "screens/**/*",
+    "scripts/**/*",
+    "state/**/*",
+    "theme/**/*"
   ],
-  "exclude": [
-    "node_modules"
-  ],
-  "references": [
-    {
-      "path": "../packages/react-native-zohosalesiq"
-    }
-  ]
+  "exclude": ["node_modules"]
 }

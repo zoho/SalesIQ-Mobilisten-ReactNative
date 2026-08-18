@@ -8,6 +8,7 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
+    "postinstall": "node tools/setup-hooks.mjs",
     "example:android": "yarn workspace mobilistensampleapp react-native run-android",
     "example:ios": "yarn workspace mobilistensampleapp react-native run-ios",
     "example:start": "yarn workspace mobilistensampleapp react-native start",
@@ -22,12 +23,12 @@
     "@babel/preset-env": "^7.28.0",
     "@babel/runtime": "^7.28.2",
     "@commitlint/config-conventional": "^19.8.1",
-    "@react-native/babel-preset": "0.80.2",
-    "@react-native/eslint-config": "^0.80.2",
-    "@react-native/metro-config": "0.80.2",
-    "@react-native/typescript-config": "0.80.2",
+    "@react-native/babel-preset": "0.86.0",
+    "@react-native/eslint-config": "^0.86.0",
+    "@react-native/metro-config": "0.86.0",
+    "@react-native/typescript-config": "0.86.0",
     "@release-it/conventional-changelog": "^10.0.1",
-    "@types/react": "^19.1.9",
+    "@types/react": "^19.2.0",
     "@types/react-test-renderer": "^19.1.0",
     "commitlint": "^19.8.1",
     "del-cli": "^6.0.0",
@@ -38,15 +39,15 @@
     "expo-module-scripts": "^4.1.9",
     "lerna": "^9.0.0",
     "prettier": "^3.6.2",
-    "react": "19.1.1",
-    "react-native": "^0.74.2",
+    "react": "19.2.3",
+    "react-native": "0.86.0",
     "react-native-builder-bob": "^0.40.13",
-    "react-test-renderer": "19.1.1",
+    "react-test-renderer": "19.2.3",
     "turbo": "^2.5.5",
     "typescript": "^5.9.2"
   },
   "resolutions": {
-    "@types/react": "^19.1.9"
+    "@types/react": "^19.2.0"
   },
   "peerDependencies": {
     "expo": ">=47.0.0",
@@ -118,7 +119,8 @@
   },
   "workspaces": {
     "packages": [
-      "packages/*"
+      "packages/*",
+      "example"
     ]
   },
   "packageManager": "yarn@4.9.2"

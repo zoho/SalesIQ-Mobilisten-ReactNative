@@ -10,7 +10,7 @@ import Mobilisten
 import MobilistenCore
 
 @objc(RNZohoSalesIQMobilisten)
-class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQFAQDelegate, ZohoSalesIQKnowledgeBaseDelegate {
+class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQKnowledgeBaseDelegate {
     
     override class func requiresMainQueueSetup() -> Bool {
         return true
@@ -32,10 +32,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let HOMEVIEW_OPENED = "HOMEVIEW_OPENED"
     let SUPPORT_OPENED = "EVENT_SUPPORT_OPENED"
     let SUPPORT_CLOSED = "EVENT_SUPPORT_CLOSED"
-    let ARTICLE_OPENED = "ARTICLE_OPENED"
-    let ARTICLE_CLOSED = "ARTICLE_CLOSED"
-    let ARTICLE_LIKED = "ARTICLE_LIKED"
-    let ARTICLE_DISLIKED = "ARTICLE_DISLIKED"
     let CHAT_ATTENDED = "EVENT_CHAT_ATTENDED"
     let CHAT_CLOSED = "EVENT_CHAT_CLOSED"
     let FEEDBACK_RECEIVED = "EVENT_FEEDBACK_RECEIVED"
@@ -60,9 +56,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let INFO_LOG = "INFO_LOG"
     let WARNING_LOG = "WARNING_LOG"
     let ERROR_LOG = "ERROR_LOG"
-    let TAB_CONVERSATIONS = "TAB_CONVERSATIONS"
-    let TAB_FAQ = "TAB_FAQ"
-    let TAB_KNOWLEDGE_BASE = "TAB_KNOWLEDGE_BASE"
     let EVENT_HANDLE_URL = "EVENT_HANDLE_URL"
     let EVENT_OPEN_URL = "EVENT_OPEN_URL"
     let EVENT_COMPLETE_CHAT_ACTION = "EVENT_COMPLETE_CHAT_ACTION"
@@ -124,10 +117,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 HOMEVIEW_OPENED,
                 SUPPORT_CLOSED,
                 SUPPORT_OPENED,
-                ARTICLE_CLOSED,
-                ARTICLE_DISLIKED,
-                ARTICLE_LIKED,
-                ARTICLE_OPENED,
                 CHAT_ATTENDED,
                 CHAT_CLOSED,
                 FEEDBACK_RECEIVED,
@@ -144,9 +133,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 INFO_LOG,
                 WARNING_LOG,
                 ERROR_LOG,
-                TAB_CONVERSATIONS,
-                TAB_FAQ,
-                TAB_KNOWLEDGE_BASE,
                 EVENT_HANDLE_URL,
                 EVENT_OPEN_URL,
                 EVENT_COMPLETE_CHAT_ACTION,
@@ -179,10 +165,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             "HOMEVIEW_OPENED": HOMEVIEW_OPENED,
             "SUPPORT_CLOSED": SUPPORT_CLOSED,
             "SUPPORT_OPENED": SUPPORT_OPENED,
-            "ARTICLE_CLOSED": ARTICLE_CLOSED,
-            "ARTICLE_DISLIKED": ARTICLE_DISLIKED,
-            "ARTICLE_LIKED": ARTICLE_LIKED,
-            "ARTICLE_OPENED": ARTICLE_OPENED,
             "CHAT_ATTENDED": CHAT_ATTENDED,
             "CHAT_CLOSED": CHAT_CLOSED,
             "FEEDBACK_RECEIVED": FEEDBACK_RECEIVED,
@@ -207,9 +189,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             "INFO_LOG": INFO_LOG,
             "WARNING_LOG": WARNING_LOG,
             "ERROR_LOG": ERROR_LOG,
-            "TAB_CONVERSATIONS": TAB_CONVERSATIONS,
-            "TAB_KNOWLEDGE_BASE": TAB_KNOWLEDGE_BASE,
-            "TAB_FAQ": TAB_FAQ,
             "EVENT_HANDLE_URL": EVENT_HANDLE_URL,
             "EVENT_OPEN_URL": EVENT_OPEN_URL,
             "EVENT_COMPLETE_CHAT_ACTION": EVENT_COMPLETE_CHAT_ACTION,
@@ -309,14 +288,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         return argumentsDict
     }
     
-    static func getFAQCategoryObject(category: SIQFAQCategory) -> [String: Any] {
-        var categoryDict: [String: Any] = [:]
-        categoryDict["id"] = category.id
-        categoryDict["name"] = category.name
-        categoryDict["articleCount"] = category.articleCount
-        return categoryDict
-    }
-    
     static func getErrorObject(error: NSError) -> [String: Any] {
         return ["code": error.code, "message": error.localizedDescription]
     }
@@ -324,36 +295,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     static func getSIQErrorObject(siqError: SIQError) -> [String: Any] {
         return ["code": siqError.code, "message": siqError.message]
     }
-    
-    static func getFAQCategoryList(categories: [SIQFAQCategory]) -> [[String: Any]] {
-        return categories.compactMap { getFAQCategoryObject(category: $0) }
-    }
-    
-    static func getFAQArticleObject(article: SIQFAQArticle) -> [String: Any] {
-        var articleDict: [String: Any] = [:]
-        
-        articleDict["id"] = article.id
-        articleDict["categoryID"] = article.categoryID
-        articleDict["categoryName"] = article.categoryName
-        articleDict["name"] = article.name
-        articleDict["viewCount"] = article.viewCount
-        articleDict["likeCount"] = article.likeCount
-        articleDict["dislikeCount"] = article.dislikeCount
-        
-        if let modifiedTime = article.lastModifiedTime {
-            articleDict["modifiedTime"] = Int(modifiedTime.timeIntervalSince1970)
-        }
-        if let createdTime = article.createdTime {
-            articleDict["createdTime"] = Int(createdTime.timeIntervalSince1970)
-        }
-        
-        return articleDict
-    }
-    
-    static func getArticlesList(articles: [SIQFAQArticle]) -> [[String: Any]] {
-        return articles.map { getFAQArticleObject(article: $0) }
-    }
-    
+
     static func getChatObject(chat: SIQVisitorChat) -> [String: Any] {
         var chatDict: [String: Any] = [:]
         
@@ -711,30 +653,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
     
-    func articleClosed(id: String?) {
-        if hasSIQEventListener {
-            sendRCTEvent(withName:ARTICLE_CLOSED, body: id)
-        }
-    }
-    
-    func articleDisliked(id: String?) {
-        if hasSIQEventListener {
-            sendRCTEvent(withName:ARTICLE_DISLIKED, body: id)
-        }
-    }
-    
-    func articleLiked(id: String?) {
-        if hasSIQEventListener {
-            sendRCTEvent(withName:ARTICLE_LIKED, body: id)
-        }
-    }
-    
-    func articleOpened(id: String?) {
-        if hasSIQEventListener {
-            sendRCTEvent(withName:ARTICLE_OPENED, body: id)
-        }
-    }
-    
     func chatAttended(chat: SIQVisitorChat?) {
         if hasSIQEventListener, let chat {
             sendRCTEvent(withName:CHAT_EVENT_LISTENER, body: RNZohoSalesIQMobilisten.getEventEmitterObject(CHAT_ATTENDED, body: RNZohoSalesIQMobilisten.getChatObject(chat: chat)))
@@ -876,12 +794,11 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.initWithAppKey(appKey, accessKey: accessKey, authProvider: nil)
             ZohoSalesIQ.delegate = self
             ZohoSalesIQ.Chat.delegate = self
-            ZohoSalesIQ.FAQ.delegate = self
             ZohoSalesIQ.KnowledgeBase.delegate = self
             self.performAdditionalSetup()
         }
     }
-    
+
     @objc(initWithCallback:accessKey:initCallback:)
     func initWithCallback(_ appKey: String, accessKey: String, callback: @escaping RCTResponseSenderBlock) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -892,12 +809,11 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
             ZohoSalesIQ.delegate = self
             ZohoSalesIQ.Chat.delegate = self
-            ZohoSalesIQ.FAQ.delegate = self
             ZohoSalesIQ.KnowledgeBase.delegate = self
             self.performAdditionalSetup()
         }
     }
-    
+
     @objc(categorizeKnowledgeBase:shouldCategorize:)
     func categorizeKnowledgeBase(_ type: String, shouldCategorize: Bool) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1021,54 +937,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
     
-    
-    @objc(getArticles:)
-    func getArticles(callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.FAQ.getArticles(categoryID: nil) { error, articles in
-                if let error = error {
-                    let errorDictionary = RNZohoSalesIQMobilisten.getErrorObject(error: error)
-                    callback([errorDictionary, ""])
-                } else {
-                    if let articles {
-                        callback([NSNull(), RNZohoSalesIQMobilisten.getArticlesList(articles: articles)])
-                    }
-                }
-            }
-        }
-    }
-    
-    @objc(getArticlesWithCategoryID:articlesCallback:)
-    func getArticlesWithCategoryID(_ catid: String, callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.FAQ.getArticles(categoryID: catid) { error, articles in
-                if let error = error {
-                    let errorDictionary = RNZohoSalesIQMobilisten.getErrorObject(error: error)
-                    callback([errorDictionary, ""])
-                } else {
-                    if let articles {
-                        callback([NSNull(), RNZohoSalesIQMobilisten.getArticlesList(articles: articles)])
-                    }
-                }
-            }
-        }
-    }
-    
-    @objc(getCategories:)
-    func getCategories(callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.FAQ.getCategories(departmentIDS: nil) { error, categories in
-                if let error = error {
-                    let errorDictionary = RNZohoSalesIQMobilisten.getErrorObject(error: error)
-                    callback([errorDictionary, ""])
-                } else {
-                    if let categories {
-                        callback([NSNull(), RNZohoSalesIQMobilisten.getFAQCategoryList(categories: categories)])
-                    }
-                }
-            }
-        }
-    }
     
     @objc(getChat:callback:)
     func getChat(_ chatId: String, callback: @escaping RCTResponseSenderBlock) {
@@ -1303,20 +1171,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
     
-    @objc(openArticle:articlesCallback:)
-    func openArticle(_ id: String, callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.FAQ.openArticle(articleID: id) { error in
-                if let error = error {
-                    let errorDictionary = RNZohoSalesIQMobilisten.getErrorObject(error: error)
-                    callback([errorDictionary])
-                } else {
-                    callback([NSNull()])
-                }
-            }
-        }
-    }
-    
     @objc(openChat)
     func openChat() {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1354,31 +1208,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.Visitor.performCustomAction(actionName, shouldOpenChatWindow: shouldOpenChatWindow)
         }
     }
-    
-    @objc(present:id:callback:)
-    func present(tab: String?, referenceId: String?, callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            var tabNumber: NSNumber?
-            
-            if tab == self.TAB_CONVERSATIONS {
-                tabNumber = NSNumber(value: 0)
-            } else if tab == self.TAB_FAQ || tab == self.TAB_KNOWLEDGE_BASE {
-                tabNumber = NSNumber(value: 1)
-            }
-            
-            ZohoSalesIQ.present(tabBarItem: tabNumber, referenceID: referenceId, shouldShowListView: true) { error, success in
-                let complete = NSNumber(value: success)
-                if let error = error {
-                    let errorDictionary = RNZohoSalesIQMobilisten.getSIQErrorObject(siqError: error)
-                    callback([errorDictionary, [complete]])
-                } else {
-                    callback([NSNull(), [complete]])
-                }
-            }
-        }
-    }
-    
-    
+
     @objc(printDebugLogsForAndroid:)
     func printDebugLogsForAndroid(_ value: Bool) {}
     
@@ -1553,13 +1383,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     @objc(setDepartments:)
     func setDepartments(_ department: [String]) {}
     
-    @objc(setFAQVisibility:)
-    func setFAQVisibility(_ visibility: Bool) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.FAQ.setVisibility(visibility)
-        }
-    }
-    
     @objc(setFeedbackVisibility:)
     func setFeedbackVisibility(_ visibility: Bool) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1630,7 +1453,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     func setMinimumPressDuration(_ duration: Double) {
         RNZohoSalesIQMobilisten.mainThread {
             guard duration >= 0 else { return }
-            let seconds = CGFloat(duration) / 1000.0
+            let seconds = duration / 1000.0
             ZohoSalesIQ.Launcher.minimumPressDuration(seconds)
         }
     }
@@ -1642,9 +1465,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.Notification.setAction(with: actionSource)
         }
     }
-    
-    @objc(setNotificationIconForAndroid:)
-    func setNotificationIconForAndroid(_ drawableName: String) {}
     
     @objc(setOperatorEmail:)
     func setOperatorEmail(_ email: String) {
@@ -1674,21 +1494,8 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
     
-    @objc(setTabOrder:)
-    func setTabOrder(_ orders: [String]) {
-        RNZohoSalesIQMobilisten.mainThread {
-            var sendOrders: [NSNumber] = []
-            for currentObject in orders {
-                if currentObject == self.TAB_CONVERSATIONS {
-                    sendOrders.append(0)
-                } else if currentObject == self.TAB_FAQ || currentObject == self.TAB_KNOWLEDGE_BASE {
-                    sendOrders.append(1)
-                }
-            }
-            ZohoSalesIQ.setTabOrder(sendOrders)
-        }
-    }
-    
+    // [sync] setTabOrder removed — Tab retired across wrappers.
+
     @objc(setThemeColor:)
     func setThemeColor(_ colors: [String: Any]) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1864,13 +1671,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     func showOfflineMessage(_ visibility: Bool) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.Chat.showOfflineMessage(visibility)
-        }
-    }
-    
-    @objc(showOperatorImageInChat:)
-    func showOperatorImageInChat(_ visibility: Bool) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.attenderImageInChat, visible: visibility)
         }
     }
     

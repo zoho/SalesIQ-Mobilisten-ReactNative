@@ -4,11 +4,11 @@ import type { ZSIQNotificationTypes } from './types/Notification';
 
 export const ZSIQNotification = {
   Notification: {
-    setIconForAndroid: function (resourceName) {
-      RNZohoSalesIQ.setNotificationIconForAndroid(resourceName);
-    },
     registerPush: function (token, isTestDevice) {
       RNZohoSalesIQ.registerPush(token, isTestDevice);
+    },
+    disablePush: function () {
+      return RNZohoSalesIQ.disablePush();
     },
     isSDKMessage: function (map = {}, callback) {
       RNZohoSalesIQ.isSDKMessage(map, callback);
@@ -22,10 +22,21 @@ export const ZSIQNotification = {
     setActionSource: function (actionSource) {
       RNZohoSalesIQ.setNotificationActionSource(actionSource);
     },
-    addListener: function (callback) {
-      RNZohoSalesIQ.updateListener(NotificationListenerEvent.NOTIFICATION_CLICKED);
-      return RNZohoSalesIQEmitter.addListener("NOTIFICATION_EVENT_LISTENER", callback);
+    getBadgeCount: function () {
+      return RNZohoSalesIQ.getBadgeCount();
     },
-    Event: NotificationListenerEvent
+    enableInAppNotification: function (enabled) {
+      RNZohoSalesIQ.enableInAppNotification(enabled);
+    },
+    addListener: function (callback) {
+      RNZohoSalesIQ.updateListener(
+        NotificationListenerEvent.NOTIFICATION_CLICKED
+      );
+      return RNZohoSalesIQEmitter.addListener(
+        'NOTIFICATION_EVENT_LISTENER',
+        callback
+      );
+    },
+    Event: NotificationListenerEvent,
   },
 } as ZSIQNotificationTypes;

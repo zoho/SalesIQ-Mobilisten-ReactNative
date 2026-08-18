@@ -1,6 +1,11 @@
 import type { SalesIQChat } from '../components/chat/types/SalesIQChat';
 import type { ResourceType } from '../components/knowledgebase/types/KnowledgeBase';
 
+/**
+ * The event names dispatched by the SalesIQ SDK. Pass a value from this enum to
+ * {@link ZSIQWrapperTypes.sendEvent ZohoSalesIQ.sendEvent()} or match against it inside a
+ * listener callback to identify which SDK event was triggered.
+ */
 export enum ListenerEvent {
   /**
    * Invoked when the user opens the SDK.
@@ -46,242 +51,251 @@ export enum ListenerEvent {
   /**
    * This event is called when the application should re-register the push notification.
    */
-  RE_REGISTER_PUSH = 'RE_REGISTER_PUSH'
+  RE_REGISTER_PUSH = 'RE_REGISTER_PUSH',
 }
 
+/**
+ * The payload delivered to a {@link ZSIQWrapperTypes.addListener ZohoSalesIQ.addListener()}
+ * callback, identifying which event fired and carrying any associated data.
+ */
 export type Listeners = {
-  event: ListenerEvent.SUPPORT_OPENED | ListenerEvent.SUPPORT_CLOSED | ListenerEvent.OPERATORS_ONLINE | ListenerEvent.OPERATORS_OFFLINE | ListenerEvent.VISITOR_REGISTRATION_FAILURE | ListenerEvent.VISITOR_IPBLOCKED | ListenerEvent.RE_REGISTER_PUSH,
-  body?: null
-}
+  /** The name of the event that was triggered. */
+  event:
+    | ListenerEvent.SUPPORT_OPENED
+    | ListenerEvent.SUPPORT_CLOSED
+    | ListenerEvent.OPERATORS_ONLINE
+    | ListenerEvent.OPERATORS_OFFLINE
+    | ListenerEvent.VISITOR_REGISTRATION_FAILURE
+    | ListenerEvent.VISITOR_IPBLOCKED
+    | ListenerEvent.RE_REGISTER_PUSH;
+  /** The event payload; `null` for events that carry no additional data. */
+  body?: null;
+};
 
+/**
+ * The legacy map of event-name string constants used with the removed
+ * {@link ZSIQWrapperTypes.addEventListener addEventListener()} API. Use the {@link ListenerEvent}
+ * enum with the scoped `addListener` APIs instead.
+ * @deprecated
+ */
 export type ZSIQListenerEventsType = {
   /**
-   * @deprecated
    * Invoked when the user opens the SDK.
+   * @deprecated
    */
   EVENT_SUPPORT_OPENED: string;
 
   /**
-   * @deprecated
    * Invoked when the user closes the SDK.
+   * @deprecated
    */
   EVENT_SUPPORT_CLOSED: string;
 
   /**
-   * @deprecated
    * Invoked when the visitor's IP is blocked.
+   * @deprecated
    */
   EVENT_VISITOR_IPBLOCKED: string;
 
   /**
-   * @deprecated
    * Invoked when any of the operators are online.
+   * @deprecated
    */
   EVENT_OPERATORS_ONLINE: string;
 
   /**
-   * @deprecated
    * Invoked when all the operators are offline.
+   * @deprecated
    */
   EVENT_OPERATORS_OFFLINE: string;
 
   /**
-   * @deprecated
    * Invoked when a chat window is opened.
+   * @deprecated
    */
   EVENT_CHATVIEW_OPENED: string;
 
   /**
-   * @deprecated
    * Invoked when a chat window is closed.
+   * @deprecated
    */
   EVENT_CHATVIEW_CLOSED: string;
 
   /**
-   * @deprecated
    * Invoked when a chat is initiated.
    * @param visitorChat - {@link SalesIQChat}
+   * @deprecated
    */
   EVENT_CHAT_OPENED: string;
 
   /**
-   * @deprecated
    * Invoked when a chat is ended.
    * @param visitorChat - {@link SalesIQChat}
+   * @deprecated
    */
   EVENT_CHAT_CLOSED: string;
 
   /**
-   * @deprecated
    * Invoked when a chat is reopened.
    * @param visitorChat - {@link SalesIQChat}
+   * @deprecated
    */
   EVENT_CHAT_REOPENED: string;
 
   /**
-   * @deprecated
    * Invoked when a chat is picked up.
-   * @param visitorChat - {@link SalesIQChat} 
+   * @param visitorChat - {@link SalesIQChat}
+   * @deprecated
    */
   EVENT_CHAT_ATTENDED: string;
 
   /**
-   * @deprecated
    * Invoked when a chat is missed.
    * @param visitorChat - {@link SalesIQChat}
+   * @deprecated
    */
   EVENT_CHAT_MISSED: string;
 
   /**
-   * @deprecated
    * Invoked when the position in the queue of a queued chat changes.
-   * @param visitorChat - {@link SalesIQChat} 
-  */
+   * @param visitorChat - {@link SalesIQChat}
+   * @deprecated
+   */
   EVENT_CHAT_QUEUE_POSITION_CHANGED: string;
 
   /**
-   * @deprecated
    * Invoked when the unread count is changed.
+   * @deprecated
    */
   EVENT_CHAT_UNREAD_COUNT_CHANGED: string;
 
   /**
-   * @deprecated
    * Invoked when feedback is given by the visitor.
    * @param visitorChat - {@link SalesIQChat SalesIQChat}
+   * @deprecated
    */
   EVENT_FEEDBACK_RECEIVED: string;
 
   /**
-   * @deprecated
    * Invoked when a chat is rated by the visitor.
    * @param visitorChat - {@link SalesIQChat SalesIQChat}
+   * @deprecated
    */
   EVENT_RATING_RECEIVED: string;
 
   /**
-   * @deprecated
-   * Invoked when an article is liked.
-   */
-  EVENT_ARTICLE_LIKED: string;
-
-  /**
-   * @deprecated
-   * Invoked when an article is disliked.
-   */
-  EVENT_ARTICLE_DISLIKED: string;
-
-  /**
-   * @deprecated
-   * Invoked when an article is opened.
-   */
-  EVENT_ARTICLE_OPENED: string;
-
-  /**
-   * @deprecated
-   * Invoked when an article is closed.
-   */
-  EVENT_ARTICLE_CLOSED: string;
-
-  /**
-   * @deprecated
    * Invoked when a chat action is to be executed. {@link https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-chatactions-v2.html Learn More}
+   * @deprecated
    */
   EVENT_PERFORM_CHATACTION: string;
 
   /**
-   * @deprecated
    * Invoked when a custom trigger is executed. {@link http://www.zoho.com/salesiq/help/developer-section/react-native-sdk-custom-trigger.html Learn More}
+   * @deprecated
    */
   EVENT_CUSTOMTRIGGER: string;
   /**
-   * @deprecated
    * Invoked when a bot has been triggered.
-   * 
+   *
    * Note: Android only
+   * @deprecated
    */
   EVENT_BOT_TRIGGER: string;
 
   /**
-   * @deprecated
    * Invoked when a URL in the chat is clicked.
    * @param chat - {@link SalesIQChat}
+   * @deprecated
    */
   EVENT_HANDLE_URL: string;
 
   /**
-   * @deprecated
    * Invoked when a resource is opened.
+   * @deprecated
    */
   EVENT_RESOURCE_OPENED: string;
 
   /**
-   * @deprecated
    * Invoked when a resource is closed.
+   * @deprecated
    */
   EVENT_RESOURCE_CLOSED: string;
 
   /**
-   * @deprecated
    * Invoked when a resource is liked.
+   * @deprecated
    */
   EVENT_RESOURCE_LIKED: string;
 
   /**
-   * @deprecated
    * Invoked when a resource is disliked.
+   * @deprecated
    */
   EVENT_RESOURCE_DISLIKED: string;
 
   /**
-   * @deprecated
    * Show/hide your custom launcher with the triggered boolean value.
+   * @deprecated
    */
   EVENT_HANDLE_CUSTOM_LAUNCHER_VISIBILITY: string;
 
   /**
-   * @deprecated
    * Invoked when the notification clicked.
+   * @deprecated
    */
   EVENT_NOTIFICATION_CLICKED: string;
 };
 
-export enum ZSIQTabs {
-  CONVERSATIONS = 'TAB_CONVERSATIONS',
-  KNOWLEDGE_BASE = 'TAB_KNOWLEDGE_BASE',
-  /**
-   * @deprecated
-   */
-  FAQ = 'TAB_FAQ',
-}
-
+/**
+ * Launcher button properties — its positioning mode and the horizontal/vertical edges it is
+ * anchored to — used when customising the launcher via
+ * {@link ZSIQWrapperTypes.setLauncherPropertiesForAndroid ZohoSalesIQ.setLauncherPropertiesForAndroid()}.
+ */
 export enum LauncherProps {
+  /** Static (fixed-position) launcher mode. */
   MODE_STATIC = 1,
+  /** Floating (draggable) launcher mode. */
   MODE_FLOATING = 2,
+  /** Anchor the launcher to the left edge of the screen. */
   HORIZONTAL_LEFT = 'LAUNCHER_HORIZONTAL_LEFT',
+  /** Anchor the launcher to the right edge of the screen. */
   HORIZONTAL_RIGHT = 'LAUNCHER_HORIZONTAL_RIGHT',
+  /** Anchor the launcher to the top edge of the screen. */
   VERTICAL_TOP = 'LAUNCHER_VERTICAL_TOP',
+  /** Anchor the launcher to the bottom edge of the screen. */
   VERTICAL_BOTTOM = 'LAUNCHER_VERTICAL_BOTTOM',
 }
 
+/**
+ * The chat status, launcher mode, action source, and resource constants exposed on the
+ * `ZohoSalesIQ` object.
+ */
 export interface ZSIQConstantsTypes {
-  Tab: typeof ZSIQTabs;
+  /** Chat status indicating the chat is open but not yet answered by an operator. */
   TYPE_OPEN: string;
+  /** Chat status indicating the chat is waiting in the queue for an operator. */
   TYPE_WAITING: string;
+  /** Chat status indicating the visitor is connected to an operator. */
   TYPE_CONNECTED: string;
+  /** Chat status indicating the chat conversation has ended. */
   TYPE_ENDED: string;
+  /** Chat status indicating the chat has been closed. */
   TYPE_CLOSED: string;
+  /** Chat status indicating the chat was missed (never attended by an operator). */
   TYPE_MISSED: string;
 
   /**
-   * @deprecated
+   * Static (fixed-position) launcher mode.
+   * @deprecated Use {@link LauncherProps.MODE_STATIC} instead.
    */
   LAUNCHER_MODE_STATIC: string;
 
   /**
-   * @deprecated
+   * Floating (draggable) launcher mode.
+   * @deprecated Use {@link LauncherProps.MODE_FLOATING} instead.
    */
   LAUNCHER_MODE_FLOATING: string;
+  /** Identifies the origin of an action — whether it is managed by the App or by the SDK. */
   ActionSource: {
     /**
      * Source of action will be managed by the App.
@@ -293,7 +307,9 @@ export interface ZSIQConstantsTypes {
     SDK: string;
   };
 
+  /** The set of knowledge base resource types (see {@link ResourceType}). */
   Resource: typeof ResourceType;
 }
 
-export type _SalesIQChat = SalesIQChat
+/** Internal re-export alias that surfaces {@link SalesIQChat} within this module. */
+export type _SalesIQChat = SalesIQChat;

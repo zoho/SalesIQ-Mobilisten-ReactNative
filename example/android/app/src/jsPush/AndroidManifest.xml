@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- JS push flow: @react-native-firebase's messaging service is the FCM entry point and forwards
+         messages to JS, where the app hands them to the SDK (see example/scripts/push.ts). Remove the
+         app's own MyFirebaseMessagingService so the two services don't collide on MESSAGING_EVENT. -->
+    <application>
+        <service
+            android:name=".MyFirebaseMessagingService"
+            tools:node="remove" />
+    </application>
+</manifest>

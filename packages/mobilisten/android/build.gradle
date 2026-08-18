@@ -135,7 +135,9 @@ dependencies {
     implementation "com.facebook.react:react-native:+"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api project(':react-native-zohosalesiq_mobilisten-core')
-    api 'com.zoho.salesiq:mobilisten:8.3.10'
+    api 'com.zoho.salesiq:mobilisten:9.0.0-beta05'
+    // The SDK declares Koin as 'implementation' (not transitive to consumers).
+    implementation 'io.insert-koin:koin-core:4.1.1'
 }
 
 if (isNewArchitectureEnabled()) {

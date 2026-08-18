@@ -137,8 +137,12 @@ class RNZohoSalesIQCore private constructor(reactContext: ReactApplicationContex
                             SIQDepartment(
                                 id = departmentMap.getString("id"),
                                 name = departmentMap.getString("name"),
-                                communicationMode = if (departmentMap.hasKey("communicationMode"))
-                                    CommunicationMode.entries[departmentMap.getInt("communicationMode")] else null
+                                // communicationMode arrives as the String enum name ("CHAT" / "CALL" /
+                                // "CHAT_AND_CALL") — matching iOS and getDepartments() — so resolve it by
+                                // name. (Previously read as an Int ordinal via getInt, which broke JS callers.)
+                                communicationMode = departmentMap.getString("communicationMode")?.let { modeName ->
+                                    CommunicationMode.entries.find { it.name == modeName }
+                                }
                             )
                         }
                 }?.let { setDepartments(it) }

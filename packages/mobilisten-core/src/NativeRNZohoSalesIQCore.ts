@@ -5,4 +5,6 @@ export interface Spec extends TurboModule {
   getConstants(): {};
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('RNZohoSalesIQMobilistenCore');
+export default TurboModuleRegistry.getEnforcing<Spec>(
+  'RNZohoSalesIQMobilistenCore'
+);

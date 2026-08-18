@@ -88,7 +88,17 @@ class RNZohoSalesIQMobilistenCalls(private val reactContext: ReactApplicationCon
 
     @ReactMethod
     override fun setCallKitIcon(icon: String?) {
-        
+
+    }
+
+    @ReactMethod
+    override fun enableVoIP(token: String?, isTestDevice: Boolean, mode: String?) {
+        RNZohoSalesIQCalls.sharedInstance?.enableVoIP(token, isTestDevice, mode)
+    }
+
+    @ReactMethod
+    override fun handleVOIPNotificationAction(info: ReadableMap?, promise: Promise) {
+        RNZohoSalesIQCalls.sharedInstance?.handleVOIPNotificationAction(info, promise)
     }
 
     @ReactMethod

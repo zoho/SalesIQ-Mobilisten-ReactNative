@@ -1,6 +1,6 @@
-import { SIQConversationListItemTheme } from "./SIQConversationListItemTheme";
+import { SIQConversationListItemTheme } from './SIQConversationListItemTheme';
 
 export class SIQConversationTheme {
-    backgroundColor = "null";
-    ListItem = new SIQConversationListItemTheme();
+  backgroundColor = 'null';
+  ListItem = new SIQConversationListItemTheme();
 }

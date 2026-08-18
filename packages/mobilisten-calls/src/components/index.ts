@@ -1,7 +1,16 @@
 import type { ZSIQCallsWrapperTypes } from '../types/ZSIQCallsWrapperTypes';
-import RNZohoSalesIQCalls, { RNZohoSalesIQCallsEmitter } from '../commons/utils';
-import { ZSIQCallsConstants, ZSIQCallsListenerEvents } from '../commons/ZSIQCallsConstants';
-import { getBase64EncodedImage, SalesIQConversation, parseConversation } from '@react-native-zohosalesiq/mobilisten-core';
+import RNZohoSalesIQCalls, {
+  RNZohoSalesIQCallsEmitter,
+} from '../commons/utils';
+import {
+  ZSIQCallsConstants,
+  ZSIQCallsListenerEvents,
+} from '../commons/ZSIQCallsConstants';
+import {
+  getBase64EncodedImage,
+  SalesIQConversation,
+  parseConversation,
+} from '@react-native-zohosalesiq/mobilisten-core';
 import { ListenerEvent } from '../types/Listener';
 
 export const ZSIQCallsWrapper = {
@@ -40,7 +49,7 @@ export const ZSIQCallsWrapper = {
     let base64Image = await getBase64EncodedImage(dp);
     let finalAttributes = {
       ...attributes,
-      displayPicture: base64Image
+      displayPicture: base64Image,
     };
     return RNZohoSalesIQCalls.start(id, displayActiveCall, finalAttributes);
   },
@@ -61,14 +70,15 @@ export const ZSIQCallsWrapper = {
     try {
       const conversationsArray = await RNZohoSalesIQCalls.getList();
 
-      const parsedConversations = conversationsArray.map((conversation: SalesIQConversation) => {      
-        return parseConversation(conversation);
-      });
+      const parsedConversations = conversationsArray.map(
+        (conversation: SalesIQConversation) => {
+          return parseConversation(conversation);
+        }
+      );
 
       return parsedConversations;
-
     } catch (error) {
-      console.error("Failed to get conversation list:", error);
+      console.error('Failed to get conversation list:', error);
       throw error;
     }
   },
@@ -78,8 +88,21 @@ export const ZSIQCallsWrapper = {
     RNZohoSalesIQCalls.setCallKitIcon(base64Image);
   },
 
+  enableVoIP: function (token, isTestDevice, mode = 'production') {
+    RNZohoSalesIQCalls.enableVoIP(token, isTestDevice, mode);
+  },
+
+  handleVOIPNotificationAction: function (info) {
+    // Promise-based end to end (native resolves once the SDK finishes processing).
+    // See the CallKit-timing warning on this method in ZSIQCallsWrapperTypes.ts.
+    return RNZohoSalesIQCalls.handleVOIPNotificationAction(info);
+  },
+
   addListener: function (callback) {
-    return RNZohoSalesIQCallsEmitter.addListener(ZSIQCallsListenerEvents.ZSIQ_CALLS_EVENT_LISTENER, callback);
+    return RNZohoSalesIQCallsEmitter.addListener(
+      ZSIQCallsListenerEvents.ZSIQ_CALLS_EVENT_LISTENER,
+      callback
+    );
   },
 
   Event: ListenerEvent,

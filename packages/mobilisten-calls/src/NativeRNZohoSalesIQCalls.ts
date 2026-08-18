@@ -36,9 +36,15 @@ export interface Spec extends TurboModule {
 
   setCallKitIcon: (icon: string) => void;
 
+  enableVoIP: (token: string, isTestDevice: boolean, mode: string) => void;
+
+  handleVOIPNotificationAction: (info: Object) => Promise<void>;
+
   addListener: (eventName: string) => void;
 
   removeListeners(count: number): void;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('RNZohoSalesIQMobilistenCalls');
+export default TurboModuleRegistry.getEnforcing<Spec>(
+  'RNZohoSalesIQMobilistenCalls'
+);

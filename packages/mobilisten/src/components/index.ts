@@ -1,7 +1,4 @@
-import type {
-  ZSIQWrapperTypes,
-  SalesIQData,
-} from '../types/ZSIQWrapperTypes';
+import type { ZSIQWrapperTypes, SalesIQData } from '../types/ZSIQWrapperTypes';
 import { Dimensions, Platform } from 'react-native'; //No I18N
 import RNZohoSalesIQ, { RNZohoSalesIQEmitter } from '../commons/utils';
 import {
@@ -22,32 +19,56 @@ import type { ChatTypes } from './chat/types/Chat';
 import { ZSIQLogger } from './logger';
 import { ZSIQConversationAPI } from './conversation';
 import { ZSIQConversationTypes } from './conversation/types/Conversation';
-import { SalesIQCallsHelper, SalesIQCallViewMode } from '@react-native-zohosalesiq/mobilisten-core';
+import { ZSIQHomepage } from './homepage';
+import type { ZSIQHomepageTypes } from './homepage/types/Homepage';
+import { ZSIQTracking } from './tracking';
+import type { ZSIQTrackingTypes } from './tracking/types/Tracking';
+import { ZSIQChatActions } from './chatactions';
+import type { ZSIQChatActionsTypes } from './chatactions/types/ChatActions';
+import { ZSIQVisitor } from './visitor';
+import type { ZSIQVisitorTypes } from './visitor/types/Visitor';
+import { ZSIQHelpCenter } from './helpcenter';
+import type { ZSIQHelpCenterTypes } from './helpcenter/types/HelpCenter';
+import {
+  SalesIQCallsHelper,
+  SalesIQCallViewMode,
+} from '@react-native-zohosalesiq/mobilisten-core';
 
 // const emitter = new NativeEventEmitter(RNZohoSalesIQ);
 
+/**
+ * The root SalesIQ Mobilisten object, exported as `ZohoSalesIQ`. It is the single entry
+ * point to the SDK: initialization plus the namespaced modules — `Chat`, `Conversation`,
+ * `Visitor`, `Notification`, `Launcher`, `KnowledgeBase`, `Homepage`, `HelpCenter`,
+ * `Tracking`, `Logger` and `ChatActions` — along with the chat-status, launcher-mode and
+ * event-name constants.
+ */
 export const ZSIQWrapper = {
   ...ZSIQConstants,
   initialize: function (configuration) {
-    if (configuration.androidCallViewMode != null && configuration.androidCallViewMode != undefined) {
-      SalesIQCallsHelper.setCallStatusViewMode(configuration.androidCallViewMode == SalesIQCallViewMode.BANNER ? 'banner' : 'floating');
+    if (
+      configuration.androidCallViewMode != null &&
+      configuration.androidCallViewMode != undefined
+    ) {
+      SalesIQCallsHelper.setCallStatusViewMode(
+        configuration.androidCallViewMode == SalesIQCallViewMode.BANNER
+          ? 'banner'
+          : 'floating'
+      );
     }
     return RNZohoSalesIQ.initialize(configuration);
   },
   init: function (appKey, accessKey) {
-    RNZohoSalesIQ.init(appKey, accessKey)
+    RNZohoSalesIQ.init(appKey, accessKey);
   },
   initWithCallback: function (appKey, accessKey, callback) {
-    RNZohoSalesIQ.initWithCallback(appKey, accessKey, callback)
+    RNZohoSalesIQ.initWithCallback(appKey, accessKey, callback);
   },
   setCustomFont: function (font) {
     RNZohoSalesIQ.setCustomFont(font);
   },
-  present: function (tab = null, id = null, callback = () => { }) {
-    RNZohoSalesIQ.present(tab, id, callback);
-  },
-  setChatTitle: function (title) {
-    RNZohoSalesIQ.setChatTitle(title);
+  present: function (screen, showHomepage = false) {
+    return RNZohoSalesIQ.presentSDK(screen ?? {}, showHomepage);
   },
   setLanguage: function (languageCode) {
     RNZohoSalesIQ.setLanguage(languageCode);
@@ -58,38 +79,20 @@ export const ZSIQWrapper = {
   setOperatorEmail: function (operatorMailID) {
     RNZohoSalesIQ.setOperatorEmail(operatorMailID);
   },
-  showOperatorImageInChat: function (show) {
-    RNZohoSalesIQ.showOperatorImageInChat(show);
-  },
-  setFeedbackVisibility: function (visibility) {
-    RNZohoSalesIQ.setFeedbackVisibility(visibility);
-  },
-  setRatingVisibility: function (visibility) {
-    RNZohoSalesIQ.setRatingVisibility(visibility);
-  },
   showOperatorImageInLauncher: function (show) {
     RNZohoSalesIQ.showOperatorImageInLauncher(show);
-  },
-  openChat: function () {
-    RNZohoSalesIQ.openChat();
-  },
-  openChatWithID: function (id) {
-    RNZohoSalesIQ.openChatWithID(id);
   },
   showOfflineMessage: function (show) {
     RNZohoSalesIQ.showOfflineMessage(show);
   },
   endChat: function (id) {
-    RNZohoSalesIQ.endChat(id);
+    RNZohoSalesIQ.end(id);
   },
   getChats: function (callback) {
     RNZohoSalesIQ.getChats(callback);
   },
   getChatsWithFilter: function (filter, callback) {
     RNZohoSalesIQ.getChatsWithFilter(filter, callback);
-  },
-  setLauncherVisibility: function (visibility) {
-    RNZohoSalesIQ.setLauncherVisibility(visibility);
   },
   setVisitorName: function (name) {
     RNZohoSalesIQ.setVisitorName(name);
@@ -106,100 +109,46 @@ export const ZSIQWrapper = {
   setQuestion: function (question) {
     RNZohoSalesIQ.setQuestion(question);
   },
-  startChat: function (message) {
-    RNZohoSalesIQ.startChat(message);
-  },
-  setConversationVisibility: function (visibility) {
-    RNZohoSalesIQ.setConversationVisibility(visibility);
-  },
   setConversationListTitle: function (title) {
     RNZohoSalesIQ.setConversationListTitle(title);
-  },
-  setFAQVisibility: function (visibility) {
-    RNZohoSalesIQ.setFAQVisibility(visibility);
-  },
-  getArticles: function (callback) {
-    RNZohoSalesIQ.getArticles(callback);
-  },
-  getArticlesWithCategoryID: function (id, callback) {
-    RNZohoSalesIQ.getArticlesWithCategoryID(id, callback);
-  },
-  getCategories: function (callback) {
-    RNZohoSalesIQ.getCategories(callback);
-  },
-  openArticle: function (id, callback) {
-    RNZohoSalesIQ.openArticle(id, callback);
   },
   fetchAttenderImage: function (atttenderId, fetchDefaultImage, callback) {
     RNZohoSalesIQ.fetchAttenderImage(atttenderId, fetchDefaultImage, callback);
   },
-  registerVisitor: function (visitorId, visitorInfoOrCallback?: any, callback?: any) {
+  registerVisitor: function (
+    visitorId,
+    visitorInfoOrCallback?: any,
+    callback?: any
+  ) {
     // Backward compatible overload handling:
     // Old: registerVisitor(visitorId, callback?)
     // New: registerVisitor(visitorId, visitorInfo?, callback?)
-    
+
+    // Native `registerVisitor` takes only (uniqueId, callback); visitorInfo has no
+    // native counterpart, so the `visitorInfo` overload is accepted for source
+    // compatibility but not forwarded. Set profile fields via Visitor.updateProfile().
     if (typeof visitorInfoOrCallback === 'function') {
-      // Old signature: registerVisitor(visitorId, callback)
+      // registerVisitor(visitorId, callback)
       RNZohoSalesIQ.registerVisitor(visitorId, visitorInfoOrCallback);
-    } else if (visitorInfoOrCallback === undefined || visitorInfoOrCallback === null) {
-      // New signature without visitorInfo: registerVisitor(visitorId, null, callback)
-      // or Old signature without callback: registerVisitor(visitorId)
-      RNZohoSalesIQ.registerVisitorNew(visitorId, null, callback);
     } else {
-      // New signature with visitorInfo: registerVisitor(visitorId, visitorInfo, callback?)
-      // Pass all three arguments to native layer
-      RNZohoSalesIQ.registerVisitorNew(visitorId, visitorInfoOrCallback, callback);
+      // registerVisitor(visitorId), registerVisitor(visitorId, null|visitorInfo, callback?)
+      RNZohoSalesIQ.registerVisitor(visitorId, callback ?? (() => {}));
     }
   },
   setThemeColorforiOS: function (colorCode) {
     RNZohoSalesIQ.setThemeColorforiOS(colorCode);
   },
-  setVisitorNameVisibility: function (visible) {
-    RNZohoSalesIQ.setVisitorNameVisibility(visible);
-  },
-  enablePreChatForms: function () {
-    RNZohoSalesIQ.enablePreChatForms();
-  },
-  disablePreChatForms: function () {
-    RNZohoSalesIQ.disablePreChatForms();
-  },
-  enableScreenshotOption: function () {
-    RNZohoSalesIQ.enableScreenshotOption();
-  },
-  disableScreenshotOption: function () {
-    RNZohoSalesIQ.disableScreenshotOption();
-  },
   enableInAppNotification: function () {
-    RNZohoSalesIQ.enableInAppNotification();
+    RNZohoSalesIQ.enableInAppNotification(true);
   },
   disableInAppNotification: function () {
-    RNZohoSalesIQ.disableInAppNotification();
+    RNZohoSalesIQ.enableInAppNotification(false);
   },
-  unregisterVisitor: function (registerAsGuestOrCallback?: any, callback?: any) {
-    // Backward compatible overload handling:
-    // Old: unregisterVisitor(callback?)
-    // New: unregisterVisitor(registerAsGuest?, callback?)
-    
-    if (typeof registerAsGuestOrCallback === 'function') {
-      // Old signature: unregisterVisitor(callback)
-      RNZohoSalesIQ.unregisterVisitor(registerAsGuestOrCallback);
-    } else if (registerAsGuestOrCallback === undefined) {
-      // Old signature without callback: unregisterVisitor()
-      // or New signature with default registerAsGuest: unregisterVisitor(undefined, callback)
-      RNZohoSalesIQ.unregisterVisitor(callback);
-    } else {
-      // New signature with registerAsGuest boolean: unregisterVisitor(boolean, callback?)
-      RNZohoSalesIQ.unregisterVisitorNew(registerAsGuestOrCallback, callback);
-    }
+  unregisterVisitor: function (callback?: any) {
+    RNZohoSalesIQ.unregisterVisitor(callback ?? (() => {}));
   },
   setPageTitle: function (title) {
     RNZohoSalesIQ.setPageTitle(title);
-  },
-  setCustomAction: function (actionName) {
-    RNZohoSalesIQ.setCustomAction(actionName);
-  },
-  performCustomAction: function (actionName, shouldOpenChatWindow = false) {
-    RNZohoSalesIQ.performCustomAction(actionName, shouldOpenChatWindow);
   },
   registerChatAction: function (chatActionName) {
     RNZohoSalesIQ.registerChatAction(chatActionName);
@@ -209,14 +158,6 @@ export const ZSIQWrapper = {
   },
   unregisterAllChatActions: function () {
     RNZohoSalesIQ.unregisterAllChatActions();
-  },
-  // DEPRECATED
-  completeChatAction: function (uuid) {
-    RNZohoSalesIQ.completeChatAction(uuid);
-  },
-  // DEPRECATED
-  completeChatActionWithMessage: function (uuid, success, message) {
-    RNZohoSalesIQ.completeChatActionWithMessage(uuid, success, message);
   },
   setChatActionTimeout: function (timeoutInSec) {
     RNZohoSalesIQ.setChatActionTimeout(timeoutInSec);
@@ -229,7 +170,7 @@ export const ZSIQWrapper = {
     RNZohoSalesIQEmitter.addListener(type, listener);
   },
   addListener: function (callback) {
-    return RNZohoSalesIQEmitter.addListener("ZSIQ_EVENT_LISTENER", callback);
+    return RNZohoSalesIQEmitter.addListener('ZSIQ_EVENT_LISTENER', callback);
   },
   Event: ListenerEvent,
   syncThemeWithOsForAndroid: function (sync) {
@@ -249,9 +190,6 @@ export const ZSIQWrapper = {
   },
   setLauncherPropertiesForAndroid: function (launcherPropertiesMap) {
     RNZohoSalesIQ.setLauncherPropertiesForAndroid(launcherPropertiesMap);
-  },
-  printDebugLogsForAndroid: function (value) {
-    RNZohoSalesIQ.printDebugLogsForAndroid(value);
   },
   setThemeForAndroid: function (value) {
     RNZohoSalesIQ.setThemeForAndroid(value);
@@ -278,16 +216,28 @@ export const ZSIQWrapper = {
     RNZohoSalesIQ.sendEvent(eventName, values);
   },
 
-  /**
-   *
-   * @param  {...Tab} tabNames
-   */
-  setTabOrder: function (...tabNames) {
-    RNZohoSalesIQ.setTabOrder(tabNames);
-  },
-
   dismissUI: function () {
     RNZohoSalesIQ.dismissUI();
+  },
+
+  setUriScheme: function (scheme) {
+    RNZohoSalesIQ.setUriScheme(scheme);
+  },
+
+  // These APIs are not needed for now, will handle if it is needed in future.
+  // isLiveChatAvailable: function (callback) {
+  //   RNZohoSalesIQ.isLiveChatAvailable(callback);
+  // },
+
+  // isBrandOnline: function (callback) {
+  //   RNZohoSalesIQ.isBrandOnline(callback);
+  // },
+
+  setThemeSource: function (source) {
+    RNZohoSalesIQ.setThemeSource(source);
+  },
+  setSessionId: function (id) {
+    RNZohoSalesIQ.setSessionId(id);
   },
 
   updateConfiguration: function (configuration, value) {
@@ -304,10 +254,9 @@ export const ZSIQWrapper = {
       case 'boolean':
         payload = { type: 'boolean', value };
         break;
-      default:        
+      default:
         throw new Error(`Unsupported value type: ${valueType}`);
     }
-    console.log('Updating configuration:', configuration, 'with value type:', valueType);
     RNZohoSalesIQ.updateConfiguration(configuration, payload);
   },
 
@@ -330,6 +279,11 @@ export const ZSIQWrapper = {
   ...ZSIQLauncher,
   ...ZSIQKnowledgeBase,
   ...ZSIQConversationAPI,
+  ...ZSIQHomepage,
+  ...ZSIQTracking,
+  ...ZSIQChatActions,
+  ...ZSIQVisitor,
+  ...ZSIQHelpCenter,
 } as ZSIQWrapperTypes &
   ZSIQConstantsTypes &
   ZSIQListenerEventsType &
@@ -338,7 +292,12 @@ export const ZSIQWrapper = {
   ZSIQLoggerTypes &
   ZSIQLauncherTypes &
   ZSIQKnowledgeBaseTypes &
-  ZSIQConversationTypes;
+  ZSIQConversationTypes &
+  ZSIQHomepageTypes &
+  ZSIQTrackingTypes &
+  ZSIQChatActionsTypes &
+  ZSIQVisitorTypes &
+  ZSIQHelpCenterTypes;
 
 //  MessageStatus: {
 //    SENDING: RNZohoSalesIQ.SENDING,

@@ -55,14 +55,6 @@ attenderId defaultImage
 :(BOOL)
 defaultImage imageCallback
 :(RCTResponseSenderBlock)imageCallback);
-RCT_EXTERN_METHOD(getArticles
-:(RCTResponseSenderBlock)articlesCallback);
-RCT_EXTERN_METHOD(getArticlesWithCategoryID
-:(NSString *)
-categoryId articlesCallback
-:(RCTResponseSenderBlock)articlesCallback);
-RCT_EXTERN_METHOD(getCategories
-:(RCTResponseSenderBlock)categoryCallback);
 RCT_EXTERN_METHOD(getChat
 :(NSString *)
 chatId callback
@@ -133,10 +125,6 @@ RCT_EXTERN_METHOD(isSDKMessage
 :(NSDictionary *)
 map callback
 :(RCTResponseSenderBlock)callback);
-RCT_EXTERN_METHOD(openArticle
-:(NSString *)
-id articlesCallback
-:(RCTResponseSenderBlock)articlesCallback);
 RCT_EXTERN_METHOD(openChat);
 
 RCT_EXTERN_METHOD(openChatWithID
@@ -151,12 +139,6 @@ RCT_EXTERN_METHOD(performCustomAction
 :(NSString *)
 actionName shouldOpenChatWindow
 :(BOOL)shouldOpenChatWindow);
-RCT_EXTERN_METHOD(present
-:(NSString *)
-tabString id
-:(NSString *)
-id callback
-:(RCTResponseSenderBlock)callback);
 RCT_EXTERN_METHOD(printDebugLogsForAndroid
 :(BOOL)value);
 RCT_EXTERN_METHOD(processNotificationMessage
@@ -200,8 +182,6 @@ RCT_EXTERN_METHOD(setDepartment
 :(NSString *)department);
 RCT_EXTERN_METHOD(setDepartments
 :(NSArray *)department);
-RCT_EXTERN_METHOD(setFAQVisibility
-:(BOOL)visible);
 RCT_EXTERN_METHOD(setFeedbackVisibility
 :(BOOL)visible);
 RCT_EXTERN_METHOD(setKnowledgeBaseRecentlyViewedCount
@@ -225,8 +205,6 @@ RCT_EXTERN_METHOD(setMinimumPressDuration
 
 RCT_EXTERN_METHOD(setNotificationActionSource
 :(NSString *)actionSource);
-RCT_EXTERN_METHOD(setNotificationIconForAndroid
-:(NSString *)drawableName);
 RCT_EXTERN_METHOD(setOperatorEmail
 :(NSString *)email);
 RCT_EXTERN_METHOD(setPageTitle
@@ -235,8 +213,6 @@ RCT_EXTERN_METHOD(setQuestion
 :(NSString *)question);
 RCT_EXTERN_METHOD(setRatingVisibility
 :(BOOL)visible);
-RCT_EXTERN_METHOD(setTabOrder
-:(NSArray *)tabNames);
 RCT_EXTERN_METHOD(setThemeColor
 :(NSDictionary *)theme);
 RCT_EXTERN_METHOD(setThemeColorforiOS
@@ -270,8 +246,6 @@ RCT_EXTERN_METHOD(showLauncher
 RCT_EXTERN_METHOD(showOfflineMessage
 :(BOOL)show);
 
-RCT_EXTERN_METHOD(showOperatorImageInChat
-:(BOOL)visible);
 RCT_EXTERN_METHOD(showOperatorImageInLauncher
 :(BOOL)show);
 RCT_EXTERN_METHOD(showPayloadChat

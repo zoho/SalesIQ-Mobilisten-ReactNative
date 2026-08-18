@@ -8,20 +8,20 @@ apply plugin: "com.facebook.react"
  */
 react {
     /* Folders */
-    //   The root of your project, i.e. where "package.json" lives. Default is '..'
-    // root = file("../")
-    //   The folder where the react-native NPM package is. Default is ../node_modules/react-native
-    // reactNativeDir = file("../node_modules/react-native")
-    //   The folder where the react-native Codegen package is. Default is ../node_modules/@react-native/codegen
-    // codegenDir = file("../node_modules/@react-native/codegen")
-    //   The cli.js file which is the React Native CLI entrypoint. Default is ../node_modules/react-native/cli.js
-    // cliFile = file("../node_modules/react-native/cli.js")
+    //   Monorepo layout: dependencies are hoisted to the repository-root node_modules.
+    root = file("../../")
+    reactNativeDir = file("../../../node_modules/react-native")
+    codegenDir = file("../../../node_modules/@react-native/codegen")
+    cliFile = file("../../../node_modules/react-native/cli.js")
+
+    /* Autolinking (RN 0.75+): resolve linked libraries via the CLI in the repo-root node_modules. */
+    autolinkLibrariesWithApp()
 
     /* Variants */
-    //   The list of variants to that are debuggable. For those we're going to
-    //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
-    //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
-    // debuggableVariants = ["liteDebug", "prodDebug"]
+    //   The list of variants that are debuggable. For those we skip bundling the JS bundle and assets
+    //   (Metro serves them). We have a `pushMode` flavor dimension (nativePush/jsPush), so the debug
+    //   variants are nativePushDebug / jsPushDebug — list both so they behave like plain `debug`.
+    debuggableVariants = ["nativePushDebug", "jsPushDebug"]
 
     /* Bundling */
     //   A list containing the node command and its flags. Default is just 'node'.
@@ -76,7 +76,7 @@ android {
 
     namespace "com.mobilistensampleapp"
     defaultConfig {
-        applicationId "com.mobilistensample"
+        applicationId "com.zoho.salesiq.mobilisten.showcase"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -102,14 +102,28 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+    // Push-notification integration mode (keep in sync with example/config/push.ts and, on iOS,
+    // the SIQPushMode value in Info.plist). Both flavors share the same applicationId so the single
+    // google-services.json applies. The flavor selects which FirebaseMessagingService is registered
+    // (see src/nativePush and src/jsPush AndroidManifest.xml).
+    flavorDimensions "pushMode"
+    productFlavors {
+        // NATIVE flow: the app's MyFirebaseMessagingService forwards FCM to the SDK.
+        nativePush {
+            dimension "pushMode"
+        }
+        // JS flow: @react-native-firebase/messaging receives FCM and the app forwards to the SDK from JS.
+        jsPush {
+            dimension "pushMode"
+        }
+    }
 }
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-    implementation 'com.google.firebase:firebase-core:19.0.0'
-    implementation 'com.google.firebase:firebase-messaging:22.0.0'
-    implementation("com.facebook.react:flipper-integration")
+    implementation 'com.google.firebase:firebase-messaging:23.4.1'
 
 
     if (hermesEnabled.toBoolean()) {
@@ -119,5 +133,14 @@ dependencies {
     }
 }
 
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 apply plugin: 'com.google.gms.google-services'
+
+/* react-native-vector-icons — bundle only the icon set used by the sample app.
+ * node_modules is hoisted to the monorepo root, so point iconFontsDir there explicitly —
+ * fonts.gradle's default (../../node_modules, i.e. example/node_modules) doesn't exist here,
+ * which is why the font is copied from the root at build time (no committed .ttf needed). */
+project.ext.vectoricons = [
+    iconFontNames: ['MaterialCommunityIcons.ttf'],
+    iconFontsDir: "$rootDir/../../node_modules/react-native-vector-icons/Fonts"
+]
+apply from: file("../../../node_modules/react-native-vector-icons/fonts.gradle")

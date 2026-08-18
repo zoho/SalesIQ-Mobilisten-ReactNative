@@ -1,4 +1,4 @@
 export class SIQInfoMessageTheme {
-    textColor = "null";
-    lineColor = "null";
+  textColor = 'null';
+  lineColor = 'null';
 }

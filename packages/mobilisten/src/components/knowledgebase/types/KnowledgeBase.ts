@@ -1,23 +1,35 @@
 import { EmitterSubscription } from 'react-native';
-import type {
-  CallbackError
-} from '../../../types/ZSIQWrapperTypes';
+import type { CallbackError } from '../../../types/ZSIQWrapperTypes';
 import type {
   KnowledgeBaseListenerEvent,
   knowledgeBaseListeners,
 } from './Listener';
 import type { Category, Resource } from './Resource';
 
+/** The type of knowledge base resource that a KnowledgeBase API operates on. */
 export enum ResourceType {
+  /** Articles resource type. */
   ARTICLES = 'RESOURCE_ARTICLES',
 }
 
+/** A department under which knowledge base resources are grouped. */
 interface ResourceDepartment {
+  /** The department's unique identifier. */
   id?: string;
+  /** The department's name. */
   name?: string;
 }
 
+/** The value resolved by {@link ZSIQKnowledgeBaseTypes.KnowledgeBase.getResources}. */
+export interface ResourcesResult {
+  /** The fetched page of resources (articles). */
+  resources: Resource[];
+  /** `true` when more resources exist beyond the requested page limit. */
+  moreDataAvailable: boolean;
+}
+
 export interface ZSIQKnowledgeBaseTypes {
+  /** Namespace for the knowledge base — controlling resource visibility, fetching articles and categories, opening resources, and subscribing to resource events. */
   KnowledgeBase: {
     /**
      * This API allows to get the status (enabled/disabled) of the specified resource type in the portal.
@@ -65,8 +77,8 @@ export interface ZSIQKnowledgeBaseTypes {
      * @param type - (Articles) The type of the resource.
      *
      *
-     * @param merge - (true/false) 
-     * - `true` - will hide the departments and merge resources from all the departments. 
+     * @param merge - (true/false)
+     * - `true` - will hide the departments and merge resources from all the departments.
      * - `false` - will list the departments. When a department is selected, only the resources associated with the selected department will be listed.
      * @returns
      */
@@ -87,7 +99,10 @@ export interface ZSIQKnowledgeBaseTypes {
      * @returns
      */
     getResourceDepartments: (
-      callback: (error: CallbackError, departments: ResourceDepartment[]) => void
+      callback: (
+        error: CallbackError,
+        departments: ResourceDepartment[]
+      ) => void
     ) => void;
     /**
      * This API helps to open a specific resource.
@@ -116,7 +131,7 @@ export interface ZSIQKnowledgeBaseTypes {
      *
      * @param type - Type of the resource
      * @param id - ID of the resource
-     * @param callback - The callback to get the resources details.
+     * @param callback - The callback to get the resource details.
      *
      * @see Errorcodes:
      * - `500` - Mobilisten SDK not initialized
@@ -125,11 +140,24 @@ export interface ZSIQKnowledgeBaseTypes {
      *
      * @returns
      */
-    getSingleResource: (
-      type: (typeof ResourceType)[keyof typeof ResourceType],
-      id: string,
-      callback: (error: CallbackError, resource: Resource) => void
-    ) => void;
+    getSingleResource: {
+      (
+        type: (typeof ResourceType)[keyof typeof ResourceType],
+        id: string,
+        callback: (error: CallbackError, resource: Resource) => void
+      ): void;
+      /**
+       * Extended overload that resolves with the {@link Resource} details and rejects on failure.
+       * @param shouldFallbackToDefaultLanguage - Whether the resource should be fetched in the
+       * default language when it is unavailable in the current language. Defaults to `true`
+       * (mirrors the native default). Android only — ignored on iOS.
+       */
+      (
+        type: (typeof ResourceType)[keyof typeof ResourceType],
+        id: string,
+        shouldFallbackToDefaultLanguage: boolean
+      ): Promise<Resource>;
+    };
     /**
      * This API allows to get a list of resources (articles). To get a specific resource list, use the below parameters as filters.
      * @param type `(Article)` - The type of the resource.
@@ -149,25 +177,42 @@ export interface ZSIQKnowledgeBaseTypes {
      * - `605` -	Mobilisten is disabled
      * @returns
      */
-    getResources: (
-      type: (typeof ResourceType)[keyof typeof ResourceType],
-      departmentId: string | null,
-      parentCategoryId: string | null,
-      page: number,
-      limit: number,
-      searchKey: string | null,
-      callback: (
-        error: CallbackError,
-        resources: Resource[],
-        moreDataAvailable: boolean
-      ) => void
-    ) => void;
+    getResources: {
+      (
+        type: (typeof ResourceType)[keyof typeof ResourceType],
+        departmentId: string | null,
+        parentCategoryId: string | null,
+        page: number,
+        limit: number,
+        searchKey: string | null,
+        callback: (
+          error: CallbackError,
+          resources: Resource[],
+          moreDataAvailable: boolean
+        ) => void
+      ): void;
+      /**
+       * Extended overload that resolves with `{ resources, moreDataAvailable }` and rejects on failure.
+       * @param includeChildCategoryResources - Whether resources of child categories should be
+       * included when a parent category is specified. Defaults to `false`.
+       * Android only — ignored on iOS.
+       */
+      (
+        type: (typeof ResourceType)[keyof typeof ResourceType],
+        departmentId: string | null,
+        parentCategoryId: string | null,
+        page: number,
+        limit: number,
+        searchKey: string | null,
+        includeChildCategoryResources: boolean
+      ): Promise<ResourcesResult>;
+    };
     /**
      * This API allows to get a list of resource's (article) categories based on the below parameters. To get a specific resource list, use the below parameters as filters.
      * @param type - `(Articles)` The type of the resource.
      * @param departmentId `(Optional)` - Department ID to fetch resource categories associated with it.
-     * @param parentCategoryId
-     * @param callback
+     * @param parentCategoryId `(Optional)` - Parent category ID to fetch only its sub-categories.
+     * @param callback - Invoked with an error (if any) and the array of matching categories.
      * @returns
      */
     getCategories: (
@@ -178,12 +223,13 @@ export interface ZSIQKnowledgeBaseTypes {
     ) => void;
     /**
      * This listener provides resource event callbacks, allowing you to monitor various visitor actions related to the resources. These actions includes opening, closing, liking and disliking a resource.
-     * @param callback
+     * @param callback - Invoked with the resource event data whenever a knowledge base event is triggered.
      * @returns
      */
     addListener: (
       callback: (callbackData: knowledgeBaseListeners) => void
     ) => EmitterSubscription;
+    /** The {@link KnowledgeBaseListenerEvent} enum of resource events delivered to {@link addListener}. */
     Event: typeof KnowledgeBaseListenerEvent;
   };
 }

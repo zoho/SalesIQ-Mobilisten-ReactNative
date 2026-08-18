@@ -17,6 +17,7 @@ import android.util.Base64
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Callback
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -44,15 +45,12 @@ import com.zoho.livechat.android.SIQVisitor
 import com.zoho.livechat.android.SIQVisitorLocation
 import com.zoho.livechat.android.SalesIQCustomAction
 import com.zoho.livechat.android.VisitorChat
-import com.zoho.livechat.android.ZohoLiveChat
 import com.zoho.livechat.android.config.DeviceConfig
 import com.zoho.livechat.android.constants.ConversationType
 import com.zoho.livechat.android.constants.SalesIQConstants
 import com.zoho.livechat.android.exception.InvalidEmailException
 import com.zoho.livechat.android.listeners.ConversationListener
 import com.zoho.livechat.android.listeners.DepartmentListener
-import com.zoho.livechat.android.listeners.FAQCategoryListener
-import com.zoho.livechat.android.listeners.FAQListener
 import com.zoho.livechat.android.listeners.OperatorImageListener
 import com.zoho.livechat.android.listeners.RegisterListener
 import com.zoho.livechat.android.listeners.SalesIQActionListener
@@ -60,8 +58,6 @@ import com.zoho.livechat.android.listeners.SalesIQChatListener
 import com.zoho.livechat.android.listeners.SalesIQCustomActionListener
 import com.zoho.livechat.android.listeners.SalesIQListener
 import com.zoho.livechat.android.listeners.UnRegisterListener
-import com.zoho.livechat.android.models.SalesIQArticle
-import com.zoho.livechat.android.models.SalesIQArticleCategory
 import com.zoho.livechat.android.modules.conversations.models.SalesIQConversation
 import com.zoho.livechat.android.modules.conversations.providers.DataProviderCallback
 import com.zoho.livechat.android.modules.conversations.providers.SalesIQConversationDataProvider
@@ -72,13 +68,15 @@ import com.zoho.livechat.android.modules.common.ui.LauncherUtil
 import com.zoho.livechat.android.modules.common.ui.LauncherUtil.isAllowedToShow
 import com.zoho.livechat.android.modules.common.ui.LauncherUtil.refreshLauncher
 import com.zoho.livechat.android.modules.common.ui.LauncherUtil.showChatBubble
-import com.zoho.livechat.android.modules.common.ui.LoggerUtil.logDebugInfo
+import com.zoho.livechat.android.modules.common.ui.LoggerUtil
 import com.zoho.livechat.android.modules.common.ui.annotations.ExperimentalSdkApi
 import com.zoho.livechat.android.modules.common.ui.lifecycle.SalesIQActivitiesManager
 import com.zoho.livechat.android.modules.common.ui.result.entities.SalesIQError
 import com.zoho.livechat.android.modules.common.ui.result.entities.SalesIQResult
+import com.zoho.livechat.android.modules.common.ui.result.callbacks.ZohoSalesIQResultCallback
 import com.zoho.livechat.android.modules.commonpreferences.data.local.CommonPreferencesLocalDataSource
 import com.zoho.livechat.android.modules.authentication.domain.entities.SalesIQAuth
+import com.zoho.livechat.android.modules.deeplinking.models.SalesIQUriScheme
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.Resource
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceCategory
 import com.zoho.livechat.android.modules.knowledgebase.ui.entities.ResourceDepartment
@@ -102,6 +100,8 @@ import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toMap
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toWritableArray
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toWritableMap
 import com.zoho.salesiq.mobilisten.core.enums.ResultType
+import com.zoho.livechat.android.modules.common.ui.entities.PresentOptions
+import com.zoho.livechat.android.modules.visitor.models.SalesIQVisitorProfile
 import com.zoho.salesiqembed.ZohoSalesIQ
 import com.zoho.salesiqembed.ZohoSalesIQ.ActionSource
 import com.zoho.salesiqembed.ZohoSalesIQ.Launcher.VisibilityMode
@@ -124,6 +124,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
     @Volatile
     private var isSecretFieldsProviderEnabled = false
+
     @Volatile
     private var isDisplayFieldsProviderEnabled = false
 
@@ -170,13 +171,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         var medium: String? = null
     }
 
-    internal enum class Tab(val value: String) {
-        CONVERSATIONS("TAB_CONVERSATIONS"),
-
-        @Deprecated("")
-        FAQ("TAB_FAQ"), KNOWLEDGE_BASE("TAB_KNOWLEDGE_BASE")
-    }
-
     val constants: MutableMap<String, Any>
         get() {
             val constants: MutableMap<String, Any> = HashMap()
@@ -186,11 +180,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             constants["TYPE_MISSED"] = TYPE_MISSED // No I18N
             constants["TYPE_ENDED"] = TYPE_ENDED // No I18N
             constants["TYPE_CLOSED"] = TYPE_CLOSED // No I18N
-
-            constants["TAB_CONVERSATIONS"] = Tab.CONVERSATIONS.value // No I18N
-            @Suppress("DEPRECATION")
-            constants["TAB_FAQ"] = Tab.FAQ.value // No I18N
-            constants["TAB_KNOWLEDGE_BASE"] = Tab.KNOWLEDGE_BASE.value // No I18N
 
             constants["SUPPORT_OPENED"] = EVENT_SUPPORT_OPENED // No I18N
             constants["SUPPORT_CLOSED"] = EVENT_SUPPORT_CLOSED // No I18N
@@ -227,11 +216,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
             constants["ACTION_SOURCE_APP"] = ACTION_SOURCE_APP // No I18N
             constants["ACTION_SOURCE_SDK"] = ACTION_SOURCE_SDK // No I18N
-
-            constants["ARTICLE_LIKED"] = EVENT_ARTICLE_LIKED // No I18N
-            constants["ARTICLE_DISLIKED"] = EVENT_ARTICLE_DISLIKED // No I18N
-            constants["ARTICLE_OPENED"] = EVENT_ARTICLE_OPENED // No I18N
-            constants["ARTICLE_CLOSED"] = EVENT_ARTICLE_CLOSED
 
             constants["LAUNCHER_MODE_STATIC"] = LAUNCHER_MODE_STATIC // No I18N
             constants["LAUNCHER_MODE_FLOATING"] = LAUNCHER_MODE_FLOATING // No I18N
@@ -290,11 +274,11 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         val application = application
         val activity = currentActivity
         if (application == null) {
-            promise?.reject("1000", "Operation failed, Unknown error")
+            promise?.reject("-1000", "Operation failed, Unknown error")
             return
         }
         if (appKey.isNullOrEmpty() || accessKey.isNullOrEmpty()) {
-            promise?.reject("1000", "App and access key must not be empty")
+            promise?.reject("-1000", "App and access key must not be empty")
             return
         }
         val configurationBuilder = SalesIQConfiguration.Builder(appKey, accessKey)
@@ -319,20 +303,29 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         val canInvokeCallBack = booleanArrayOf(true)
         ZohoSalesIQ.setPlatformName(SalesIQConstants.Platform.REACT_NATIVE)
 
-        customFont?.regular?.let {
+        // Visitor authentication (registered / guest / JWT) is intentionally not handled here —
+        // it will be provided by a dedicated upcoming API rather than via SalesIQConfiguration.
+
+        val fontsMap = readableMap.getMap("fonts")
+        val regularFontPath =
+            fontsMap?.getMap("regular")?.getString("path")?.takeIf { it.isNotEmpty() }
+                ?: customFont?.regular
+        val mediumFontPath =
+            fontsMap?.getMap("medium")?.getString("path")?.takeIf { it.isNotEmpty() }
+                ?: customFont?.medium
+        regularFontPath?.let {
             configurationBuilder.setFont(Fonts.REGULAR, it)
         }
-        customFont?.medium?.let {
+        mediumFontPath?.let {
             configurationBuilder.setFont(Fonts.MEDIUM, it)
         }
 
         val configuration = configurationBuilder.build()
         ZohoSalesIQ.initialize(application, configuration) { result ->
             if (result.isSuccess) {
-                if (fcmToken != null) {
-                    ZohoSalesIQ.Notification.enablePush(fcmToken, isTestDevice)
-                }
-                if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
+                fcmToken?.let { ZohoSalesIQ.Notification.enablePush(it, isTestDevice) }
+
+                if (activity != null) {
                     LauncherUtil.refreshLauncher()
                 }
                 if (canInvokeCallBack[0]) {
@@ -343,14 +336,11 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                 if (canInvokeCallBack[0]) {
                     canInvokeCallBack[0] = false
                     promise?.reject(
-                        result.error?.code?.toString() ?: "1000", result.error?.message
+                        result.error?.code?.toString() ?: "-1000", result.error?.message
                     )
                 }
             }
         }
-
-        ZohoSalesIQ.getApplicationManager()?.setCurrentActivity(activity)
-        ZohoSalesIQ.getApplicationManager()?.appActivity = activity
     }
 
     @ReactMethod
@@ -403,6 +393,25 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                     errorMap.putInt("code", code) // No I18N
                     errorMap.putString("message", message) // No I18N
                     listCallback.invoke(errorMap, null)
+                }
+            })
+        }
+    }
+
+    @ReactMethod
+    fun getChatsList(promise: Promise) {
+        HANDLER.post {
+            ZohoSalesIQ.Chat.getList(object : ConversationListener {
+                override fun onSuccess(arrayList: ArrayList<VisitorChat>) {
+                    val array: WritableArray = WritableNativeArray()
+                    for (i in arrayList.indices) {
+                        array.pushMap(getChatMapObject(arrayList[i]))
+                    }
+                    promise.resolve(array)
+                }
+
+                override fun onFailure(code: Int, message: String) {
+                    promise.reject(code.toString(), message) // No I18N
                 }
             })
         }
@@ -486,115 +495,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         callback.invoke(ZohoSalesIQ.Chat.isMultipleOpenRestricted())
     }
 
-    @Suppress("DEPRECATION")
-    @ReactMethod
-    fun getArticles(articlesCallback: Callback) {
-        HANDLER.post {
-            ZohoLiveChat.FAQ.getArticles(object : FAQListener {
-                override fun onSuccess(articlesList: ArrayList<SalesIQArticle>) {
-                    val array: WritableArray = WritableNativeArray()
-                    for (i in articlesList.indices) {
-                        val article = articlesList[i]
-                        val articleMap = getArticleMapObject(article)
-                        array.pushMap(articleMap)
-                    }
-                    articlesCallback.invoke(null, array)
-                }
-
-                override fun onFailure(code: Int, message: String) {
-                    val errorMap: WritableMap = WritableNativeMap()
-                    errorMap.putInt("code", code) // No I18N
-                    errorMap.putString("message", message) // No I18N
-                    articlesCallback.invoke(errorMap, null)
-                }
-            })
-        }
-    }
-
-    @ReactMethod
-    fun getArticlesWithCategoryID(
-        categoryId: String,
-        articlesCallback: Callback,
-    ) {
-        HANDLER.post {
-            ZohoSalesIQ.KnowledgeBase.getResources(
-                ZohoSalesIQ.ResourceType.Articles,
-                null,
-                categoryId,
-                null,
-                false,
-                object : ResourcesListener {
-                    override fun onSuccess(articles: List<Resource>, moreDataAvailable: Boolean) {
-                        val array: WritableArray = WritableNativeArray()
-                        for (i in articles.indices) {
-                            array.pushMap(getArticleMapObject(articles[i]))
-                        }
-                        articlesCallback.invoke(null, array)
-                    }
-
-                    override fun onFailure(code: Int, message: String?) {
-                        val errorMap: WritableMap = WritableNativeMap()
-                        errorMap.putInt("code", code) // No I18N
-                        errorMap.putString("message", message) // No I18N
-                        articlesCallback.invoke(errorMap, null)
-                    }
-                })
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    @ReactMethod
-    fun getCategories(categoryCallback: Callback) {
-        HANDLER.post {
-            ZohoLiveChat.FAQ.getCategories(object : FAQCategoryListener {
-                override fun onSuccess(categoryList: ArrayList<SalesIQArticleCategory>) {
-                    val array: WritableArray = WritableNativeArray()
-
-                    for (i in categoryList.indices) {
-                        val category = categoryList[i]
-
-                        val categoryMap: WritableMap = WritableNativeMap()
-                        categoryMap.putString("id", category.categoryId) // No I18N
-                        categoryMap.putString(
-                            "name",  // No I18N
-                            category.categoryName
-                        )
-                        categoryMap.putInt("articleCount", category.count) // No I18N
-
-                        array.pushMap(categoryMap)
-                    }
-                    categoryCallback.invoke(null, array)
-                }
-
-                override fun onFailure(code: Int, message: String) {
-                    val errorMap: WritableMap = WritableNativeMap()
-                    errorMap.putInt("code", code) // No I18N
-                    errorMap.putString("message", message) // No I18N
-                    categoryCallback.invoke(errorMap, null)
-                }
-            })
-        }
-    }
-
-    @ReactMethod
-    fun openArticle(id: String?, articlesCallback: Callback) {
-        HANDLER.post {
-            ZohoSalesIQ.KnowledgeBase.open(
-                ZohoSalesIQ.ResourceType.Articles, id, object : OpenResourceListener {
-                    override fun onSuccess() {
-                        articlesCallback.invoke("null")
-                    }
-
-                    override fun onFailure(code: Int, message: String?) {
-                        val errorMap: WritableMap = WritableNativeMap()
-                        errorMap.putInt("code", code) // No I18N
-                        errorMap.putString("message", message) // No I18N
-                        articlesCallback.invoke(errorMap)
-                    }
-                })
-        }
-    }
-
     @ReactMethod
     fun init(appKey: String, accessKey: String) {
         val application = application
@@ -615,7 +515,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         if (communicationMode != null) {
             promise.resolve(communicationMode.name)
         } else {
-            promise.reject("100", "No communication mode found")
+            promise.reject("-100", "No communication mode found")
         }
     }
 
@@ -667,15 +567,9 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         ZohoSalesIQ.Launcher.setMinimumPressDuration(duration.toLong())
     }
 
-    @Suppress("DEPRECATION")
-    @ReactMethod
-    fun setChatTitle(title: String?) {
-        HANDLER.post { ZohoSalesIQ.Chat.setTitle(title) }
-    }
-
     @ReactMethod
     fun setChatConversationTitle(onlineTitle: String?, offlineTitle: String?) {
-        HANDLER.post { ZohoSalesIQ.Chat.setTitle(onlineTitle, offlineTitle) }
+        HANDLER.post { ZohoSalesIQ.Chat.setTitle(onlineTitle.orEmpty(), offlineTitle.orEmpty()) }
     }
 
     @ReactMethod
@@ -702,7 +596,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     fun setOperatorEmail(email: String?) {
         HANDLER.post {
             try {
-                ZohoSalesIQ.Chat.setOperatorEmail(email)
+                email?.let { ZohoSalesIQ.Chat.setOperatorEmail(it) }
             } catch (e: InvalidEmailException) {
                 LiveChatUtil.log(e)
             }
@@ -710,52 +604,10 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     }
 
     @ReactMethod
-    fun showOperatorImageInChat(visible: Boolean) {
-        HANDLER.post {
-            ZohoSalesIQ.Chat.setVisibility(
-                ChatComponent.operatorImage, visible
-            )
-        }
-    }
-
-    @ReactMethod
-    fun setFeedbackVisibility(visible: Boolean) {
-        HANDLER.post {
-            ZohoSalesIQ.Chat.setVisibility(
-                ChatComponent.feedback, visible
-            )
-        }
-    }
-
-    @ReactMethod
-    fun setRatingVisibility(visible: Boolean) {
-        HANDLER.post {
-            ZohoSalesIQ.Chat.setVisibility(
-                ChatComponent.rating, visible
-            )
-        }
-    }
-
-    @ReactMethod
     fun showOperatorImageInLauncher(show: Boolean) {
         HANDLER.post {
-            val activity = currentActivity
-            if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
-                ZohoSalesIQ.getApplicationManager()!!.setCurrentActivity(activity)
-                ZohoSalesIQ.Chat.showOperatorImageInLauncher(show)
-            }
+            ZohoSalesIQ.Chat.showOperatorImageInLauncher(show)
         }
-    }
-
-    @Suppress("DEPRECATION")
-    @ReactMethod
-    fun openChat() {
-        HANDLER.post { ZohoSalesIQ.Chat.show() }
-    }
-
-    @ReactMethod
-    fun openChatWithID(chatId: String?) {
-        HANDLER.post { ZohoSalesIQ.Chat.open(chatId) }
     }
 
     @ReactMethod
@@ -774,8 +626,13 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             chatId = null
         }
         if (chatId != null) {
-            LiveChatUtil.log("Opening payload chat with id: $chatId")
-            HANDLER.post { ZohoSalesIQ.Chat.open(chatId) }
+            ZohoSalesIQ.present(
+                PresentOptions(
+                    screen = PresentOptions.Screen.Conversation(
+                        chatId, PresentOptions.Screen.Conversation.SessionType.CHAT
+                    )
+                )
+            )
         }
     }
 
@@ -785,64 +642,48 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     }
 
     @ReactMethod
-    fun endChat(chatId: String?) {
-        HANDLER.post { ZohoSalesIQ.Chat.endChat(chatId) }
-    }
-
-    @Suppress("DEPRECATION")
-    @ReactMethod
-    fun setLauncherVisibility(visible: Boolean) {
-        HANDLER.post { ZohoSalesIQ.Chat.showLauncher(visible) }
+    fun end(chatId: String?, promise: Promise) {
+        HANDLER.post {
+            chatId?.let { ZohoSalesIQ.Chat.endChat(it) }
+            promise.resolve(null)
+        }
     }
 
     @ReactMethod
     fun setVisitorName(name: String?) {
-        HANDLER.post { ZohoSalesIQ.Visitor.setName(name) }
+        HANDLER.post { ZohoSalesIQ.Visitor.setName(name.orEmpty()) }
     }
 
     @ReactMethod
     fun setVisitorEmail(email: String?) {
-        HANDLER.post { ZohoSalesIQ.Visitor.setEmail(email) }
+        HANDLER.post { ZohoSalesIQ.Visitor.setEmail(email.orEmpty()) }
     }
 
     @ReactMethod
     fun setVisitorContactNumber(number: String?) {
-        HANDLER.post { ZohoSalesIQ.Visitor.setContactNumber(number) }
+        HANDLER.post { ZohoSalesIQ.Visitor.setContactNumber(number.orEmpty()) }
     }
 
     @ReactMethod
     fun setVisitorAddInfo(key: String?, value: String?) {
-        HANDLER.post { ZohoSalesIQ.Visitor.addInfo(key, value) }
+        // An empty key is never a valid custom-info entry; skip rather than storing a "" key.
+        if (key.isNullOrBlank()) return
+        HANDLER.post { ZohoSalesIQ.Visitor.addInfo(key, value.orEmpty()) }
     }
 
     @ReactMethod
     fun setQuestion(question: String?) {
-        HANDLER.post { ZohoSalesIQ.Visitor.setQuestion(question) }
+        HANDLER.post { ZohoSalesIQ.Chat.setQuestion(question.orEmpty()) }
     }
 
-    @Suppress("DEPRECATION")
     @ReactMethod
-    fun startChat(question: String?) {
-        HANDLER.post { ZohoSalesIQ.Visitor.startChat(question) }
+    fun setConversationListTitle(title: String?) {
+        HANDLER.post { ZohoSalesIQ.Conversation.setTitle(title.orEmpty()) }
     }
 
     @ReactMethod
     fun setConversationVisibility(visible: Boolean) {
         HANDLER.post { ZohoSalesIQ.Conversation.setVisibility(visible) }
-    }
-
-    @ReactMethod
-    fun setConversationListTitle(title: String?) {
-        HANDLER.post { ZohoSalesIQ.Conversation.setTitle(title) }
-    }
-
-    @ReactMethod
-    fun setFAQVisibility(visible: Boolean) {
-        HANDLER.post {
-            ZohoSalesIQ.KnowledgeBase.setVisibility(
-                ZohoSalesIQ.ResourceType.Articles, visible
-            )
-        }
     }
 
     @ReactMethod
@@ -869,7 +710,8 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     @ReactMethod
     fun unregisterVisitor(callback: Callback?) {
         HANDLER.post {
-            ZohoSalesIQ.unregisterVisitor(currentActivity, object : UnRegisterListener {
+            val context = reactContext?.currentActivity ?: reactContext ?: return@post
+            ZohoSalesIQ.unregisterVisitor(context, object : UnRegisterListener {
                 override fun onSuccess() {
                     if (callback != null) {
                         callback.invoke(null, true)
@@ -888,86 +730,19 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     }
 
     @ReactMethod
-    fun registerVisitorNew(uniqueId: String?, visitorInfo: ReadableMap?, callback: Callback?) {
-        HANDLER.post {
-            val salesIQVisitorInfo = visitorInfo?.let { visitorInfo ->
-                val name = visitorInfo.getString("name")
-                val email = visitorInfo.getString("email")
-                val phone = visitorInfo.getString("phone")
-                val customInfoMap =
-                    visitorInfo.getMap("customInfo")?.toMap()?.mapValues { (_, v) -> v as String }
-                SalesIQVisitorInfo(name, email, phone, customInfoMap)
-            }
-
-            val listener = (object : RegisterListener {
-                override fun onSuccess() {
-                    callback?.invoke(null, true)
-                }
-
-                override fun onFailure(code: Int, message: String) {
-                    callback?.invoke(
-                        RNZohoSalesIQCore.getErrorMap(code, message), false
-                    )
-                }
-            }).takeIf { callback != null }
-
-            if (uniqueId == null) {
-                ZohoSalesIQ.registerGuestVisitor(salesIQVisitorInfo, listener)
-                return@post
-            }
-            ZohoSalesIQ.registerVisitor(uniqueId, salesIQVisitorInfo, listener)
-        }
-    }
-
-    @ReactMethod
-    fun unregisterVisitorNew(registerAsGuest: Boolean, callback: Callback?) {
-        HANDLER.post {
-            ZohoSalesIQ.unregisterVisitor(registerAsGuest, object : UnRegisterListener {
-                override fun onSuccess() {
-                    if (callback != null) {
-                        callback.invoke(null, true)
-                    }
-                }
-
-                override fun onFailure(code: Int, message: String) {
-                    if (callback != null) {
-                        callback.invoke(
-                            RNZohoSalesIQCore.getErrorMap(code, message), false
-                        )
-                    }
-                }
-            })
-        }
-    }
-
-    @ReactMethod
     fun setPageTitle(title: String?) {
-        HANDLER.post { ZohoSalesIQ.Tracking.setPageTitle(title) }
+        HANDLER.post { ZohoSalesIQ.Tracking.setPageTitle(title.orEmpty()) }
     }
 
     @ReactMethod
-    fun setCustomAction(actionName: String) {
-        HANDLER.post { ZohoSalesIQ.Tracking.setCustomAction(actionName) }
-    }
-
-    @Suppress("DEPRECATION")
-    @ReactMethod
-    fun performCustomAction(actionName: String, shouldOpenChatWindow: Boolean) {
+    fun enableInAppNotification(enabled: Boolean) {
         HANDLER.post {
-            ZohoSalesIQ.Tracking.setCustomAction(
-                actionName, shouldOpenChatWindow
-            )
+            if (enabled) {
+                ZohoSalesIQ.Notification.enableInApp()
+            } else {
+                ZohoSalesIQ.Notification.disableInApp()
+            }
         }
-    }
-
-    @ReactMethod
-    fun enableInAppNotification() {
-        HANDLER.post { ZohoSalesIQ.Notification.enableInApp() }
-    }
-
-    @ReactMethod
-    fun disableInAppNotification() {
-        HANDLER.post { ZohoSalesIQ.Notification.disableInApp() }
     }
 
     @ReactMethod
@@ -993,95 +768,23 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     }
 
     @ReactMethod
-    fun setVisitorNameVisibility(visibility: Boolean) {
-        HANDLER.post {
-            ZohoSalesIQ.Chat.setVisibility(
-                ChatComponent.visitorName, visibility
-            )
-        }
-    }
-
-    @ReactMethod
-    fun enablePreChatForms() {
-        HANDLER.post {
-            ZohoSalesIQ.Chat.setVisibility(
-                ChatComponent.prechatForm, true
-            )
-        }
-    }
-
-    @ReactMethod
-    fun disablePreChatForms() {
-        HANDLER.post {
-            ZohoSalesIQ.Chat.setVisibility(
-                ChatComponent.prechatForm, false
-            )
-        }
-    }
-
-    @ReactMethod
-    fun enableScreenshotOption() {
-        HANDLER.post {
-            ZohoSalesIQ.Chat.setVisibility(
-                ChatComponent.screenshot, true
-            )
-        }
-    }
-
-    @ReactMethod
-    fun disableScreenshotOption() {
-        HANDLER.post {
-            ZohoSalesIQ.Chat.setVisibility(
-                ChatComponent.screenshot, false
-            )
-        }
-    }
-
-    @ReactMethod
     fun registerChatAction(actionName: String?) {
-        HANDLER.post { ZohoLiveChat.ChatActions.register(actionName) }
+        HANDLER.post { actionName?.let { ZohoSalesIQ.ChatActions.register(it) } }
     }
 
     @ReactMethod
     fun unregisterChatAction(actionName: String?) {
-        HANDLER.post { ZohoLiveChat.ChatActions.unregister(actionName) }
+        HANDLER.post { actionName?.let { ZohoSalesIQ.ChatActions.unregister(it) } }
     }
 
     @ReactMethod
     fun unregisterAllChatActions() {
-        HANDLER.post { ZohoLiveChat.ChatActions.unregisterAll() }
+        HANDLER.post { ZohoSalesIQ.ChatActions.unregisterAll() }
     }
 
     @ReactMethod
     fun setChatActionTimeout(timeout: Double) {
-        HANDLER.post { ZohoLiveChat.ChatActions.setTimeout(timeout.toLong() * 1000) }
-    }
-
-    @ReactMethod
-    fun completeChatAction(uuid: String) {
-        HANDLER.post {
-            val listener = actionsList[uuid]
-            listener?.onSuccess()
-            actionsList.remove(uuid)
-        }
-    }
-
-    @ReactMethod
-    fun completeChatActionWithMessage(
-        uuid: String,
-        success: Boolean,
-        message: String?,
-    ) {
-        HANDLER.post {
-            val listener = actionsList[uuid]
-            if (listener != null) {
-                if (success) {
-                    if (message != null) {
-                        listener.onSuccess(message)
-                    }
-                }
-            }
-        }
+        HANDLER.post { ZohoSalesIQ.ChatActions.setTimeout(timeout.toLong() * 1000) }
     }
 
     @ReactMethod
@@ -1122,6 +825,85 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         HANDLER.post { callback.invoke(ZohoSalesIQ.isSDKEnabled()) }
     }
 
+    // These APIs are not needed for now, will handle if it is needed in future.
+    // @ReactMethod
+    // fun isLiveChatAvailable(callback: Callback) {
+    //     HANDLER.post { callback.invoke(ZohoSalesIQ.isLiveChatAvailable()) }
+    // }
+
+    // @ReactMethod
+    // fun isBrandOnline(callback: Callback) {
+    //     HANDLER.post { callback.invoke(ZohoSalesIQ.isBrandOnline()) }
+    // }
+
+    // @ReactMethod
+    // fun getChatDepartments(callback: Callback) {
+    //     HANDLER.post {
+    //         val departments = ZohoSalesIQ.Chat.getDepts()
+    //         val writableArray = Arguments.createArray()
+    //         for (dept in departments) {
+    //             writableArray.pushString(dept)
+    //         }
+    //         callback.invoke(writableArray)
+    //     }
+    // }
+
+    @ReactMethod
+    fun setThemeSource(source: String) {
+        HANDLER.post {
+            val themeSource = when (source) {
+                "portal" -> ZohoSalesIQ.ThemeSource.SalesIQPortalConfiguration
+                "sdk" -> ZohoSalesIQ.ThemeSource.SdkConfiguration
+                else -> return@post
+            }
+            ZohoSalesIQ.setThemeSource(themeSource)
+        }
+    }
+
+    @ReactMethod
+    fun setUriScheme(schemeMap: ReadableMap) {
+        HANDLER.post {
+            val scheme = schemeMap.getString("scheme")
+            if (scheme.isNullOrEmpty()) {
+                LiveChatUtil.log("MobilistenPlugin - setUriScheme called without a scheme")
+                return@post
+            }
+            val uriScheme = SalesIQUriScheme(scheme)
+            schemeMap.getArray("hosts")?.toArrayList()?.filterIsInstance<String>()
+                ?.takeIf { it.isNotEmpty() }?.let { hosts ->
+                    uriScheme.addHosts(*hosts.toTypedArray())
+                }
+            schemeMap.getArray("paths")?.let { paths ->
+                for (index in 0 until paths.size()) {
+                    val pathMap = paths.getMap(index) ?: continue
+                    val value = pathMap.getString("value") ?: continue
+                    val pathMatcher = when (pathMap.getString("type")) {
+                        "exact" -> SalesIQUriScheme.PathMatcher.Exact(value)
+                        "prefix" -> SalesIQUriScheme.PathMatcher.Prefix(value)
+                        "suffix" -> SalesIQUriScheme.PathMatcher.Suffix(value)
+                        "pattern" -> SalesIQUriScheme.PathMatcher.Pattern(value)
+                        else -> null
+                    }
+                    pathMatcher?.let { uriScheme.addPaths(it) }
+                }
+            }
+            ZohoSalesIQ.setUriScheme(uriScheme)
+        }
+    }
+
+    @ReactMethod
+    fun visitorPerformCustomAction(actionName: String, promise: Promise) {
+        HANDLER.post {
+            ZohoSalesIQ.Visitor.performCustomAction(actionName)
+            promise.resolve(null)
+        }
+    }
+
+    @ReactMethod
+    fun setSessionId(id: String) {
+        HANDLER.post { ZohoSalesIQ.setSessionID(id) }
+    }
+
     @ReactMethod
     fun getChatUnreadCount(callback: Callback) {
         HANDLER.post { callback.invoke(ZohoSalesIQ.Notification.getBadgeCount()) }
@@ -1140,12 +922,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                 val x = launcherPropertiesMap.getInt("x")
                 if (x > -1) {
                     launcherProperties.x = x
-                }
-            }
-            if (launcherPropertiesMap.hasKey("y")) {
-                val y = launcherPropertiesMap.getInt("y")
-                if (y > -1) {
-                    launcherProperties.setY(y)
                 }
             }
 
@@ -1189,13 +965,57 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                     launcherProperties.setDirection(verticalDirection)
                 }
             }
-            if (launcherPropertiesMap.hasKey("icon") && launcherPropertiesMap.getString("icon") != null && ZohoSalesIQ.getApplicationManager() != null && ZohoSalesIQ.getApplicationManager()!!.application != null) {
+
+            if (launcherPropertiesMap.hasKey("icon") && launcherPropertiesMap.getString("icon") != null && this@RNZohoSalesIQ.application != null) {
                 val resourceId = getDrawableResourceId(launcherPropertiesMap.getString("icon"))
-                val drawable = AppCompatResources.getDrawable(
-                    ZohoSalesIQ.getApplicationManager()!!.application, resourceId
-                )
                 if (resourceId > 0) {
-                    launcherProperties.icon = drawable
+                    val drawable = AppCompatResources.getDrawable(
+                        this@RNZohoSalesIQ.application!!, resourceId
+                    )
+                    launcherProperties.chatIcon = drawable
+                }
+            }
+            val application = this@RNZohoSalesIQ.application
+            if (application != null) {
+                val chatIconName =
+                    if (launcherPropertiesMap.hasKey("chatIcon")) launcherPropertiesMap.getString("chatIcon") else null
+                val callIconName =
+                    if (launcherPropertiesMap.hasKey("callIcon")) launcherPropertiesMap.getString("callIcon") else null
+                val createIconName =
+                    if (launcherPropertiesMap.hasKey("createIcon")) launcherPropertiesMap.getString(
+                        "createIcon"
+                    ) else null
+                val closeIconName =
+                    if (launcherPropertiesMap.hasKey("closeIcon")) launcherPropertiesMap.getString("closeIcon") else null
+
+                val chatDrawable = chatIconName?.let {
+                    val id = getDrawableResourceId(it); if (id > 0) AppCompatResources.getDrawable(
+                    application, id
+                ) else null
+                }
+                val callDrawable = callIconName?.let {
+                    val id = getDrawableResourceId(it); if (id > 0) AppCompatResources.getDrawable(
+                    application, id
+                ) else null
+                }
+                val createDrawable = createIconName?.let {
+                    val id = getDrawableResourceId(it); if (id > 0) AppCompatResources.getDrawable(
+                    application, id
+                ) else null
+                }
+                val closeDrawable = closeIconName?.let {
+                    val id = getDrawableResourceId(it); if (id > 0) AppCompatResources.getDrawable(
+                    application, id
+                ) else null
+                }
+
+                if (chatDrawable != null || callDrawable != null || createDrawable != null || closeDrawable != null) {
+                    launcherProperties.setIcons(
+                        chat = chatDrawable ?: launcherProperties.chatIcon,
+                        call = callDrawable ?: launcherProperties.callIcon,
+                        create = createDrawable ?: launcherProperties.createIcon,
+                        close = closeDrawable ?: launcherProperties.closeIcon
+                    )
                 }
             }
             ZohoSalesIQ.setLauncherProperties(launcherProperties)
@@ -1205,8 +1025,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     @ReactMethod
     fun refreshLauncherPropertiesForAndroid() {
         HANDLER.post {
-            val salesIQApplicationManager = ZohoSalesIQ.getApplicationManager()
-            if (salesIQApplicationManager != null && SalesIQApplicationManager.getCurrentActivity() != null && isAllowedToShow(
+            if (SalesIQApplicationManager.getCurrentActivity() != null && isAllowedToShow(
                     SalesIQApplicationManager.getCurrentActivity()
                 )
             ) {
@@ -1263,18 +1082,16 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     @Suppress("UNCHECKED_CAST")
     @ReactMethod
     fun getNotificationPayload(readableMap: ReadableMap, callback: Callback) {
-        val map = readableMap.toMap() as? Map<String?, String?>
-        if (map != null) {
-            ZohoSalesIQ.Notification.getPayload(map) { result: SalesIQResult<SalesIQNotificationPayload?> ->
-                if (result.isSuccess) {
-                    val payload = result.data
-                    callback.invoke(getNotificationPayloadMap(payload))
-                } else {
-                    callback.invoke(null as Any?)
-                }
+        val map: Map<String, String> = readableMap.toMap()
+            .orEmpty().entries.mapNotNull { (key, value) -> (value as? String)?.let { key to it } }
+            .toMap()
+        ZohoSalesIQ.Notification.getPayload(map) { result ->
+            if (result.isSuccess) {
+                val payload = result.data
+                callback.invoke(getNotificationPayloadMap(payload))
+            } else {
+                callback.invoke(null as Any?)
             }
-        } else {
-            callback.invoke(null as Any?)
         }
     }
 
@@ -1290,29 +1107,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             ActionSource.SDK
         }
         return actionSource
-    }
-
-    @ReactMethod
-    fun present(tabString: String?, id: String?, callback: Callback?) {
-        HANDLER.post {
-            val tab = getTab(tabString)
-            ZohoSalesIQ.present(
-                tab, id
-            ) { result: SalesIQResult<Unit> ->
-                if (callback != null) {
-                    if (result.isSuccess) {
-                        callback.invoke(null, true)
-                    } else {
-                        val error = result.error
-                        callback.invoke(
-                            RNZohoSalesIQCore.getErrorMap(
-                                error!!.code, error.message
-                            ), false
-                        )
-                    }
-                }
-            }
-        }
     }
 
     @ReactMethod
@@ -1371,23 +1165,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                     articleMap.putString("categoryName", resource.category!!.name) // No I18N
                 }
             }
-        }
-        return articleMap
-    }
-
-    @Suppress("DEPRECATION")
-    fun getArticleMapObject(article: SalesIQArticle): WritableMap {
-        val articleMap: WritableMap = WritableNativeMap()
-        articleMap.putString("id", article.id) // No I18N
-        articleMap.putString("name", article.title) // No I18N
-        articleMap.putInt("likeCount", article.liked) // No I18N
-        articleMap.putInt("dislikeCount", article.disliked) // No I18N
-        articleMap.putInt("viewCount", article.viewed) // No I18N
-        if (article.categoryId != null) {
-            articleMap.putString("categoryID", article.categoryId) // No I18N
-        }
-        if (article.categoryName != null) {
-            articleMap.putString("categoryName", article.categoryName) // No I18N
         }
         return articleMap
     }
@@ -1464,10 +1241,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                     EVENT_RESOURCE_OPENED, resourceMap
                 )
             )
-
-            eventEmitter(
-                EVENT_ARTICLE_OPENED, resource?.id
-            )
         }
 
         override fun handleResourceClosed(
@@ -1483,9 +1256,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                 KNOWLEDGEBASE_EVENT_LISTENER, RNZohoSalesIQCore.getEventEmitterObjectWithMap(
                     EVENT_RESOURCE_CLOSED, resourceMap
                 )
-            )
-            eventEmitter(
-                EVENT_ARTICLE_CLOSED, resource?.id
             )
         }
 
@@ -1503,10 +1273,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                     EVENT_RESOURCE_LIKED, resourceMap
                 )
             )
-
-            eventEmitter(
-                EVENT_ARTICLE_LIKED, resource?.id
-            )
         }
 
         override fun handleResourceDisliked(
@@ -1521,10 +1287,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                 KNOWLEDGEBASE_EVENT_LISTENER, RNZohoSalesIQCore.getEventEmitterObjectWithMap(
                     EVENT_RESOURCE_DISLIKED, resourceMap
                 )
-            )
-
-            eventEmitter(
-                EVENT_ARTICLE_DISLIKED, resource?.id
             )
         }
 
@@ -1819,9 +1581,8 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                         val requestId = payload.getString("requestId") // No I18N
                         val fieldsMap = payload.getMap("fields") // No I18N
                         if (requestId != null) {
-                            pendingSecretFieldsCallbacks.remove(requestId)?.onResult(
-                                fieldsMap?.let { getStringMap(it) } ?: emptyMap()
-                            )
+                            pendingSecretFieldsCallbacks.remove(requestId)
+                                ?.onResult(fieldsMap?.let { getStringMap(it) } ?: emptyMap())
                         }
                     }
                 }
@@ -1832,9 +1593,8 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                         val requestId = payload.getString("requestId") // No I18N
                         val fieldsMap = payload.getMap("fields") // No I18N
                         if (requestId != null) {
-                            pendingDisplayFieldsCallbacks.remove(requestId)?.onResult(
-                                fieldsMap?.let { getStringMap(it) } ?: emptyMap()
-                            )
+                            pendingDisplayFieldsCallbacks.remove(requestId)
+                                ?.onResult(fieldsMap?.let { getStringMap(it) } ?: emptyMap())
                         }
                     }
                 }
@@ -1845,40 +1605,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     @ReactMethod
     fun shouldOpenUrl(value: Boolean) {
         shouldOpenUrl = value
-    }
-
-    @Suppress("DEPRECATION", "EnumValuesSoftDeprecate")
-    @ReactMethod
-    fun setTabOrder(tabNames: ReadableArray) {
-        /** @apiNote Please remove the -1 below when the [ZohoSalesIQ.Tab.FAQ] is removed
-         */
-        val minimumTabOrdersSize =
-            min(tabNames.size().toDouble(), (ZohoSalesIQ.Tab.values().size - 1).toDouble()).toInt()
-        val tabOrder = arrayOfNulls<ZohoSalesIQ.Tab>(minimumTabOrdersSize)
-        var insertIndex = 0
-        for (index in 0 until minimumTabOrdersSize) {
-            val tabName = tabNames.getString(index)
-            if (Tab.CONVERSATIONS.value == tabName) {
-                tabOrder[insertIndex++] = ZohoSalesIQ.Tab.Conversations
-            } else if (Tab.FAQ.value == tabName || Tab.KNOWLEDGE_BASE.value == tabName) {
-                tabOrder[insertIndex++] = ZohoSalesIQ.Tab.KnowledgeBase
-            }
-        }
-        ZohoSalesIQ.setTabOrder(*tabOrder)
-    }
-
-    @ReactMethod
-    fun printDebugLogsForAndroid(value: Boolean) {
-        ZohoSalesIQ.printDebugLogs(value)
-    }
-
-    @Suppress("DEPRECATION")
-    @ReactMethod
-    fun setNotificationIconForAndroid(drawableName: String?) {
-        val resourceId = getDrawableResourceId(drawableName)
-        if (resourceId > 0) {
-            ZohoSalesIQ.Notification.setIcon(resourceId)
-        }
     }
 
     @ReactMethod
@@ -1892,12 +1618,12 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
     @SuppressLint("DiscouragedApi")
     private fun getStyleResourceId(id: String): Int {
-        val salesIQApplicationManager = ZohoSalesIQ.getApplicationManager()
+        val application = this@RNZohoSalesIQ.application
         var resourceId = 0
-        if (salesIQApplicationManager != null && salesIQApplicationManager.application != null) {
-            resourceId = salesIQApplicationManager.application.resources.getIdentifier(
+        if (application != null) {
+            resourceId = application.resources.getIdentifier(
                 id, "style",  // No I18N
-                ZohoSalesIQ.getApplicationManager()!!.application.packageName
+                application.packageName
             )
         }
         return resourceId
@@ -1905,12 +1631,12 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
     @SuppressLint("DiscouragedApi")
     private fun getDrawableResourceId(drawableName: String?): Int {
-        val salesIQApplicationManager = ZohoSalesIQ.getApplicationManager()
+        val application = this@RNZohoSalesIQ.application
         var resourceId = 0
-        if (salesIQApplicationManager != null && salesIQApplicationManager.application != null) {
-            resourceId = salesIQApplicationManager.application.resources.getIdentifier(
+        if (application != null) {
+            resourceId = application.resources.getIdentifier(
                 drawableName, "drawable",  // No I18N
-                ZohoSalesIQ.getApplicationManager()!!.application.packageName
+                application.packageName
             )
         }
         return resourceId
@@ -1932,6 +1658,12 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
     @ReactMethod
     fun setLoggerPathForiOS(@Suppress("unused") value: String?) {
+    }
+
+    @ReactMethod
+    fun disablePush(promise: Promise) {
+        ZohoSalesIQ.Notification.disablePush()
+        promise.resolve(null)
     }
 
     @ReactMethod
@@ -1959,13 +1691,13 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         ZohoSalesIQ.Chat.start(
             question, customChatId, departmentName
         ) { result: SalesIQResult<VisitorChat?> ->
-            if (result.isSuccess && result.data != null) {
-                val visitorChat = result.data
-                val visitorMap = getChatMapObject(visitorChat!!)
-                callback?.invoke(null, visitorMap)
+            if (result.isSuccess) {
+                callback?.invoke(null, result.data?.let { getChatMapObject(it) })
             } else {
                 val error = result.error
-                callback?.invoke(RNZohoSalesIQCore.getErrorMap(error!!.code, error.message), null)
+                callback?.invoke(
+                    RNZohoSalesIQCore.getErrorMap(error?.code ?: -1, error?.message), null
+                )
             }
         }
     }
@@ -1983,13 +1715,11 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         ) { result: SalesIQResult<VisitorChat?> ->
             if (finalCallback[0] != null) {
                 if (result.isSuccess) {
-                    val visitorChat = result.data
-                    val visitorMap = getChatMapObject(visitorChat!!)
-                    finalCallback[0]!!.invoke(null, visitorMap)
+                    finalCallback[0]!!.invoke(null, result.data?.let { getChatMapObject(it) })
                 } else {
                     val error = result.error
                     finalCallback[0]!!.invoke(
-                        RNZohoSalesIQCore.getErrorMap(error!!.code, error.message), null
+                        RNZohoSalesIQCore.getErrorMap(error?.code ?: -1, error?.message), null
                     )
                 }
             }
@@ -1997,24 +1727,22 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         }
     }
 
-//    @ReactMethod
-//    fun initNewChatWithTrigger(
-//        customAction: String,
-//        customChatId: String?,
-//        departmentName: String?,
-//        secretField: ReadableMap?,
-//        callback: Callback?,
-//    ) {
-//        val attributes = RNZohoSalesIQCore.getConversationAttributes(departmentName, secretField)
-//        val finalCallback = arrayOf(callback)
-//
-//        ZohoSalesIQ.Chat.startWithTrigger(
-//            customAction, customChatId, attributes
-//        ) {
-//            result ->
-//            finalCallback[0] = null
-//        }
-//    }
+    @ReactMethod
+    fun allowChatInOfflineMode(allow: Boolean) {
+        HANDLER.post { ZohoSalesIQ.Chat.allowChatInOfflineMode(allow) }
+    }
+
+    @ReactMethod
+    fun setChatOfflineMessage(message: String?) {
+        // Note: Setting a custom offline message is an iOS-only native API
+        // (ZohoSalesIQ.Chat.setOfflineMessage(message)); no Android equivalent.
+        LiveChatUtil.log("MobilistenPlugin - setChatOfflineMessage is not supported on Android")
+    }
+
+    @ReactMethod
+    fun getBadgeCount(promise: Promise) {
+        HANDLER.post { promise.resolve(ZohoSalesIQ.Notification.getBadgeCount()) }
+    }
 
     @ReactMethod
     fun getChat(chatId: String, callback: Callback?) {
@@ -2023,15 +1751,11 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         ) { result: SalesIQResult<VisitorChat?> ->
             if (callback != null) {
                 if (result.isSuccess) {
-                    val visitorChat = result.data
-                    val visitorMap = getChatMapObject(visitorChat!!)
-                    callback.invoke(null, visitorMap)
+                    callback.invoke(null, result.data?.let { getChatMapObject(it) })
                 } else {
                     val error = result.error
                     callback.invoke(
-                        RNZohoSalesIQCore.getErrorMap(
-                            error!!.code, error.message
-                        ), null
+                        RNZohoSalesIQCore.getErrorMap(error?.code ?: -1, error?.message), null
                     )
                 }
             }
@@ -2040,7 +1764,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
     @ReactMethod
     fun setChatWaitingTime(seconds: Int) {
-        ZohoSalesIQ.Chat.setWaitingTime(seconds.toLong())
+        ZohoSalesIQ.Chat.setWaitingTime(seconds)
     }
 
     init {
@@ -2115,7 +1839,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             type, callback
         ) {
             ZohoSalesIQ.KnowledgeBase.open(
-                getResourceType(type)!!, id, object : OpenResourceListener {
+                getResourceType(type)!!, id.orEmpty(), object : OpenResourceListener {
                     override fun onSuccess() {
                         callback.invoke(null, java.lang.Boolean.TRUE)
                     }
@@ -2133,13 +1857,76 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             type, callback
         ) {
             ZohoSalesIQ.KnowledgeBase.getSingleResource(
-                getResourceType(type)!!, id, object : ResourceListener {
+                getResourceType(type)!!, id.orEmpty(), object : ResourceListener {
                     override fun onSuccess(resource: Resource?) {
                         callback.invoke(null, resource.toWritableMap())
                     }
 
                     override fun onFailure(code: Int, message: String?) {
                         callback.invoke(RNZohoSalesIQCore.getErrorMap(code, message), null)
+                    }
+                })
+        }
+    }
+
+    @ReactMethod
+    fun getKnowledgeBaseSingleResourceWithLanguageFallback(
+        type: String,
+        id: String?,
+        shouldFallbackToDefaultLanguage: Boolean,
+        promise: Promise,
+    ) {
+        executeIfResourceTypeIsValid(
+            type, promise
+        ) {
+            ZohoSalesIQ.KnowledgeBase.getSingleResource(
+                getResourceType(type)!!,
+                id.orEmpty(),
+                shouldFallbackToDefaultLanguage,
+                object : ResourceListener {
+                    override fun onSuccess(resource: Resource?) {
+                        promise.resolve(resource.toWritableMap())
+                    }
+
+                    override fun onFailure(code: Int, message: String?) {
+                        promise.reject(code.toString(), message) // No I18N
+                    }
+                })
+        }
+    }
+
+    @ReactMethod
+    fun getKnowledgeBaseResourcesWithChildCategories(
+        type: String,
+        departmentID: String?,
+        parentCategoryID: String?,
+        page: Int,
+        limit: Int,
+        searchKey: String?,
+        includeChildCategoryResources: Boolean,
+        promise: Promise,
+    ) {
+        executeIfResourceTypeIsValid(
+            type, promise
+        ) {
+            ZohoSalesIQ.KnowledgeBase.getResources(
+                getResourceType(type)!!,
+                departmentID,
+                parentCategoryID,
+                searchKey,
+                page,
+                limit,
+                includeChildCategoryResources,
+                object : ResourcesListener {
+                    override fun onSuccess(
+                        articles: List<Resource>,
+                        moreDataAvailable: Boolean,
+                    ) {
+                        promise.resolve(getResourcesResultMap(articles, moreDataAvailable))
+                    }
+
+                    override fun onFailure(code: Int, message: String?) {
+                        promise.reject(code.toString(), message) // No I18N
                     }
                 })
         }
@@ -2181,6 +1968,16 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                     }
                 })
         }
+    }
+
+    private fun getResourcesResultMap(
+        articles: List<Resource>,
+        moreDataAvailable: Boolean,
+    ): WritableMap {
+        val map: WritableMap = WritableNativeMap()
+        map.putArray("resources", articles.toWritableArray()) // No I18N
+        map.putBoolean("moreDataAvailable", moreDataAvailable) // No I18N
+        return map
     }
 
     @ReactMethod
@@ -2243,23 +2040,48 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             "NeutralRatingDisabled" -> {
                 configurationKey = "binaryRating"
             }
+
             "ChatBotCarousalCardPropertiesOrientation" -> {
                 configurationKey = "chat_bot_carousal_card_properties_orientation"
             }
+
             "ChatBotCarousalCardImageVisibility" -> {
                 configurationKey = "chat_bot_carousal_card_image_visibility"
             }
+
             "ChatFallbackDepartmentsOnReopenIfOffline" -> {
                 configurationKey = "fallbackDepartmentsOnReopenIfOffline"
             }
+
+            "HideCreditCardMaskingConsentAlert" -> {
+                configurationKey = "siq_mobilisten_bypass_credit_card_masking_consent"
+            }
+
+            "DontNeedHomePageInStartFlow" -> {
+                configurationKey = "enable_homepage_backstack_for_chat_initiation"
+            }
         }
         if (configurationKey != null) {
-            System.setProperty(configurationKey, value.toString())
+            if (key == "DontNeedHomePageInStartFlow") {
+                // RN semantic: true means do not include homepage in start flow.
+                // Android key is inverse (enable homepage backstack), so invert before setting.
+                val dontNeedHomePage = when (value) {
+                    is Boolean -> value
+                    is String -> value.toBoolean()
+                    is Number -> value.toInt() != 0
+                    else -> false
+                }
+                System.setProperty(configurationKey, (!dontNeedHomePage).toString())
+            } else {
+                System.setProperty(configurationKey, value.toString())
+            }
         } else {
             when (key) {
                 "IncludeVisitorInfoInConversationInfo" -> {
                     ZohoSalesIQ.setConfig(
-                        SalesIQConfig.IncludeVisitorInfoWithDisplayFields(LiveChatUtil.getBoolean(value))
+                        SalesIQConfig.IncludeVisitorInfoWithDisplayFields(
+                            LiveChatUtil.getBoolean(value)
+                        )
                     )
                 }
 
@@ -2270,11 +2092,15 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                 }
 
                 "SecretFieldsProviderTimeout" -> {
-                    ZohoSalesIQ.setTimeout(SalesIQTimeoutType.SECRET_FIELDS, LiveChatUtil.getLong(value))
+                    ZohoSalesIQ.setTimeout(
+                        SalesIQTimeoutType.SECRET_FIELDS, LiveChatUtil.getLong(value)
+                    )
                 }
 
                 "DisplayFieldsProviderTimeout" -> {
-                    ZohoSalesIQ.setTimeout(SalesIQTimeoutType.DISPLAY_FIELDS, LiveChatUtil.getLong(value))
+                    ZohoSalesIQ.setTimeout(
+                        SalesIQTimeoutType.DISPLAY_FIELDS, LiveChatUtil.getLong(value)
+                    )
                 }
 
                 else -> {
@@ -2288,7 +2114,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
     fun refreshData(data: ReadableMap, promise: Promise) {
         val type = data.getString("type")?.takeIf { it.isNotBlank() }
         if (type == null) {
-            promise.reject("1200", "Missing refresh data type")
+            promise.reject("-1200", "Missing refresh data type")
             return
         }
 
@@ -2298,7 +2124,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             else -> null
         })?.takeIf { it.isNotBlank() }
         if (conversationId == null) {
-            promise.reject("1201", "Missing conversation identifier")
+            promise.reject("-1201", "Missing conversation identifier")
             return
         }
 
@@ -2308,7 +2134,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             else -> null
         }
         if (refreshData == null) {
-            promise.reject("1202", "Unsupported refresh data type")
+            promise.reject("-1202", "Unsupported refresh data type")
             return
         }
 
@@ -2327,8 +2153,10 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
     @ReactMethod
     fun setDataProvider(config: ReadableMap) {
-        isSecretFieldsProviderEnabled = config.hasKey("secretFieldsEnabled") && config.getBoolean("secretFieldsEnabled")
-        isDisplayFieldsProviderEnabled = config.hasKey("customInfoEnabled") && config.getBoolean("customInfoEnabled")
+        isSecretFieldsProviderEnabled =
+            config.hasKey("secretFieldsEnabled") && config.getBoolean("secretFieldsEnabled")
+        isDisplayFieldsProviderEnabled =
+            config.hasKey("customInfoEnabled") && config.getBoolean("customInfoEnabled")
 
         HANDLER.post {
             if (isSecretFieldsProviderEnabled || isDisplayFieldsProviderEnabled) {
@@ -2357,6 +2185,241 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         return stringMap
     }
 
+    // MARK: Homepage APIs
+
+    @ReactMethod
+    fun setHomepageEnabled(enabled: Boolean) {
+        ZohoSalesIQ.Homepage.setEnabled(enabled)
+    }
+
+    @ReactMethod
+    fun setHomepageWidgetVisibility(widget: String, visible: Boolean) {
+        val widgetType: ZohoSalesIQ.Homepage.Widget? = when (widget) {
+            "HOMEPAGE_WIDGET_CHAT" -> ZohoSalesIQ.Homepage.Widget.CHAT
+            "HOMEPAGE_WIDGET_CALL" -> ZohoSalesIQ.Homepage.Widget.CALL
+            "HOMEPAGE_WIDGET_ARTICLES" -> ZohoSalesIQ.Homepage.Widget.ARTICLES
+            "HOMEPAGE_WIDGET_PREVIOUS_CONVERSATION" -> ZohoSalesIQ.Homepage.Widget.PREVIOUS_CONVERSATIONS
+            "HOMEPAGE_WIDGET_IMAGE_CARD" -> ZohoSalesIQ.Homepage.Widget.IMAGE_CARD
+            "HOMEPAGE_WIDGET_VIDEO_CARD" -> ZohoSalesIQ.Homepage.Widget.VIDEO_CARD
+            else -> null
+        }
+        if (widgetType != null) {
+            ZohoSalesIQ.Homepage.setVisibility(widgetType, visible)
+        } else {
+            LiveChatUtil.log("MobilistenPlugin - Invalid homepage widget type: $widget")
+        }
+    }
+
+    @ReactMethod
+    fun presentSDK(screen: ReadableMap, showHomepage: Boolean, promise: Promise) {
+        HANDLER.post {
+            val screenType = screen.getString("screenType") // No I18N
+            if (screenType == null) {
+                // No screen provided: open the SDK's default UI (null present
+                // options) and report the actual result from the present callback.
+                ZohoSalesIQ.present(null) { result ->
+                    if (result.isSuccess) {
+                        promise.resolve(true)
+                    } else {
+                        val error = result.error
+                        promise.reject((error?.code ?: -1).toString(), error?.message) // No I18N
+                    }
+                }
+                return@post
+            }
+            when (screenType) {
+                "conversation" -> { // No I18N
+                    val id = if (screen.hasKey("id")) screen.getString("id") else null // No I18N
+                    val listMap =
+                        if (screen.hasKey("list")) screen.getMap("list") else null // No I18N
+                    val sessionBehaviorMap =
+                        if (screen.hasKey("sessionBehavior")) screen.getMap("sessionBehavior") else null // No I18N
+                    val sessionTypeStr =
+                        if (screen.hasKey("sessionType")) screen.getString("sessionType") else null // No I18N
+
+                    val conversationList = parseSIQConversationList(listMap)
+                    val sessionBehavior = parseSIQSessionBehavior(sessionBehaviorMap)
+                    val sessionType = parseSIQSessionType(sessionTypeStr)
+
+                    val siqScreen = if (id != null) {
+                        PresentOptions.Screen.Conversation(
+                            id,
+                            sessionType ?: PresentOptions.Screen.Conversation.SessionType.CHAT,
+                            conversationList
+                        )
+                    } else {
+                        PresentOptions.Screen.Conversation(conversationList, sessionBehavior)
+                    }
+
+                    val presentOptions =
+                        PresentOptions(screen = siqScreen, isHomepageEnabled = showHomepage)
+                    ZohoSalesIQ.present(presentOptions) { result ->
+                        if (result.isSuccess) {
+                            promise.resolve(true)
+                        } else {
+                            val error = result.error
+                            promise.reject(
+                                (error?.code ?: -1).toString(), error?.message
+                            ) // No I18N
+                        }
+                    }
+                }
+
+                "knowledgeBase" -> { // No I18N
+                    val id = if (screen.hasKey("id")) screen.getString("id") else null // No I18N
+                    val siqScreen = PresentOptions.Screen.KnowledgeBase(
+                        PresentOptions.Screen.KnowledgeBase.ResourceType.ARTICLES, id
+                    )
+
+                    val presentOptions =
+                        PresentOptions(screen = siqScreen, isHomepageEnabled = showHomepage)
+                    ZohoSalesIQ.present(presentOptions) { result ->
+                        if (result.isSuccess) {
+                            promise.resolve(true)
+                        } else {
+                            val error = result.error
+                            promise.reject(
+                                (error?.code ?: -1).toString(), error?.message
+                            ) // No I18N
+                        }
+                    }
+                }
+
+                else -> {
+                    promise.reject("-1", "Unknown screenType: $screenType") // No I18N
+                }
+            }
+        }
+    }
+
+    @ReactMethod
+    fun helpCenterAsk(question: String?, promise: Promise) {
+        HANDLER.post {
+            ZohoSalesIQ.HelpCenter.ask(question) { result ->
+                if (result.isSuccess) {
+                    promise.resolve(true)
+                } else {
+                    val error = result.error
+                    promise.reject((error?.code ?: -1).toString(), error?.message)
+                }
+            }
+        }
+    }
+
+    @ReactMethod
+    fun updateProfile(profile: ReadableMap, promise: Promise) {
+        val siqProfile = SalesIQVisitorProfile()
+        if (profile.hasKey("salutation")) { // No I18N
+            val salutationStr = profile.getString("salutation")
+            siqProfile.salutation = when (salutationStr?.lowercase()) {
+                "mr" -> SalesIQVisitorProfile.Salutation.Mr
+                "ms" -> SalesIQVisitorProfile.Salutation.Ms
+                "mrs" -> SalesIQVisitorProfile.Salutation.Mrs
+                "dr" -> SalesIQVisitorProfile.Salutation.Dr
+                "prof" -> SalesIQVisitorProfile.Salutation.Prof
+                else -> SalesIQVisitorProfile.Salutation.None
+            }
+        }
+        siqProfile.firstName =
+            if (profile.hasKey("firstName")) profile.getString("firstName") else null // No I18N
+        siqProfile.lastName =
+            if (profile.hasKey("lastName")) profile.getString("lastName") else null // No I18N
+        siqProfile.email =
+            if (profile.hasKey("emailID")) profile.getString("emailID") else null // No I18N
+
+        if (profile.hasKey("phone")) { // No I18N
+            val phoneMap = profile.getMap("phone") // No I18N
+            if (phoneMap != null) {
+                val code = if (phoneMap.hasKey("code")) phoneMap.getString("code")
+                    .orEmpty() else "" // No I18N
+                val number = if (phoneMap.hasKey("number")) phoneMap.getString("number")
+                    .orEmpty() else "" // No I18N
+                if (code.isNotEmpty() || number.isNotEmpty()) {
+                    siqProfile.phoneNumber = SalesIQVisitorProfile.PhoneNumber(code, number)
+                }
+            }
+        }
+
+        if (profile.hasKey("customInfo")) { // No I18N
+            val customInfoMap = profile.getMap("customInfo") // No I18N
+            if (customInfoMap != null) {
+                val iterator = customInfoMap.keySetIterator()
+                val map = HashMap<String, String>()
+                while (iterator.hasNextKey()) {
+                    val key = iterator.nextKey()
+                    map[key] = customInfoMap.getString(key).orEmpty()
+                }
+                siqProfile.customInfo = map
+            }
+        }
+
+        if (profile.hasKey("location")) { // No I18N
+            val locationMap = profile.getMap("location") // No I18N
+            if (locationMap != null) {
+                val location = SIQVisitorLocation()
+                location.countryCode =
+                    if (locationMap.hasKey("countryCode")) locationMap.getString("countryCode") else null // No I18N
+                location.city =
+                    if (locationMap.hasKey("city")) locationMap.getString("city") else null // No I18N
+                location.zipCode =
+                    if (locationMap.hasKey("zipCode")) locationMap.getString("zipCode") else null // No I18N
+                location.state =
+                    if (locationMap.hasKey("state")) locationMap.getString("state") else null // No I18N
+                location.country =
+                    if (locationMap.hasKey("country")) locationMap.getString("country") else null // No I18N
+                if (locationMap.hasKey("latitude")) location.latitude =
+                    locationMap.getDouble("latitude")  // No I18N
+                if (locationMap.hasKey("longitude")) location.longitude =
+                    locationMap.getDouble("longitude") // No I18N
+                siqProfile.location = location
+            }
+        }
+
+        HANDLER.post {
+            ZohoSalesIQ.Visitor.updateProfile(siqProfile)
+            promise.resolve(null)
+        }
+    }
+
+    private fun parseSIQConversationList(map: ReadableMap?): PresentOptions.ConversationList {
+        val type = map?.getString("type") ?: "all" // No I18N
+        val filter = parseSIQConversationFilter(map?.getString("filter")) // No I18N
+        return when (type) {
+            "chat" -> PresentOptions.ConversationList.Chat(filter) // No I18N
+            "call" -> PresentOptions.ConversationList.Call(filter) // No I18N
+            "none" -> PresentOptions.ConversationList.None // No I18N
+            else -> PresentOptions.ConversationList.All(filter)
+        }
+    }
+
+    private fun parseSIQConversationFilter(str: String?): PresentOptions.ConversationsListFilter {
+        return when (str) {
+            "ongoing" -> PresentOptions.ConversationsListFilter.ONGOING // No I18N
+            "ended" -> PresentOptions.ConversationsListFilter.ENDED // No I18N
+            else -> PresentOptions.ConversationsListFilter.ALL
+        }
+    }
+
+    private fun parseSIQSessionType(str: String?): PresentOptions.Screen.Conversation.SessionType? {
+        return when (str) {
+            "chat" -> PresentOptions.Screen.Conversation.SessionType.CHAT // No I18N
+            "call" -> PresentOptions.Screen.Conversation.SessionType.CALL // No I18N
+            else -> null
+        }
+    }
+
+    private fun parseSIQSessionBehavior(map: ReadableMap?): PresentOptions.Screen.Conversation.SessionBehavior {
+        val sessionType = parseSIQSessionType(map?.getString("sessionType"))
+            ?: PresentOptions.Screen.Conversation.SessionType.CHAT // No I18N
+        return when (map?.getString("type")) { // No I18N
+            "alwaysNew" -> PresentOptions.Screen.Conversation.SessionBehavior.AlwaysNew(sessionType) // No I18N
+            "continueOrNew" -> PresentOptions.Screen.Conversation.SessionBehavior.ContinueOrNew(
+                sessionType
+            ) // No I18N
+            else -> PresentOptions.Screen.Conversation.SessionBehavior.None
+        }
+    }
+
     private fun executeIfResourceTypeIsValid(
         type: String,
         callback: Callback?,
@@ -2367,6 +2430,19 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             runnable.run()
         } else {
             callback?.invoke(resourceTypeErrorMap)
+        }
+    }
+
+    private fun executeIfResourceTypeIsValid(
+        type: String,
+        promise: Promise,
+        runnable: Runnable,
+    ) {
+        val resourceType = getResourceType(type)
+        if (resourceType != null) {
+            runnable.run()
+        } else {
+            promise.reject("-100", "Invalid resource type") // No I18N
         }
     }
 
@@ -2385,10 +2461,6 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         private const val EVENT_CHAT_CLOSED = "EVENT_CHAT_CLOSED" // No I18N
         private const val EVENT_CHAT_REOPENED = "EVENT_CHAT_REOPENED" // No I18N
         private const val EVENT_CHAT_EXPIRED = "EVENT_CHAT_EXPIRED" // No I18N
-        private const val EVENT_ARTICLE_LIKED = "EVENT_ARTICLE_LIKED" // No I18N
-        private const val EVENT_ARTICLE_DISLIKED = "EVENT_ARTICLE_DISLIKED" // No I18N
-        private const val EVENT_ARTICLE_OPENED = "EVENT_ARTICLE_OPENED" // No I18N
-        private const val EVENT_ARTICLE_CLOSED = "EVENT_ARTICLE_CLOSED" // No I18N
         private const val EVENT_OPERATORS_ONLINE = "EVENT_OPERATORS_ONLINE" // No I18N
         private const val EVENT_OPERATORS_OFFLINE = "EVENT_OPERATORS_OFFLINE" // No I18N
         private const val EVENT_VISITOR_IPBLOCKED = "EVENT_VISITOR_IPBLOCKED" // No I18N
@@ -2407,8 +2479,10 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
             "EVENT_CHAT_UNREAD_COUNT_CHANGED" // No I18N
 
         private const val EVENT_NOTIFICATION_CLICKED = "EVENT_NOTIFICATION_CLICKED" // No I18N
-        private const val CONVERSATION_SECRET_FIELDS_REQUEST = "conversationSecretFieldsRequest" // No I18N
-        private const val CONVERSATION_DISPLAY_FIELDS_REQUEST = "conversationDisplayFieldsRequest" // No I18N
+        private const val CONVERSATION_SECRET_FIELDS_REQUEST =
+            "conversationSecretFieldsRequest" // No I18N
+        private const val CONVERSATION_DISPLAY_FIELDS_REQUEST =
+            "conversationDisplayFieldsRequest" // No I18N
 
         private const val TYPE_OPEN = "OPEN" // No I18N
         private const val TYPE_CONNECTED = "CONNECTED" // No I18N
@@ -2495,7 +2569,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                 ZohoSalesIQ.setListener(rnZohoSalesIQListener)
                 ZohoSalesIQ.Chat.setListener(rnZohoSalesIQListener)
                 ZohoSalesIQ.KnowledgeBase.setListener(rnZohoSalesIQListener)
-                ZohoLiveChat.ChatActions.setListener(rnZohoSalesIQListener)
+                ZohoSalesIQ.ChatActions.setListener(rnZohoSalesIQListener)
                 ZohoSalesIQ.Notification.setListener(rnZohoSalesIQListener)
                 isCallbacksRegistered = true
                 LiveChatUtil.log("Callbacks registered")
@@ -2535,8 +2609,12 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
 
                 "REOPEN" -> chatComponent = ChatComponent.reopen
                 "CALL" -> chatComponent = ChatComponent.call
-                "FILE_SHARING_WHEN_BOT_CONNECTED" -> chatComponent = ChatComponent.fileSharingWhenBotConnected
-                "VOICE_NOTE_WHEN_BOT_CONNECTED" -> chatComponent = ChatComponent.voiceNoteWhenBotConnected
+                "FILE_SHARING_WHEN_BOT_CONNECTED" -> chatComponent =
+                    ChatComponent.fileSharingWhenBotConnected
+
+                "VOICE_NOTE_WHEN_BOT_CONNECTED" -> chatComponent =
+                    ChatComponent.voiceNoteWhenBotConnected
+
                 else -> {}
             }
             return chatComponent
@@ -2547,13 +2625,15 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         @JvmStatic
         fun handleNotification(application: Application?, extras: Map<*, *>?) {
             HANDLER.post {
-                ZohoSalesIQ.Notification.handle(application, extras)
+                if (application != null && extras != null) {
+                    ZohoSalesIQ.Notification.handle(application, extras)
+                }
             }
         }
 
         @JvmStatic
         fun isSDKMessage(extras: Map<*, *>?): Boolean {
-            return ZohoSalesIQ.Notification.isZohoSalesIQNotification(extras)
+            return extras != null && ZohoSalesIQ.Notification.isZohoSalesIQNotification(extras)
         }
 
         internal fun getNotificationPayloadMap(payload: SalesIQNotificationPayload?): WritableMap? {
@@ -2587,7 +2667,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
         fun enablePush(token: String?, testDevice: Boolean) {
             fcmToken = token
             isTestDevice = testDevice
-            ZohoSalesIQ.Notification.enablePush(token, isTestDevice)
+            token?.let { ZohoSalesIQ.Notification.enablePush(it, isTestDevice) }
         }
 
         internal fun initSalesIQ(
@@ -2609,10 +2689,8 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                 ZohoSalesIQ.init(
                     application, appKey, accessKey, initConfig, object : OnInitCompleteListener {
                         override fun onInitComplete() {
-                            if (fcmToken != null) {
-                                ZohoSalesIQ.Notification.enablePush(fcmToken, isTestDevice)
-                            }
-                            if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
+                            fcmToken?.let { ZohoSalesIQ.Notification.enablePush(it, isTestDevice) }
+                            if (activity != null) {
                                 refreshLauncher()
                             }
                             if (initCallback != null && canInvokeCallBack[0]) {
@@ -2628,24 +2706,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                             }
                         }
                     })
-                if (activity != null && ZohoSalesIQ.getApplicationManager() != null) {
-                    ZohoSalesIQ.getApplicationManager()!!.setCurrentActivity(activity)
-                    ZohoSalesIQ.getApplicationManager()!!.appActivity = activity
-                }
             }
-        }
-
-        @Suppress("DEPRECATION")
-        internal fun getTab(tab: String?): ZohoSalesIQ.Tab? {
-            var tabType: ZohoSalesIQ.Tab? = null
-            if (tab != null) {
-                if (Tab.CONVERSATIONS.value == tab) {
-                    tabType = ZohoSalesIQ.Tab.Conversations
-                } else if (Tab.KNOWLEDGE_BASE.value == tab || Tab.FAQ.value == tab) {
-                    tabType = ZohoSalesIQ.Tab.KnowledgeBase
-                }
-            }
-            return tabType
         }
 
         fun eventEmitter(event: String, value: Any?) {
@@ -2840,7 +2901,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                         LiveChatUtil.log("MobilistenEncryptedSharedPreferences- re-registering visitor") // No I18N
                         LiveChatUtil.registerVisitor(userId, null, object : RegisterListener {
                             override fun onSuccess() {
-                                logDebugInfo(
+                                LoggerUtil.logDebugInfo(
                                     DebugInfoData.VisitorFailureReRegistrationAcknowledged(userId)
                                 )
                                 LiveChatUtil.log("MobilistenEncryptedSharedPreferences- re-registering visitor success") // No I18N
@@ -2876,7 +2937,7 @@ class RNZohoSalesIQ private constructor(reactContext: ReactApplicationContext) {
                     } catch (e: Exception) {
                         LiveChatUtil.log(e)
                     }
-                    logDebugInfo(DebugInfoData.VisitorFailureGuestAcknowledged(jsonObject.toString()))
+                    LoggerUtil.logDebugInfo(DebugInfoData.VisitorFailureGuestAcknowledged(jsonObject.toString()))
                     if (sharedPreferences.contains(MobilistenEncryptedSharedPreferences.ARE_NEW_ENCRYPTED_KEYS_PRESENT_IN_DEFAULT_PREFERENCES) && sharedPreferences.getBoolean(
                             MobilistenEncryptedSharedPreferences.ARE_NEW_ENCRYPTED_KEYS_PRESENT_IN_DEFAULT_PREFERENCES,
                             true

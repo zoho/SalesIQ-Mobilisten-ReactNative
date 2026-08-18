@@ -1,7 +1,7 @@
-import { SIQButtonTheme } from "./SIQButtonTheme";
+import { SIQButtonTheme } from './SIQButtonTheme';
 
 export class SIQFAQBottomBarTheme {
-    backgroundColor = "null";
-    LikeButton = new SIQButtonTheme();
-    DislikeButton = new SIQButtonTheme();
+  backgroundColor = 'null';
+  LikeButton = new SIQButtonTheme();
+  DislikeButton = new SIQButtonTheme();
 }

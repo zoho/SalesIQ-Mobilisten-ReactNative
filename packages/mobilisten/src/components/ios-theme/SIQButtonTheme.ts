@@ -1,4 +1,4 @@
 export class SIQButtonTheme {
-    selectedColor = "null";
-    normalColor = "null";
+  selectedColor = 'null';
+  normalColor = 'null';
 }

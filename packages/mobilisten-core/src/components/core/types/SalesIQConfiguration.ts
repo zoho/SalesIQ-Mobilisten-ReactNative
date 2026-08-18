@@ -10,13 +10,48 @@
  * - androidCallViewMode: Optional parameter to set the call view mode.
  */
 
+/**
+ * The presentation style used for the in-app call status view on Android.
+ */
 export enum SalesIQCallViewMode {
-    BANNER = 'BANNER',
-    FLOATING = 'FLOATING',
+  /** Show the ongoing-call status as a banner. */
+  BANNER = 'BANNER',
+  /** Show the ongoing-call status as a floating view. */
+  FLOATING = 'FLOATING',
 }
 
+/**
+ * Configuration for a single font role (e.g. regular or medium) in {@link SalesIQFonts}.
+ */
+export interface SalesIQFontConfig {
+  /** Path/name of the font to apply. */
+  path?: string;
+}
+
+/**
+ * Custom fonts to be applied across the SDK UI.
+ * Note: Wired through the native configuration on Android; iOS has no equivalent
+ * configuration hook in the native SDK.
+ */
+export interface SalesIQFonts {
+  /** The font used for regular-weight text. */
+  regular?: SalesIQFontConfig;
+  /** The font used for medium-weight text. */
+  medium?: SalesIQFontConfig;
+}
+
+/**
+ * The configuration used to initialize the SalesIQ SDK.
+ */
 export interface SalesIQConfiguration {
-    appKey: string;
-    accessKey: string;
-    androidCallViewMode?: SalesIQCallViewMode | null;
+  /** The app key generated for your application in the SalesIQ portal. */
+  appKey: string;
+  /** The access key generated for your brand in the SalesIQ portal. */
+  accessKey: string;
+  /** The presentation style for the in-app call status view (Android only). */
+  androidCallViewMode?: SalesIQCallViewMode | null;
+  /**
+   * Custom fonts for the SDK UI (Android only).
+   */
+  fonts?: SalesIQFonts | null;
 }

@@ -10,7 +10,7 @@ import Foundation
 import MobilistenCore
 
 @objc(RNZohoSalesIQMobilisten)
-class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQFAQDelegate, ZohoSalesIQKnowledgeBaseDelegate, ZohoSalesIQConversationDelegate {
+class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQChatDelegate, ZohoSalesIQKnowledgeBaseDelegate, ZohoSalesIQConversationDelegate {
     
     
     override class func requiresMainQueueSetup() -> Bool {
@@ -21,13 +21,12 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     private var hasSIQEventListener = false
     private var handleURI = true
     private var actionDictionary: [String: SIQActionHandler] = [:]
-    
+
     // Store pending completion handlers for conversation delegate callbacks
     private var pendingSecretFieldsCompletions: [String: ([String: Any]) -> Void] = [:]
     private var pendingDisplayFieldsCompletions: [String: ([String: Any]) -> Void] = [:]
     private var isSecretFieldsEnabled = false
     private var isDisplayFieldsEnabled = false
-    
     private func performAdditionalSetup() {
         // Perform additional setup here
     }
@@ -39,10 +38,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let HOMEVIEW_OPENED = "HOMEVIEW_OPENED"
     let SUPPORT_OPENED = "EVENT_SUPPORT_OPENED"
     let SUPPORT_CLOSED = "EVENT_SUPPORT_CLOSED"
-    let ARTICLE_OPENED = "ARTICLE_OPENED"
-    let ARTICLE_CLOSED = "ARTICLE_CLOSED"
-    let ARTICLE_LIKED = "ARTICLE_LIKED"
-    let ARTICLE_DISLIKED = "ARTICLE_DISLIKED"
     let CHAT_ATTENDED = "EVENT_CHAT_ATTENDED"
     let CHAT_CLOSED = "EVENT_CHAT_CLOSED"
     let CHAT_EXPIRED = "EVENT_CHAT_EXPIRED"
@@ -69,9 +64,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let INFO_LOG = "INFO_LOG"
     let WARNING_LOG = "WARNING_LOG"
     let ERROR_LOG = "ERROR_LOG"
-    let TAB_CONVERSATIONS = "TAB_CONVERSATIONS"
-    let TAB_FAQ = "TAB_FAQ"
-    let TAB_KNOWLEDGE_BASE = "TAB_KNOWLEDGE_BASE"
     let EVENT_HANDLE_URL = "EVENT_HANDLE_URL"
     let EVENT_OPEN_URL = "EVENT_OPEN_URL"
     let EVENT_COMPLETE_CHAT_ACTION = "EVENT_COMPLETE_CHAT_ACTION"
@@ -128,7 +120,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     let INCLUDE_VISITOR_INFO_IN_CONVERSATION_INFO = "IncludeVisitorInfoInConversationInfo"
     let SECRET_FIELDS_PROVIDER_TIMEOUT = "SecretFieldsProviderTimeout"
     let DISPLAY_FIELDS_PROVIDER_TIMEOUT = "DisplayFieldsProviderTimeout"
-    
+    let DONT_NEED_HOMEPAGE_IN_START_FLOW = "DontNeedHomePageInStartFlow"
     func sendRCTEvent(withName eventName: String, body: Any?) {
         if hasSIQEventListener {
             print("CustomEventsEmitter emitting event: \(eventName)")
@@ -147,10 +139,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 HOMEVIEW_OPENED,
                 SUPPORT_CLOSED,
                 SUPPORT_OPENED,
-                ARTICLE_CLOSED,
-                ARTICLE_DISLIKED,
-                ARTICLE_LIKED,
-                ARTICLE_OPENED,
                 CHAT_ATTENDED,
                 CHAT_CLOSED,
                 FEEDBACK_RECEIVED,
@@ -169,9 +157,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 INFO_LOG,
                 WARNING_LOG,
                 ERROR_LOG,
-                TAB_CONVERSATIONS,
-                TAB_FAQ,
-                TAB_KNOWLEDGE_BASE,
                 EVENT_HANDLE_URL,
                 EVENT_OPEN_URL,
                 EVENT_COMPLETE_CHAT_ACTION,
@@ -206,10 +191,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             "HOMEVIEW_OPENED": HOMEVIEW_OPENED,
             "SUPPORT_CLOSED": SUPPORT_CLOSED,
             "SUPPORT_OPENED": SUPPORT_OPENED,
-            "ARTICLE_CLOSED": ARTICLE_CLOSED,
-            "ARTICLE_DISLIKED": ARTICLE_DISLIKED,
-            "ARTICLE_LIKED": ARTICLE_LIKED,
-            "ARTICLE_OPENED": ARTICLE_OPENED,
             "CHAT_ATTENDED": CHAT_ATTENDED,
             "CHAT_CLOSED": CHAT_CLOSED,
             "FEEDBACK_RECEIVED": FEEDBACK_RECEIVED,
@@ -235,9 +216,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             "INFO_LOG": INFO_LOG,
             "WARNING_LOG": WARNING_LOG,
             "ERROR_LOG": ERROR_LOG,
-            "TAB_CONVERSATIONS": TAB_CONVERSATIONS,
-            "TAB_KNOWLEDGE_BASE": TAB_KNOWLEDGE_BASE,
-            "TAB_FAQ": TAB_FAQ,
             "EVENT_HANDLE_URL": EVENT_HANDLE_URL,
             "EVENT_OPEN_URL": EVENT_OPEN_URL,
             "EVENT_COMPLETE_CHAT_ACTION": EVENT_COMPLETE_CHAT_ACTION,
@@ -339,14 +317,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         return argumentsDict
     }
     
-    static func getFAQCategoryObject(category: SIQFAQCategory) -> [String: Any] {
-        var categoryDict: [String: Any] = [:]
-        categoryDict["id"] = category.id
-        categoryDict["name"] = category.name
-        categoryDict["articleCount"] = category.articleCount
-        return categoryDict
-    }
-    
     static func getErrorObject(error: NSError) -> [String: Any] {
         return ["code": error.code, "message": error.localizedDescription]
     }
@@ -354,36 +324,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     static func getSIQErrorObject(siqError: SIQError) -> [String: Any] {
         return ["code": siqError.code, "message": siqError.message]
     }
-    
-    static func getFAQCategoryList(categories: [SIQFAQCategory]) -> [[String: Any]] {
-        return categories.compactMap { getFAQCategoryObject(category: $0) }
-    }
-    
-    static func getFAQArticleObject(article: SIQFAQArticle) -> [String: Any] {
-        var articleDict: [String: Any] = [:]
-        
-        articleDict["id"] = article.id
-        articleDict["categoryID"] = article.categoryID
-        articleDict["categoryName"] = article.categoryName
-        articleDict["name"] = article.name
-        articleDict["viewCount"] = article.viewCount
-        articleDict["likeCount"] = article.likeCount
-        articleDict["dislikeCount"] = article.dislikeCount
-        
-        if let modifiedTime = article.lastModifiedTime {
-            articleDict["modifiedTime"] = Int(modifiedTime.timeIntervalSince1970)
-        }
-        if let createdTime = article.createdTime {
-            articleDict["createdTime"] = Int(createdTime.timeIntervalSince1970)
-        }
-        
-        return articleDict
-    }
-    
-    static func getArticlesList(articles: [SIQFAQArticle]) -> [[String: Any]] {
-        return articles.map { getFAQArticleObject(article: $0) }
-    }
-    
+
     static func getChatObject(chat: SIQVisitorChat) -> [String: Any] {
         var chatDict: [String: Any] = [:]
         
@@ -665,11 +606,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     static func handlePushNotificationAction(actionIdentifier: String? = nil, userInfo: [AnyHashable : Any], responseText: String? = nil, completion: @escaping () -> Void) {
         ZohoSalesIQ.handlePushNotificationAction(actionIdentifier: actionIdentifier, userInfo: userInfo, responseText: responseText, completion: completion)
     }
-    
-    func openNewChat() {
-        ZohoSalesIQ.Chat.show(referenceID: nil, new: true)
-    }
-    
+
     private func getNotificationActionPayload(_ payload: Any?) -> [String: Any] {
         var resultMap: [String: Any] = [:]
         
@@ -743,30 +680,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     func supportOpened() {
         if hasSIQEventListener {
             sendRCTEvent(withName:ZSIQ_EVENT_LISTENER, body: RNZohoSalesIQMobilisten.getEventEmitterObject(SUPPORT_OPENED, body: nil))
-        }
-    }
-    
-    func articleClosed(id: String?) {
-        if hasSIQEventListener {
-            sendRCTEvent(withName:ARTICLE_CLOSED, body: id)
-        }
-    }
-    
-    func articleDisliked(id: String?) {
-        if hasSIQEventListener {
-            sendRCTEvent(withName:ARTICLE_DISLIKED, body: id)
-        }
-    }
-    
-    func articleLiked(id: String?) {
-        if hasSIQEventListener {
-            sendRCTEvent(withName:ARTICLE_LIKED, body: id)
-        }
-    }
-    
-    func articleOpened(id: String?) {
-        if hasSIQEventListener {
-            sendRCTEvent(withName:ARTICLE_OPENED, body: id)
         }
     }
     
@@ -939,7 +852,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
 
         return nil
     }
-    
+
     //MARK: Delegate functions ends here
     
     
@@ -960,13 +873,12 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.initWithAppKey(appKey, accessKey: accessKey, authProvider: nil)
             ZohoSalesIQ.delegate = self
             ZohoSalesIQ.Chat.delegate = self
-            ZohoSalesIQ.FAQ.delegate = self
             ZohoSalesIQ.KnowledgeBase.delegate = self
             ZohoSalesIQ.Conversation.delegate = self
             self.performAdditionalSetup()
         }
     }
-    
+
     @objc(initWithCallback:accessKey:initCallback:)
     func initWithCallback(_ appKey: String, accessKey: String, callback: @escaping RCTResponseSenderBlock) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -977,7 +889,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
             ZohoSalesIQ.delegate = self
             ZohoSalesIQ.Chat.delegate = self
-            ZohoSalesIQ.FAQ.delegate = self
             ZohoSalesIQ.KnowledgeBase.delegate = self
             ZohoSalesIQ.Conversation.delegate = self
             self.performAdditionalSetup()
@@ -990,17 +901,20 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         RNZohoSalesIQMobilisten.mainThread {
             let appKey = configuration["appKey"] as? String ?? ""
             let accessKey = configuration["accessKey"] as? String ?? ""
+
+            // `fonts` has no equivalent configuration hook in the iOS native SDK.
+            // Visitor authentication (registered / guest / JWT) is intentionally not handled here —
+            // it will be provided by a dedicated upcoming API rather than via SalesIQConfiguration.
             ZohoSalesIQ.setPlatform(platform: "ReactNative")
             ZohoSalesIQ.initWithAppKey(appKey, accessKey: accessKey, authProvider: nil) { error in
                 if error == nil {
                     resolve(true)
                 } else {
-                    reject("500" ,"❌ MOBILISTEN » INITIALIZATION FAILED", nil)
+                    reject("-500","❌ MOBILISTEN » INITIALIZATION FAILED", nil)
                 }
             }
             ZohoSalesIQ.delegate = self
             ZohoSalesIQ.Chat.delegate = self
-            ZohoSalesIQ.FAQ.delegate = self
             ZohoSalesIQ.KnowledgeBase.delegate = self
             ZohoSalesIQ.Conversation.delegate = self
             self.performAdditionalSetup()
@@ -1031,48 +945,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
         }
     }
-    
-    @objc(completeChatAction:)
-    func completeChatAction(_ uuid: String) {
-        RNZohoSalesIQMobilisten.mainThread {
-            if let handler = self.actionDictionary[uuid] {
-                handler.success(message: nil)
-                self.actionDictionary.removeValue(forKey: uuid)
-            }
-        }
-    }
-    
-    @objc(completeChatActionWithMessage:success:message:)
-    func completeChatActionWithMessage(_ uuid: String, complete: Bool, message: String) {
-        RNZohoSalesIQMobilisten.mainThread {
-            if let handler = self.actionDictionary[uuid] {
-                complete ? handler.success(message: message) : handler.faliure(message: message)
-                self.actionDictionary.removeValue(forKey: uuid)
-            }
-        }
-    }
-    
-    @objc(disableInAppNotification)
-    func disableInAppNotification() {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.inAppNotifications, visible: false)
-        }
-    }
-    
-    @objc(disablePreChatForms)
-    func disablePreChatForms() {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.preChatForm, visible: false)
-        }
-    }
-    
-    @objc(disableScreenshotOption)
-    func disableScreenshotOption() {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.screenshotOption, visible: false)
-        }
-    }
-    
+
     @objc(dismissUI)
     func dismissUI() {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1087,31 +960,18 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
     
-    @objc(enableInAppNotification)
-    func enableInAppNotification() {
+    @objc(enableInAppNotification:)
+    func enableInAppNotification(_ enabled: Bool) {
         RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.inAppNotifications, visible: true)
+            ZohoSalesIQ.Chat.setVisibility(.inAppNotifications, visible: enabled)
         }
     }
     
-    @objc(enablePreChatForms)
-    func enablePreChatForms() {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.preChatForm, visible: true)
-        }
-    }
-    
-    @objc(enableScreenshotOption)
-    func enableScreenshotOption() {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.screenshotOption, visible: true)
-        }
-    }
-    
-    @objc(endChat:)
-    func endChat(_ refID: String) {
+    @objc(end:resolver:rejecter:)
+    func end(_ refID: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.Chat.endSession(referenceID: refID)
+            resolve(nil)
         }
     }
     
@@ -1129,56 +989,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
         }
     }
-    
-    
-    @objc(getArticles:)
-    func getArticles(callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.FAQ.getArticles(categoryID: nil) { error, articles in
-                if let error = error {
-                    let errorDictionary = RNZohoSalesIQMobilisten.getErrorObject(error: error)
-                    callback([errorDictionary, ""])
-                } else {
-                    if let articles {
-                        callback([NSNull(), RNZohoSalesIQMobilisten.getArticlesList(articles: articles)])
-                    }
-                }
-            }
-        }
-    }
-    
-    @objc(getArticlesWithCategoryID:articlesCallback:)
-    func getArticlesWithCategoryID(_ catid: String, callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.FAQ.getArticles(categoryID: catid) { error, articles in
-                if let error = error {
-                    let errorDictionary = RNZohoSalesIQMobilisten.getErrorObject(error: error)
-                    callback([errorDictionary, ""])
-                } else {
-                    if let articles {
-                        callback([NSNull(), RNZohoSalesIQMobilisten.getArticlesList(articles: articles)])
-                    }
-                }
-            }
-        }
-    }
-    
-    @objc(getCategories:)
-    func getCategories(callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.FAQ.getCategories(departmentIDS: nil) { error, categories in
-                if let error = error {
-                    let errorDictionary = RNZohoSalesIQMobilisten.getErrorObject(error: error)
-                    callback([errorDictionary, ""])
-                } else {
-                    if let categories {
-                        callback([NSNull(), RNZohoSalesIQMobilisten.getFAQCategoryList(categories: categories)])
-                    }
-                }
-            }
-        }
-    }
-    
+
     @objc(getChat:callback:)
     func getChat(_ chatId: String, callback: @escaping RCTResponseSenderBlock) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1189,6 +1000,10 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 } else if let chat = chat {
                     let chatDict = RNZohoSalesIQMobilisten.getChatObject(chat: chat)
                     callback([NSNull(), chatDict])
+                } else {
+                    // Success with no conversation object (e.g. queued): resolve with null so the
+                    // JS promise/callback always settles instead of hanging forever.
+                    callback([NSNull(), NSNull()])
                 }
             }
         }
@@ -1218,7 +1033,20 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
         }
     }
-    
+
+    @objc
+    func getChatsList(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        RNZohoSalesIQMobilisten.mainThread {
+            ZohoSalesIQ.Chat.getList(filter: .all) { error, chats in
+                if let error = error {
+                    reject("\(error.code)", error.localizedDescription, error)
+                } else {
+                    resolve(chats.map { RNZohoSalesIQMobilisten.getChatList(chats: $0) } ?? [])
+                }
+            }
+        }
+    }
+
     @objc(getChatsWithFilter:listCallback:)
     func getChatsWithFilter(_ status: String, callback: @escaping RCTResponseSenderBlock) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1325,7 +1153,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
         }
     }
-    
+
     @objc(getKnowledgeBaseSingleResource:id:callback:)
     func getKnowledgeBaseSingleResource(_ type: String, articleID: String, callback: @escaping RCTResponseSenderBlock) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1411,35 +1239,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             callback([NSNumber(value: isSDKMessage)])
         }
     }
-    
-    @objc(openArticle:articlesCallback:)
-    func openArticle(_ id: String, callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.FAQ.openArticle(articleID: id) { error in
-                if let error = error {
-                    let errorDictionary = RNZohoSalesIQMobilisten.getErrorObject(error: error)
-                    callback([errorDictionary])
-                } else {
-                    callback([NSNull()])
-                }
-            }
-        }
-    }
-    
-    @objc(openChat)
-    func openChat() {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.show(referenceID: nil, new: false)
-        }
-    }
-    
-    @objc(openChatWithID:)
-    func openChatWithID(_ id: String) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.show(referenceID: id, new: false)
-        }
-    }
-    
+
     @objc(openKnowledgeBase:id:callback:)
     func openKnowledgeBase(_ type: String, articleID: String, callback: @escaping RCTResponseSenderBlock) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1456,43 +1256,15 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
         }
     }
-    
-    @objc(performCustomAction:shouldOpenChatWindow:)
-    func performCustomAction(_ actionName: String, shouldOpenChatWindow: Bool) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Visitor.performCustomAction(actionName, shouldOpenChatWindow: shouldOpenChatWindow)
-        }
-    }
-    
-    @objc(present:id:callback:)
-    func present(tab: String?, referenceId: String?, callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            var tabNumber: NSNumber?
-            
-            if tab == self.TAB_CONVERSATIONS {
-                tabNumber = NSNumber(value: 0)
-            } else if tab == self.TAB_FAQ || tab == self.TAB_KNOWLEDGE_BASE {
-                tabNumber = NSNumber(value: 1)
-            }
-            
-            ZohoSalesIQ.present(tabBarItem: tabNumber, referenceID: referenceId, shouldShowListView: true) { error, success in
-                let complete = NSNumber(value: success)
-                if let error = error {
-                    let errorDictionary = RNZohoSalesIQMobilisten.getSIQErrorObject(siqError: error)
-                    callback([errorDictionary, [complete]])
-                } else {
-                    callback([NSNull(), [complete]])
-                }
-            }
-        }
-    }
-    
-    
-    @objc(printDebugLogsForAndroid:)
-    func printDebugLogsForAndroid(_ value: Bool) {}
-    
+
     @objc(processNotificationMessage:)
-    func processNotificationMessage(_ extras: [String: Any]) {}
+    func processNotificationMessage(_ extras: [String: Any]) {
+        // No-op on iOS. SalesIQ delivers push over APNs directly (not FCM), so an incoming push is always
+        // received and processed by the native AppDelegate (RNZSIQNotifications.processNotificationWithInfo),
+        // not by JavaScript. Routing the JS `Notification.process(...)` call to the SDK here would
+        // double-process the notification. iOS message handling stays native; JS `process` is Android-only.
+        // (`isSDKMessage` / `getPayload` remain functional as payload utilities.)
+    }
     
     @objc(refreshLauncher)
     func refreshLauncher() {
@@ -1534,31 +1306,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
 
-    @objc(registerVisitorNew:visitorInfo:callback:)
-    func registerVisitorNew(_ uniqueID: String?, visitorInfo: NSDictionary?, callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            let visitorInfoObj = visitorInfo.flatMap { info -> ZSIQVisitorInfo? in
-                let visitorInfo = ZSIQVisitorInfo()
-                if let name = info["name"] as? String {
-                    visitorInfo.name = name
-                }
-                if let email = info["email"] as? String {
-                    visitorInfo.email = email
-                }
-                if let phone = info["phone"] as? String {
-                    visitorInfo.phone = phone
-                }
-                if let customInfo = info["customInfo"] as? [String: String] {
-                    visitorInfo.customInfo = customInfo
-                }
-                return visitorInfo
-            }
-            ZohoSalesIQ.registerVisitor(uniqueID, visitorInfo: visitorInfoObj) { success in
-                callback([NSNull(), success])
-            }
-        }
-    }
-    
     @objc(sendEvent:objects:)
     func sendEvent(_ eventName: String, values: [Any]) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1659,14 +1406,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
         }
     }
-    
-    @objc(setChatTitle:)
-    func setChatTitle(_ chatTitle: String) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setTitle(chatTitle)
-        }
-    }
-    
+
     @objc(setChatWaitingTime:)
     func setChatWaitingTime(_ seconds: Double) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1674,54 +1414,33 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
     
+    @objc(setConversationVisibility:)
+    func setConversationVisibility(_ visible: Bool) {
+        RNZohoSalesIQMobilisten.mainThread {
+            ZohoSalesIQ.Conversation.setVisibility(visible)
+        }
+    }
+
     @objc(setConversationListTitle:)
     func setConversationListTitle(_ title: String) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.Conversation.setTitle(title)
         }
     }
-    
-    @objc(setConversationVisibility:)
-    func setConversationVisibility(_ visibility: Bool) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Conversation.setVisibility(visibility)
-        }
-    }
-    
-    @objc(setCustomAction:)
-    func setCustomAction(_ actionName: String) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Tracking.setCustomAction(actionName, shouldOpenChatWindow: false)
-        }
-    }
-    
+
     @objc(setCustomFont:)
     func setCustomFont(_ map: [String: Any]) {}
-    
+
     @objc(setDepartment:)
     func setDepartment(_ department: String) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.Chat.setDepartment(department)
         }
     }
-    
+
     @objc(setDepartments:)
     func setDepartments(_ department: [String]) {}
-    
-    @objc(setFAQVisibility:)
-    func setFAQVisibility(_ visibility: Bool) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.FAQ.setVisibility(visibility)
-        }
-    }
-    
-    @objc(setFeedbackVisibility:)
-    func setFeedbackVisibility(_ visibility: Bool) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.feedback, visible: visibility)
-        }
-    }
-    
+
     @objc(setKnowledgeBaseRecentlyViewedCount:)
     func setKnowledgeBaseRecentlyViewedCount(_ limit: Double) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1759,14 +1478,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     
     @objc(setLauncherPropertiesForAndroid:)
     func setLauncherPropertiesForAndroid(_ launcherPropertiesMap: [String: Any]) {}
-    
-    @objc(setLauncherVisibility:)
-    func setLauncherVisibility(_ show: Bool) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.showLauncher(show)
-        }
-    }
-    
+
     @objc(setLoggerEnabled:)
     func setLoggerEnabled(_ enable: Bool) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1785,7 +1497,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     func setMinimumPressDuration(_ duration: Double) {
         RNZohoSalesIQMobilisten.mainThread {
             guard duration >= 0 else { return }
-            let seconds = CGFloat(duration) / 1000.0
+            let seconds = duration / 1000.0
             ZohoSalesIQ.Launcher.minimumPressDuration(seconds)
         }
     }
@@ -1797,10 +1509,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.Notification.setAction(with: actionSource)
         }
     }
-    
-    @objc(setNotificationIconForAndroid:)
-    func setNotificationIconForAndroid(_ drawableName: String) {}
-    
+
     @objc(setOperatorEmail:)
     func setOperatorEmail(_ email: String) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1814,7 +1523,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.Tracking.setPageTitle(pageTitle)
         }
     }
-    
+
     @objc(setQuestion:)
     func setQuestion(_ question: String) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1822,27 +1531,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
     
-    @objc(setRatingVisibility:)
-    func setRatingVisibility(_ visibility: Bool) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.rating, visible: visibility)
-        }
-    }
-    
-    @objc(setTabOrder:)
-    func setTabOrder(_ orders: [String]) {
-        RNZohoSalesIQMobilisten.mainThread {
-            var sendOrders: [NSNumber] = []
-            for currentObject in orders {
-                if currentObject == self.TAB_CONVERSATIONS {
-                    sendOrders.append(0)
-                } else if currentObject == self.TAB_FAQ || currentObject == self.TAB_KNOWLEDGE_BASE {
-                    sendOrders.append(1)
-                }
-            }
-            ZohoSalesIQ.setTabOrder(sendOrders)
-        }
-    }
+
     
     @objc(setThemeColor:)
     func setThemeColor(_ colors: [String: Any]) {
@@ -1899,21 +1588,21 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.Visitor.addInfo(key, value: value)
         }
     }
-    
+
     @objc(setVisitorContactNumber:)
     func setVisitorContactNumber(_ number: String) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.Visitor.setContactNumber(number)
         }
     }
-    
+
     @objc(setVisitorEmail:)
     func setVisitorEmail(_ email: String) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.Visitor.setEmail(email)
         }
     }
-    
+
     @objc(setVisitorLocation:)
     func setVisitorLocation(_ location: [String: Any]) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -1921,7 +1610,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             let visitorLocation = SIQVisitorLocation()
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
-            
+
             if let latitudeValue = location["latitude"] {
                 if let latitude = latitudeValue as? NSNumber {
                     visitorLocation.latitude = latitude
@@ -1929,7 +1618,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                     visitorLocation.latitude = latitude
                 }
             }
-            
+
             if let longitudeValue = location["longitude"] {
                 if let longitude = longitudeValue as? NSNumber {
                     visitorLocation.longitude = longitude
@@ -1937,45 +1626,38 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                     visitorLocation.longitude = longitude
                 }
             }
-            
+
             if let zipCode = location["zipCode"] as? String {
                 visitorLocation.zipCode = zipCode
             }
-            
+
             if let city = location["city"] as? String {
                 visitorLocation.city = city
             }
-            
+
             if let state = location["state"] as? String {
                 visitorLocation.state = state
             }
-            
+
             if let country = location["country"] as? String {
                 visitorLocation.country = country
             }
-            
+
             if let countryCode = location["countryCode"] as? String {
                 visitorLocation.countryCode = countryCode
             }
-            
+
             ZohoSalesIQ.Visitor.setLocation(visitorLocation)
         }
     }
-    
+
     @objc(setVisitorName:)
     func setVisitorName(_ name: String) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.Visitor.setName(name)
         }
     }
-    
-    @objc(setVisitorNameVisibility:)
-    func setVisitorNameVisibility(_ visibility: Bool) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.visitorName, visible: visibility)
-        }
-    }
-    
+
     @objc(shouldOpenUrl:)
     func shouldOpenUrl(_ shouldOpen: Bool) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -2021,21 +1703,14 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             ZohoSalesIQ.Chat.showOfflineMessage(visibility)
         }
     }
-    
-    @objc(showOperatorImageInChat:)
-    func showOperatorImageInChat(_ visibility: Bool) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.setVisibility(.attenderImageInChat, visible: visibility)
-        }
-    }
-    
+
     @objc(showOperatorImageInLauncher:)
     func showOperatorImageInLauncher(_ show: Bool) {
         RNZohoSalesIQMobilisten.mainThread {
             ZohoSalesIQ.Chat.setVisibility(.attenderImageOnLauncher, visible: show)
         }
     }
-    
+
     @objc(showPayloadChat:)
     func showPayloadChat(_ result: [String: Any]) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -2050,14 +1725,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
         }
     }
-    
-    @objc(startChat:)
-    func startChat(_ message: String) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.Chat.startChat(question: message)
-        }
-    }
-    
+
     @objc(startNewChat:customChatId:departmentName:callback:)
     func startNewChat(_ question: String, chatId: String?, department: String?, callback: @escaping RCTResponseSenderBlock) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -2068,6 +1736,10 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 } else if let chat = chat {
                     let chatDict = RNZohoSalesIQMobilisten.getChatObject(chat: chat)
                     callback([NSNull(), chatDict])
+                } else {
+                    // Success with no conversation object (e.g. queued): resolve with null so the
+                    // JS promise/callback always settles instead of hanging forever.
+                    callback([NSNull(), NSNull()])
                 }
             }
         }
@@ -2106,6 +1778,10 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 } else if let chat = chat {
                     let chatDict = RNZohoSalesIQMobilisten.getChatObject(chat: chat)
                     callback([NSNull(), chatDict])
+                } else {
+                    // Success with no conversation object (e.g. queued): resolve with null so the
+                    // JS promise/callback always settles instead of hanging forever.
+                    callback([NSNull(), NSNull()])
                 }
             }
         }
@@ -2121,6 +1797,10 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 } else if let chat = chat {
                     let chatDict = RNZohoSalesIQMobilisten.getChatObject(chat: chat)
                     callback([NSNull(), chatDict])
+                } else {
+                    // Success with no conversation object (e.g. queued): resolve with null so the
+                    // JS promise/callback always settles instead of hanging forever.
+                    callback([NSNull(), NSNull()])
                 }
             }
         }
@@ -2216,16 +1896,15 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
     @objc(syncThemeWithOsForAndroid:)
     func syncThemeWithOsForAndroid(_ sync: Bool) {}
 
-    
     @objc(refreshData:resolver:rejecter:)
     func refreshData(_ data: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         RNZohoSalesIQMobilisten.mainThread {
             guard let type = data["type"] as? String else {
-                reject("1200", "Missing refresh data type", nil)
+                reject("-1200", "Missing refresh data type", nil)
                 return
             }
             guard let conversationId = (data["conversationId"] as? String) ?? (data["id"] as? String), !conversationId.isEmpty else {
-                reject("1201", "Missing conversation identifier", nil)
+                reject("-1201", "Missing conversation identifier", nil)
                 return
             }
             let refreshType = type.lowercased()
@@ -2245,7 +1924,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             } else if refreshType == "secretfields" {
                 ZohoSalesIQ.refreshData(.secretFields(conversationId), completion: handleRefreshResponse)
             } else {
-                reject("1202", "Unsupported refresh data type", nil)
+                reject("-1202", "Unsupported refresh data type", nil)
             }
         }
     }
@@ -2269,7 +1948,7 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
         }
     }
-    
+
     @objc(unregisterAllChatActions)
     func unregisterAllChatActions() {
         RNZohoSalesIQMobilisten.mainThread {
@@ -2293,15 +1972,6 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
         }
     }
 
-    @objc(unregisterVisitorNew:callback:)
-    func unregisterVisitorNew(_ registerAsGuest: Bool, callback: @escaping RCTResponseSenderBlock) {
-        RNZohoSalesIQMobilisten.mainThread {
-            ZohoSalesIQ.unregisterVisitor(registerGuest: registerAsGuest) { success in
-                callback([NSNull(), success])
-            }
-        }
-    }
-    
     @objc(updateListener:)
     func updateListener(_ eventName: String) {
         RNZohoSalesIQMobilisten.mainThread {
@@ -2368,6 +2038,8 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
                 flag = .getSecretFieldsTimeout
             case self.DISPLAY_FIELDS_PROVIDER_TIMEOUT:
                 flag = .getDisplayFieldsTimeout
+            case self.DONT_NEED_HOMEPAGE_IN_START_FLOW:
+                flag = .dontNeedHomePageInStartFlow
             default:
                 flag = nil
             }
@@ -2379,4 +2051,242 @@ class RNZohoSalesIQMobilisten: RCTEventEmitter, ZohoSalesIQDelegate, ZohoSalesIQ
             }
         }
     }
+
+    // MARK: - Homepage APIs
+
+    @objc(setHomepageEnabled:)
+    func setHomepageEnabled(_ enabled: Bool) {
+        RNZohoSalesIQMobilisten.mainThread {
+            ZohoSalesIQ.Homepage.setEnabled(enabled)
+        }
+    }
+
+    @objc(setHomepageWidgetVisibility:visible:)
+    func setHomepageWidgetVisibility(_ widget: String, visible: Bool) {
+        RNZohoSalesIQMobilisten.mainThread {
+            let widgetType: SIQWidget?
+            switch widget {
+            case "HOMEPAGE_WIDGET_CHAT": widgetType = .chat
+            case "HOMEPAGE_WIDGET_CALL": widgetType = .call
+            case "HOMEPAGE_WIDGET_ARTICLES": widgetType = .articles
+            case "HOMEPAGE_WIDGET_PREVIOUS_CONVERSATION": widgetType = .previousConversation
+            case "HOMEPAGE_WIDGET_IMAGE_CARD": widgetType = .imageCard
+            case "HOMEPAGE_WIDGET_VIDEO_CARD": widgetType = .videoCard
+            default: widgetType = nil
+            }
+            if let validWidget = widgetType {
+                ZohoSalesIQ.Homepage.setVisibility(validWidget, visible: visible)
+            } else {
+                print("Invalid homepage widget type: \(widget)")
+            }
+        }
+    }
+
+    // MARK: - presentSDK
+
+    @objc(presentSDK:showHomepage:resolver:rejecter:)
+    func presentSDK(_ screenMap: [String: Any], showHomepage: Bool, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        RNZohoSalesIQMobilisten.mainThread {
+            guard let screenType = screenMap["screenType"] as? String else {
+                // No screen provided: open the SDK's default UI.
+                ZohoSalesIQ.Chat.show()
+                resolve(true)
+                return
+            }
+
+            let screen: ZSIQScreen?
+
+            switch screenType {
+            case "conversation":
+                let id = screenMap["id"] as? String
+                let listMap = screenMap["list"] as? [String: Any]
+                let sessionBehaviorMap = screenMap["sessionBehavior"] as? [String: Any]
+                let sessionTypeStr = screenMap["sessionType"] as? String
+
+                let list = parseSIQConversationList(listMap)
+                let sessionBehavior = parseSIQSessionBehavior(sessionBehaviorMap)
+                let sessionType = parseSIQSessionType(sessionTypeStr) ?? .chat
+
+                if let id = id {
+                    // Init 1: Open existing conversation by ID
+                    screen = ZSIQConversation(id: id, sessionType: sessionType, list: list)
+                } else {
+                    // Init 2: Start or resume a conversation
+                    screen = ZSIQConversation(list: list, sessionBehavior: sessionBehavior)
+                }
+
+            case "knowledgeBase":
+                let id = screenMap["id"] as? String
+                screen = ZSIQKnowledgeBase(type: .articles, id: id)
+
+            default:
+                reject("-1", "Unknown screenType: \(screenType)", nil)
+                return
+            }
+
+            guard let validScreen = screen else {
+                reject("-1", "Invalid screen: \(screenType)", nil)
+                return
+            }
+
+            ZohoSalesIQ.present(validScreen, showHomepage: showHomepage) { error, success in
+                if let error = error {
+                    reject("\(error.code)", error.message, nil)
+                } else {
+                    resolve(success)
+                }
+            }
+        }
+    }
+
+    // MARK: - Visitor.updateProfile
+
+    @objc(updateProfile:resolver:rejecter:)
+    func updateProfile(_ profileMap: [String: Any], resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        RNZohoSalesIQMobilisten.mainThread {
+            ZohoSalesIQ.Visitor.updateProfile(parseVisitorProfile(from: profileMap))
+            resolve(nil)
+        }
+    }
+
+    // MARK: - HelpCenter.ask
+
+    @objc(helpCenterAsk:resolver:rejecter:)
+    func helpCenterAsk(_ question: String?, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task { @MainActor in
+            ZohoSalesIQ.HelpCenter.ask(question) { error, success in
+                if let error = error {
+                    reject("\(error.code)", error.message, nil)
+                } else {
+                    resolve(success)
+                }
+            }
+        }
+    }
+
+    // MARK: - New APIs (stubs for iOS - to be implemented by iOS developer)
+
+
+    @objc(disablePush:rejecter:)
+    func disablePush(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        // No-op on iOS: the native SDK exposes no push-disable API.
+        resolve(nil)
+    }
+
+    // MARK: - setUriScheme
+
+    @objc(setUriScheme:)
+    func setUriScheme(_ scheme: [String: Any]) {
+        // Android only: models an Android intent-filter <data> element.
+        // There is no equivalent API in the iOS native SDK.
+    }
+
+
+    // MARK: - Chat offline messages
+
+    @objc(allowChatInOfflineMode:)
+    func allowChatInOfflineMode(_ allow: Bool) {
+        // Android only: the iOS native SDK does not expose an allowChatInOfflineMode API.
+    }
+
+    @objc(setChatOfflineMessage:)
+    func setChatOfflineMessage(_ message: String?) {
+        RNZohoSalesIQMobilisten.mainThread {
+            ZohoSalesIQ.Chat.setOfflineMessage(message)
+        }
+    }
+
+    // MARK: - Notification.getBadgeCount
+
+    @objc(getBadgeCount:rejecter:)
+    func getBadgeCount(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        RNZohoSalesIQMobilisten.mainThread {
+            // iOS does not expose a distinct badge-count API;
+            // the unread message count is the badge-count equivalent.
+            resolve(ZohoSalesIQ.Chat.getUnreadMessageCount())
+        }
+    }
+
+    // MARK: - KnowledgeBase (extended variants)
+
+    @objc(getKnowledgeBaseSingleResourceWithLanguageFallback:id:shouldFallbackToDefaultLanguage:resolver:rejecter:)
+    func getKnowledgeBaseSingleResourceWithLanguageFallback(_ type: String, articleID: String, shouldFallbackToDefaultLanguage: Bool, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        // Note: The iOS native SDK does not expose a language-fallback parameter;
+        // shouldFallbackToDefaultLanguage is Android-only and is ignored here.
+        RNZohoSalesIQMobilisten.mainThread {
+            guard type == self.RESOURCE_ARTICLES else {
+                reject("-100", "Invalid resource type", nil)
+                return
+            }
+            ZohoSalesIQ.KnowledgeBase.getSingleResource(.articles, id: articleID) { success, error, resource in
+                if let error = error {
+                    reject("\(error.code)", error.message, nil)
+                } else if let resource = resource {
+                    resolve(RNZohoSalesIQMobilisten.getResourceObject(resource: resource))
+                } else {
+                    resolve(NSNull())
+                }
+            }
+        }
+    }
+
+    @objc(getKnowledgeBaseResourcesWithChildCategories:departmentID:parentCategoryID:page:limit:searchKey:includeChildCategoryResources:resolver:rejecter:)
+    func getKnowledgeBaseResourcesWithChildCategories(_ type: String, departmentId: String?, parentCategoryId: String?, page: Double, limit: Double, searchKey: String?, includeChildCategoryResources: Bool, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        // Note: The iOS native SDK does not expose includeChildCategoryResources;
+        // the flag is Android-only and is ignored here.
+        RNZohoSalesIQMobilisten.mainThread {
+            guard type == self.RESOURCE_ARTICLES else {
+                reject("-100", "Invalid resource type", nil)
+                return
+            }
+            ZohoSalesIQ.KnowledgeBase.getResources(.articles, departmentId: departmentId, parentCategoryId: parentCategoryId, searchKey: searchKey, page: Int(page), limit: Int(limit)) { success, error, resources, moreDataAvailable in
+                if let error = error {
+                    reject("\(error.code)", error.message, nil)
+                } else {
+                    let resourceArray = RNZohoSalesIQMobilisten.getResourceList(resources: resources ?? [])
+                    resolve(["resources": resourceArray, "moreDataAvailable": moreDataAvailable])
+                }
+            }
+        }
+    }
+
+    // @objc(isLiveChatAvailable:)
+    // func isLiveChatAvailable(_ callback: @escaping RCTResponseSenderBlock) {
+    //     // TODO: Implement - ZohoSalesIQ.isLiveChatAvailable()
+    //     callback([false])
+    // }
+
+    // @objc(isBrandOnline:)
+    // func isBrandOnline(_ callback: @escaping RCTResponseSenderBlock) {
+    //     // TODO: Implement - ZohoSalesIQ.isBrandOnline()
+    //     callback([false])
+    // }
+
+
+    @objc(setThemeSource:)
+    func setThemeSource(_ source: String) {
+        // TODO: Implement - ZohoSalesIQ.setThemeSource()
+    }
+
+    // @objc(getChatDepartments:)
+    // func getChatDepartments(_ callback: @escaping RCTResponseSenderBlock) {
+    //     // TODO: Implement - ZohoSalesIQ.Chat.getDepts()
+    //     callback([[]])
+    // }
+
+    @objc(visitorPerformCustomAction:resolver:rejecter:)
+    func visitorPerformCustomAction(_ actionName: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        RNZohoSalesIQMobilisten.mainThread {
+            ZohoSalesIQ.Visitor.performCustomAction(actionName, shouldOpenChatWindow: false)
+            resolve(nil)
+        }
+    }
+
+    @objc(setSessionId:)
+    func setSessionId(_ id: String) {
+        RNZohoSalesIQMobilisten.mainThread {
+            ZohoSalesIQ.Chat.setUserSessionID(id)
+        }
+    }
 }
+

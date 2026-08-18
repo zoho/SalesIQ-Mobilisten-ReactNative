@@ -8,6 +8,11 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+# Required by @react-native-firebase (used by the 'js' push flow) so the Firebase Swift pods integrate
+# as static frameworks with React Native's default static linkage. See:
+# https://rnfirebase.io/#allow-ios-static-frameworks
+$RNFirebaseAsStaticFramework = true
+
 # If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
 # because `react-native-flipper` depends on (FlipperKit,...) that will be excluded
 #
@@ -17,8 +22,6 @@ prepare_react_native_project!
 #   dependencies: {
 #     ...(process.env.NO_FLIPPER ? { 'react-native-flipper': { platforms: { ios: null } } } : {}),
 # ```
-flipper_config = ENV['NO_FLIPPER'] == "1" ? FlipperConfiguration.disabled : FlipperConfiguration.enabled
-
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -40,6 +43,12 @@ target 'mobilistensampleapp' do
   )
 
   # pod 'RNZohoSalesIQ', :path => '../node_modules/@react-native-zohosalesiq/mobilisten/ios'
+
+  # Required by @react-native-firebase (used by the 'js' push flow). The Firebase Swift pods build as
+  # static libraries (see $RNFirebaseAsStaticFramework above), and to import GoogleUtilities from Swift
+  # in that mode it must generate a module map. Without this, `pod install` fails with:
+  # "The Swift pod `FirebaseCoreInternal` depends upon `GoogleUtilities`, which does not define modules."
+  pod 'GoogleUtilities', :modular_headers => true
 
   target 'mobilistensampleappTests' do
     inherit! :complete

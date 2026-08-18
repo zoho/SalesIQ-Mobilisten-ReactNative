@@ -38,6 +38,11 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     }
 
     @ReactMethod
+    override fun getChatsList(promise: Promise) {
+        RNZohoSalesIQ.sharedInstance?.getChatsList(promise)
+    }
+
+    @ReactMethod
     override fun getChatsWithFilter(filter: String, listCallback: Callback) {
         RNZohoSalesIQ.sharedInstance?.getChatsWithFilter(filter, listCallback)
     }
@@ -52,6 +57,7 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
         RNZohoSalesIQ.sharedInstance?.fetchDepartments(promise)
     }
 
+    @ReactMethod
     override fun getCommunicationMode(promise: Promise) {
         RNZohoSalesIQ.sharedInstance?.getCommunicationMode(promise)
     }
@@ -64,26 +70,6 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     @ReactMethod
     override fun isMultipleOpenChatRestricted(callback: Callback) {
         RNZohoSalesIQ.sharedInstance?.isMultipleOpenChatRestricted(callback)
-    }
-
-    @ReactMethod
-    override fun getArticles(articlesCallback: Callback) {
-        RNZohoSalesIQ.sharedInstance?.getArticles(articlesCallback)
-    }
-
-    @ReactMethod
-    override fun getArticlesWithCategoryID(categoryId: String, articlesCallback: Callback) {
-        RNZohoSalesIQ.sharedInstance?.getArticlesWithCategoryID(categoryId, articlesCallback)
-    }
-
-    @ReactMethod
-    override fun getCategories(categoryCallback: Callback) {
-        RNZohoSalesIQ.sharedInstance?.getCategories(categoryCallback)
-    }
-
-    @ReactMethod
-    override fun openArticle(id: String, articlesCallback: Callback) {
-        RNZohoSalesIQ.sharedInstance?.openArticle(id, articlesCallback)
     }
 
     @ReactMethod
@@ -122,11 +108,6 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun setChatTitle(title: String) {
-        RNZohoSalesIQ.sharedInstance?.setChatTitle(title)
-    }
-
-    @ReactMethod
     override fun setChatConversationTitle(onlineTitle: String?, offlineTitle: String?) {
         RNZohoSalesIQ.sharedInstance?.setChatConversationTitle(onlineTitle, offlineTitle)
     }
@@ -157,33 +138,8 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun showOperatorImageInChat(visible: Boolean) {
-        RNZohoSalesIQ.sharedInstance?.showOperatorImageInChat(visible)
-    }
-
-    @ReactMethod
-    override fun setFeedbackVisibility(visible: Boolean) {
-        RNZohoSalesIQ.sharedInstance?.setFeedbackVisibility(visible)
-    }
-
-    @ReactMethod
-    override fun setRatingVisibility(visible: Boolean) {
-        RNZohoSalesIQ.sharedInstance?.setRatingVisibility(visible)
-    }
-
-    @ReactMethod
     override fun showOperatorImageInLauncher(show: Boolean) {
         RNZohoSalesIQ.sharedInstance?.showOperatorImageInLauncher(show)
-    }
-
-    @ReactMethod
-    override fun openChat() {
-        RNZohoSalesIQ.sharedInstance?.openChat()
-    }
-
-    @ReactMethod
-    override fun openChatWithID(chatId: String) {
-        RNZohoSalesIQ.sharedInstance?.openChatWithID(chatId)
     }
 
     @ReactMethod
@@ -197,13 +153,8 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun endChat(chatId: String) {
-        RNZohoSalesIQ.sharedInstance?.endChat(chatId)
-    }
-
-    @ReactMethod
-    override fun setLauncherVisibility(visible: Boolean) {
-        RNZohoSalesIQ.sharedInstance?.setLauncherVisibility(visible)
+    override fun end(chatId: String, promise: Promise) {
+        RNZohoSalesIQ.sharedInstance?.end(chatId, promise)
     }
 
     @ReactMethod
@@ -229,16 +180,6 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     @ReactMethod
     override fun setQuestion(question: String) {
         RNZohoSalesIQ.sharedInstance?.setQuestion(question)
-    }
-
-    @ReactMethod
-    override fun startChat(question: String) {
-        RNZohoSalesIQ.sharedInstance?.startChat(question)
-    }
-
-    @ReactMethod
-    override fun setConversationVisibility(visible: Boolean) {
-        RNZohoSalesIQ.sharedInstance?.setConversationVisibility(visible)
     }
 
     @ReactMethod
@@ -287,19 +228,15 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun present(tabString: String?, id: String?, callback: Callback?) {
-        RNZohoSalesIQ.sharedInstance?.present(tabString, id, callback)
-    }
-
-    @ReactMethod
     override fun setConversationListTitle(title: String) {
         RNZohoSalesIQ.sharedInstance?.setConversationListTitle(title)
     }
 
     @ReactMethod
-    override fun setFAQVisibility(visible: Boolean) {
-        RNZohoSalesIQ.sharedInstance?.setFAQVisibility(visible)
+    override fun setConversationVisibility(visible: Boolean) {
+        RNZohoSalesIQ.sharedInstance?.setConversationVisibility(visible)
     }
+
 
     @ReactMethod
     override fun registerVisitor(uniqueId: String, callback: Callback?) {
@@ -312,40 +249,13 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun registerVisitorNew(
-        uniqueId: String?, visitorInfo: ReadableMap?, callback: Callback?
-    ) {
-        RNZohoSalesIQ.sharedInstance?.registerVisitorNew(uniqueId, visitorInfo, callback)
-    }
-
-    @ReactMethod
-    override fun unregisterVisitorNew(registerAsGuest: Boolean, callback: Callback?) {
-        RNZohoSalesIQ.sharedInstance?.unregisterVisitorNew(registerAsGuest, callback)
-    }
-
-    @ReactMethod
     override fun setPageTitle(title: String) {
         RNZohoSalesIQ.sharedInstance?.setPageTitle(title)
     }
 
     @ReactMethod
-    override fun setCustomAction(actionName: String) {
-        RNZohoSalesIQ.sharedInstance?.setCustomAction(actionName)
-    }
-
-    @ReactMethod
-    override fun performCustomAction(actionName: String, shouldOpenChatWindow: Boolean) {
-        RNZohoSalesIQ.sharedInstance?.performCustomAction(actionName, shouldOpenChatWindow)
-    }
-
-    @ReactMethod
-    override fun enableInAppNotification() {
-        RNZohoSalesIQ.sharedInstance?.enableInAppNotification()
-    }
-
-    @ReactMethod
-    override fun disableInAppNotification() {
-        RNZohoSalesIQ.sharedInstance?.disableInAppNotification()
+    override fun enableInAppNotification(enabled: Boolean) {
+        RNZohoSalesIQ.sharedInstance?.enableInAppNotification(enabled)
     }
 
     @ReactMethod
@@ -361,31 +271,6 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     @ReactMethod
     override fun setChatComponentVisibility(chatComponentName: String, visibility: Boolean) {
         RNZohoSalesIQ.sharedInstance?.setChatComponentVisibility(chatComponentName, visibility)
-    }
-
-    @ReactMethod
-    override fun setVisitorNameVisibility(visibility: Boolean) {
-        RNZohoSalesIQ.sharedInstance?.setVisitorNameVisibility(visibility)
-    }
-
-    @ReactMethod
-    override fun enablePreChatForms() {
-        RNZohoSalesIQ.sharedInstance?.enablePreChatForms()
-    }
-
-    @ReactMethod
-    override fun disablePreChatForms() {
-        RNZohoSalesIQ.sharedInstance?.disablePreChatForms()
-    }
-
-    @ReactMethod
-    override fun enableScreenshotOption() {
-        RNZohoSalesIQ.sharedInstance?.enableScreenshotOption()
-    }
-
-    @ReactMethod
-    override fun disableScreenshotOption() {
-        RNZohoSalesIQ.sharedInstance?.disableScreenshotOption()
     }
 
     @ReactMethod
@@ -406,16 +291,6 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     @ReactMethod
     override fun setChatActionTimeout(timeout: Double) {
         RNZohoSalesIQ.sharedInstance?.setChatActionTimeout(timeout)
-    }
-
-    @ReactMethod
-    override fun completeChatAction(uuid: String) {
-        RNZohoSalesIQ.sharedInstance?.completeChatAction(uuid)
-    }
-
-    @ReactMethod
-    override fun completeChatActionWithMessage(uuid: String, success: Boolean, message: String) {
-        RNZohoSalesIQ.sharedInstance?.completeChatActionWithMessage(uuid, success, message)
     }
 
     @ReactMethod
@@ -476,21 +351,6 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     @ReactMethod
     override fun shouldOpenUrl(value: Boolean) {
         RNZohoSalesIQ.sharedInstance?.shouldOpenUrl(value)
-    }
-
-    @ReactMethod
-    override fun setTabOrder(tabNames: ReadableArray) {
-        RNZohoSalesIQ.sharedInstance?.setTabOrder(tabNames)
-    }
-
-    @ReactMethod
-    override fun printDebugLogsForAndroid(value: Boolean) {
-        RNZohoSalesIQ.sharedInstance?.printDebugLogsForAndroid(value)
-    }
-
-    @ReactMethod
-    override fun setNotificationIconForAndroid(drawableName: String) {
-        RNZohoSalesIQ.sharedInstance?.setNotificationIconForAndroid(drawableName)
     }
 
     @ReactMethod
@@ -616,6 +476,7 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
         )
     }
 
+    @ReactMethod
     override fun updateConfiguration(key: String?, value: ReadableMap?) {
         if (key == null) {
             return
@@ -641,6 +502,123 @@ class RNZohoSalesIQMobilisten(private val reactContext: ReactApplicationContext)
     @ReactMethod
     override fun reRegisterPush() {
 
+    }
+
+    @ReactMethod
+    override fun setHomepageEnabled(enabled: Boolean) {
+        RNZohoSalesIQ.sharedInstance?.setHomepageEnabled(enabled)
+    }
+
+    @ReactMethod
+    override fun setHomepageWidgetVisibility(widget: String, visible: Boolean) {
+        RNZohoSalesIQ.sharedInstance?.setHomepageWidgetVisibility(widget, visible)
+    }
+
+    @ReactMethod
+    override fun presentSDK(screen: ReadableMap, showHomepage: Boolean, promise: Promise) {
+        RNZohoSalesIQ.sharedInstance?.presentSDK(screen, showHomepage, promise)
+    }
+
+    @ReactMethod
+    override fun updateProfile(profile: ReadableMap, promise: Promise) {
+        RNZohoSalesIQ.sharedInstance?.updateProfile(profile, promise)
+    }
+
+    @ReactMethod
+    override fun helpCenterAsk(question: String?, promise: Promise) {
+        RNZohoSalesIQ.sharedInstance?.helpCenterAsk(question, promise)
+    }
+
+
+    @ReactMethod
+    override fun disablePush(promise: Promise) {
+        RNZohoSalesIQ.sharedInstance?.disablePush(promise)
+    }
+
+    @ReactMethod
+    override fun setUriScheme(scheme: ReadableMap) {
+        RNZohoSalesIQ.sharedInstance?.setUriScheme(scheme)
+    }
+
+    @ReactMethod
+    override fun allowChatInOfflineMode(allow: Boolean) {
+        RNZohoSalesIQ.sharedInstance?.allowChatInOfflineMode(allow)
+    }
+
+    @ReactMethod
+    override fun setChatOfflineMessage(message: String?) {
+        RNZohoSalesIQ.sharedInstance?.setChatOfflineMessage(message)
+    }
+
+    @ReactMethod
+    override fun getBadgeCount(promise: Promise) {
+        RNZohoSalesIQ.sharedInstance?.getBadgeCount(promise)
+    }
+
+    @ReactMethod
+    override fun getKnowledgeBaseSingleResourceWithLanguageFallback(
+        type: String,
+        id: String,
+        shouldFallbackToDefaultLanguage: Boolean,
+        promise: Promise,
+    ) {
+        RNZohoSalesIQ.sharedInstance?.getKnowledgeBaseSingleResourceWithLanguageFallback(
+            type, id, shouldFallbackToDefaultLanguage, promise
+        )
+    }
+
+    @ReactMethod
+    override fun getKnowledgeBaseResourcesWithChildCategories(
+        type: String,
+        departmentID: String?,
+        parentCategoryID: String?,
+        page: Double,
+        limit: Double,
+        searchKey: String?,
+        includeChildCategoryResources: Boolean,
+        promise: Promise,
+    ) {
+        RNZohoSalesIQ.sharedInstance?.getKnowledgeBaseResourcesWithChildCategories(
+            type,
+            departmentID,
+            parentCategoryID,
+            page.toInt(),
+            limit.toInt(),
+            searchKey,
+            includeChildCategoryResources,
+            promise
+        )
+    }
+
+    // These APIs are not needed for now, will handle if it is needed in future.
+    // @ReactMethod
+    // override fun isLiveChatAvailable(callback: Callback) {
+    //     RNZohoSalesIQ.sharedInstance?.isLiveChatAvailable(callback)
+    // }
+
+    // @ReactMethod
+    // override fun isBrandOnline(callback: Callback) {
+    //     RNZohoSalesIQ.sharedInstance?.isBrandOnline(callback)
+    // }
+
+    @ReactMethod
+    override fun setThemeSource(source: String) {
+        RNZohoSalesIQ.sharedInstance?.setThemeSource(source)
+    }
+
+    // @ReactMethod
+    // override fun getChatDepartments(callback: Callback) {
+    //     RNZohoSalesIQ.sharedInstance?.getChatDepartments(callback)
+    // }
+
+    @ReactMethod
+    override fun visitorPerformCustomAction(actionName: String, promise: Promise) {
+        RNZohoSalesIQ.sharedInstance?.visitorPerformCustomAction(actionName, promise)
+    }
+
+    @ReactMethod
+    override fun setSessionId(id: String) {
+        RNZohoSalesIQ.sharedInstance?.setSessionId(id)
     }
 
     override fun getName(): String {

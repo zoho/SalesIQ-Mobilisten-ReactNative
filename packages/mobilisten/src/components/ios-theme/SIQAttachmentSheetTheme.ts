@@ -1,6 +1,6 @@
 export class SIQAttachmentSheetTheme {
-    backgroundColor = "null";
-    overlayColor = "null";
-    tintColor = "null";
-    separatorColor = "null";
+  backgroundColor = 'null';
+  overlayColor = 'null';
+  tintColor = 'null';
+  separatorColor = 'null';
 }

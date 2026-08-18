@@ -18,10 +18,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     {
         Map extras = remoteMessage.getData();
         RNZohoSalesIQ.handleNotification(MainApplication.Companion.getApplication(), extras);
+        Log.d("Mobilisten", "Push-Notification, onMessageReceived: " + extras.toString());  // No i18N
     }
 
     @Override
     public void onNewToken(String token) {
         RNZohoSalesIQ.enablePush(token,true);
+        Log.d("Mobilisten", "Push-Notification, onNewToken: " + token); // No i18N
     }
 }

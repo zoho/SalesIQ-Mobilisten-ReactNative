@@ -1,90 +1,105 @@
-[![SupportedLanguages](https://img.shields.io/badge/Platforms-iOS%20%7C%20%20Android-green.svg)](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-installation.html) [![Version](https://img.shields.io/badge/version-8.1.0-blue.svg)](https://mobilisten.io/)
+![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android-black.svg)
+![React Native](https://img.shields.io/badge/React%20Native-0.77.2-61dafb.svg)
+![SalesIQ Mobilisten](https://img.shields.io/badge/SalesIQ%20Mobilisten-React%20Native-1a73e8.svg)
 
-# React Native module for SalesIQ Mobilisten SDK
+# Mobilisten sample app — React Native
 
-Connect with customers at every step of their journey Give them the best in-app live chat
-experience with Mobilisten. Mobilisten enables customers to reach you from any screen on your app,
-get their questions answered, and make better purchase decisions.
+A unified showcase of the Zoho SalesIQ Mobilisten SDK for React Native. The app walks through every
+major capability of the SDK — live chat, calls, the visitor API, the launcher, knowledge base,
+help center, notifications, and events — across eleven purpose-built screens that share one design
+system.
 
-## Getting Started
+The SDK is initialized automatically at launch and push registration is automatic; the UI only
+reports status and lets you exercise each API. Nothing here uses deprecated APIs.
 
-[**Mobilisten**](https://mobilisten.io/) is a support chat SDK that comes with a set of highly
-configurable APIs to suit your needs. Get started by generating an `App` and `Access` keys for your
-bundle ID from the SalesIQ console.
+## Features
 
-## Requirements
+Eleven screens, in a fixed order, each mapping to a slice of the SDK:
 
-**iOS**: Minimum deployment target should be set to iOS 11.
+1. **Home** — dashboard for every module, with a hero that reflects the automatic SDK init status
+   (initialized / keys required / failed).
+2. **Core & configuration** — global runtime configuration and live init status. No manual init
+   button; startup is automatic.
+3. **Launcher** — launcher visibility modes, drag-to-dismiss, operator image, and position.
+4. **Visitor** — full visitor profile via `Visitor.updateProfile` (name, email, contact number,
+   custom info), plus registration/deregistration.
+5. **Chat** — start conversations and toggle chat-window components.
+6. **Calls** — audio/video call entry points and live call state via the calls module.
+7. **Knowledge base** — browse and search self-service articles and categories.
+8. **Homepage & help center** — homepage widget visibility and the AI/agent-backed help center.
+9. **Notifications** — push status (registered automatically), in-app notification toggle, action
+   source, and the last received payload.
+10. **Events console** — a live feed of every SDK event across chat, calls, launcher, KB, and
+    notifications.
+11. **Settings** — set your App key / Access key, choose light / dark / system appearance, and view
+    the SDK version.
 
-**Android**: Android API level 21 or above is required.
+## Prerequisites
 
-## Installation
+- Node.js 18 or newer.
+- React Native CLI toolchain for 0.77.2 (see the
+  [React Native environment setup](https://reactnative.dev/docs/environment-setup)).
+- **iOS**: Xcode, CocoaPods, and Ruby (a `Gemfile` is provided for the CocoaPods toolchain).
+- **Android**: JDK 17, Android SDK with `compileSdk`/`targetSdk` 35 and `minSdk` 24.
+- A Zoho SalesIQ account with an App key and Access key for your bundle identifier
+  (`com.mobilistensample` for Android / your iOS bundle id).
 
-Follow the below steps given below to complete installation of **Mobilisten** in your React-Native
-app.
+## Install and run
 
-1. Install the **@react-native-zohosalesiq/mobilisten** package using NPM.
+This example lives inside the plugin workspace, so install from the workspace root first, then run
+from this directory.
 
-```ruby
-npm install @react-native-zohosalesiq/mobilisten --save
+```sh
+# from the repo root (installs the workspace, including this example)
+yarn install
+
+# start the Metro bundler
+cd example
+yarn start
 ```
 
-2. Link the module with the react native app
+In a second terminal:
 
-```ruby
-react-native link @react-native-zohosalesiq/mobilisten
+```sh
+# Android
+yarn android
+
+# iOS — install pods once, then run
+cd ios && pod install && cd ..
+yarn ios
 ```
 
-#### Installation steps for iOS
+Run on a real device (verified) or a simulator/emulator. Calls features are best exercised on a
+physical device.
 
-1. Navigate to the **ios** folder in the project directory and open **Podfile**.
-   Add the "**/ios**" to the path for the **RNZohoSalesIQ** pod as shown below.
+## Adding your App key and Access key
 
-```diff
-- pod 'RNZohoSalesIQ', :path => '../node_modules/@react-native-zohosalesiq/mobilisten'
-+ pod 'RNZohoSalesIQ', :path => '../node_modules/@react-native-zohosalesiq/mobilisten/ios'
-```
+The app ships with placeholder credentials and starts in a graceful "keys required" state until you
+provide real keys.
 
-2. Run the `pod repo update && pod install` command from the **ios** directory.
+- **Recommended:** open the **Settings** screen in the running app, paste your App key and Access
+  key, and save. The SDK re-initializes immediately — no rebuild required.
+- The placeholders live in `state/settings.ts` (`<YOUR_ANDROID_APP_KEY>` /
+  `<YOUR_ANDROID_ACCESS_KEY>` and the iOS pair). Initialization happens automatically in `App.tsx`
+  via `ZohoSalesIQ.initialize(...)` whenever the stored credentials change.
 
-#### Installation steps for Android
+Generate keys for your bundle id from the SalesIQ portal.
 
-1. Navigate to the **android** folder within the project directory using Android Studio or any other
-   platform of choice for Android development.
-   Add the following maven repository to the **build.gradle** file.
+## Screenshots
 
-```ruby
-allprojects {
-      repositories {
-        .....
-          maven { url 'https://maven.zohodl.com' }
-      }
-}
-```
+| Home (light) | Home (scrolled) | Visitor |
+|---|---|---|
+| ![Home](screenshots/home-light.png) | ![Home scrolled](screenshots/home-scrolled.png) | ![Visitor](screenshots/visitor.png) |
 
-2. Click **Sync Now** from the toolbar on the IDE.
+## Design system
 
-## Initializing Mobilisten
+All six Mobilisten sample apps (React Native, Android/Compose, Flutter, Cordova, iOS SwiftUI, iOS
+UIKit) share a single design system — one token set for color, spacing, and type, and the same
+component vocabulary and eleven-screen inventory. See
+[`design/DESIGN_SYSTEM.md`](design/DESIGN_SYSTEM.md). No screen hardcodes a color, size, or font
+value; everything comes from the generated `theme` tokens.
 
-1. Generate `App` and `Access` keys for iOS and Android platforms by providing your bundle id.
-2. Use the **ZohoSalesIQ.init** API with keys for each platform as shown below.
+## Light and dark mode
 
-```js
-import { ZohoSalesIQ } from '@react-native-zohosalesiq/mobilisten';
-
-if (Platform.OS === 'ios'){
-    ZohoSalesIQ.init("ios_app_key","ios_access_key");
-}else{
-    ZohoSalesIQ.init("android_app_key","android_access_key");
-}
-```
-
-3. If you wish to show the default chat launcher, use the [**ZohoSalesIQ.Launcher.show()
-   **](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-launcher-show.html)
-   API (Optional).
-
-## API Documentation
-
-You can find the list of all APIs and their
-documentation [here](https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-add-event-listener.html)
-under the **API Reference** section.
+The app follows the OS appearance by default and provides a light / dark / system override in
+**Settings**. Every color token is defined as a light/dark pair pre-checked for WCAG-AA contrast.

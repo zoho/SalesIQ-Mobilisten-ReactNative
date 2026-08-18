@@ -6,18 +6,21 @@
 //
 
 import Foundation
+import MobilistenCalls
 
 @objc
 public class RNZSIQCallsNotificationService: NSObject {
     @objc
     @MainActor
     public static func enableVoIP(_ token: String, isTestDevice: Bool, isProductionMode: Bool) {
-        RNZohoSalesIQMobilistenCalls.sharedInstance.enableVoIP(token, isTestDevice: isTestDevice, isProductionMode: isProductionMode)
+        let mode = isProductionMode ? "production" : "sandbox"
+        RNZohoSalesIQMobilistenCalls.sharedInstance.enableVoIP(token, isTestDevice: isTestDevice, mode: mode)
     }
-    
+
     @objc
     @MainActor
     public static func handleVoIPNotificationAction(_ info: [AnyHashable : Any], completion: @escaping () -> Void) {
-        RNZohoSalesIQMobilistenCalls.sharedInstance.handleVoIPNotificationAction(info, completion: completion)
+        let stringKeyedInfo = (info as? [String: Any]) ?? [:]
+        RNZohoSalesIQMobilistenCalls.sharedInstance.handleVoIPNotificationAction(stringKeyedInfo, completion: completion)
     }
 }

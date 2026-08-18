@@ -36,6 +36,10 @@ RCT_EXTERN_METHOD(setCallKitIcon:(NSString *)icon);
 
 RCT_EXTERN_METHOD(setAndroidReplyMessages:(NSArray<NSString *> *)messages);
 
+RCT_EXTERN_METHOD(enableVoIP:(NSString *)token isTestDevice:(BOOL)isTestDevice mode:(nullable NSString *)mode);
+
+RCT_EXTERN_METHOD(handleVOIPNotificationAction:(NSDictionary *)info resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject);
+
 
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:

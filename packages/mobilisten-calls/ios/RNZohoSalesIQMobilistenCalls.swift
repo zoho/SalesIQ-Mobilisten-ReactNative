@@ -20,6 +20,7 @@ class RNZohoSalesIQMobilistenCalls: RCTEventEmitter, @unchecked Sendable {
     private let ZSIQ_CALLS_EVENT_LISTENER = "ZSIQ_CALLS_EVENT_LISTENER"
     private let CALL_STATE_CHANGED = "EVENT_STATE_CHANGED"
     private let QUEUE_POSITION_CHANGED = "EVENT_QUEUE_POSITION_CHANGED"
+    private let CALL_ERROR = "EVENT_ERROR"
     
     override func startObserving() {
         hasSIQEventListener = true
@@ -54,7 +55,7 @@ class RNZohoSalesIQMobilistenCalls: RCTEventEmitter, @unchecked Sendable {
     }
     
     override func supportedEvents() -> [String]! {
-        return [ZSIQ_CALLS_EVENT_LISTENER, CALL_STATE_CHANGED, QUEUE_POSITION_CHANGED]
+        return [ZSIQ_CALLS_EVENT_LISTENER, CALL_STATE_CHANGED, QUEUE_POSITION_CHANGED, CALL_ERROR]
     }
     
     override func constantsToExport() -> [AnyHashable : Any]! {
@@ -138,7 +139,7 @@ class RNZohoSalesIQMobilistenCalls: RCTEventEmitter, @unchecked Sendable {
                 } else if let callConversation = conversation as? SalesIQCall {
                     resolve(self.getCallConversationDict(callConversation))
                 } else {
-                    reject("401", "No ongoing call present", nil)
+                    reject("-401", "No ongoing call present", nil)
                 }
             }
         }
@@ -263,6 +264,16 @@ extension RNZohoSalesIQMobilistenCalls: ZohoSalesIQCallDelegate {
     func callStateDidChange(for state: MobilistenCallsCore.SalesIQCallState) {
         if hasSIQEventListener {
             sendRCTEvent(withName: ZSIQ_CALLS_EVENT_LISTENER, body: RNZohoSalesIQMobilistenCalls.getEventEmitterObject(CALL_STATE_CHANGED, body: getCallStatus(state)))
+        }
+    }
+
+    // Forward native call failures to JS as an ERROR event. Payload mirrors Android
+    // (SalesIQCallsListener.onError) so both platforms deliver the same { code, message } shape.
+    // Signature verified against MobilistenCallsCore.swiftinterface: didFailWithError(call:error:).
+    func didFailWithError(call: SIQVisitorChat?, error: CallError) {
+        if hasSIQEventListener {
+            let errorDict: [String: Any] = ["code": error.code, "message": error.message]
+            sendRCTEvent(withName: ZSIQ_CALLS_EVENT_LISTENER, body: RNZohoSalesIQMobilistenCalls.getEventEmitterObject(CALL_ERROR, body: errorDict))
         }
     }
     
@@ -454,17 +465,38 @@ extension RNZohoSalesIQMobilistenCalls {
 }
 
 extension RNZohoSalesIQMobilistenCalls {
-    func enableVoIP(_ token: String, isTestDevice: Bool, isProductionMode: Bool) {
+    // MARK: - enableVoIP
+    @objc(enableVoIP:isTestDevice:mode:)
+    func enableVoIP(_ token: String, isTestDevice: Bool, mode: String?) {
         Task { @MainActor in
-            ZohoSalesIQCalls.enableVoIP(token, isTestDevice: isTestDevice, mode: isProductionMode ? .production : .sandbox)
+            let apnsMode: APNSMode = (mode == "sandbox") ? .sandbox : .production
+            ZohoSalesIQCalls.enableVoIP(token, isTestDevice: isTestDevice, mode: apnsMode)
         }
     }
 
-    func handleVoIPNotificationAction(_ info: [AnyHashable: Any], completion: @escaping () -> Void) {
+    // MARK: - handleVoIPNotificationAction (native entry points)
+    /// Completion-based VoIP action handler for native callers (AppDelegate / notification
+    /// service). Runs the SDK call synchronously on the main actor — unlike the Promise
+    /// variant below, which hops through a `Task` — so CallKit's incoming call is reported
+    /// inside the VoIP push callback, satisfying iOS's synchronous-report requirement.
+    @MainActor
+    func handleVoIPNotificationAction(_ info: [String: Any], completion: @escaping () -> Void) {
         nonisolated(unsafe) let info = info
         nonisolated(unsafe) let completion = completion
+        ZohoSalesIQCalls.handleVOIPNotificationAction(info) { @Sendable in
+            completion()
+        }
+    }
+
+    // MARK: - handleVOIPNotificationAction (JS bridge)
+    @objc(handleVOIPNotificationAction:resolver:rejecter:)
+    func handleVOIPNotificationAction(_ info: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        nonisolated(unsafe) let info = info
+        nonisolated(unsafe) let resolve = resolve
         Task { @MainActor in
-            ZohoSalesIQCalls.handleVOIPNotificationAction(info, completion: completion)
+            ZohoSalesIQCalls.handleVOIPNotificationAction(info) { @Sendable in
+                resolve(nil)
+            }
         }
     }
 }

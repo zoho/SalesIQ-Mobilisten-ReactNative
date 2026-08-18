@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>mobilistensampleapp</string>
+	<string>Mobilisten</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -32,19 +32,32 @@
 		<true/>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string></string>
+	<string>Allow access to Bluetooth so you can use a Bluetooth headset during audio and video calls in chat support.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string></string>
+	<string>Allow access to Bluetooth so you can use a Bluetooth headset during audio and video calls in chat support.</string>
 	<key>NSCameraUsageDescription</key>
-	<string></string>
+	<string>Allow access to your camera so you can share photos and make video calls with support agents in chat.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Allow access to your location so you can share it with support agents when you need location-based help in chat.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string></string>
+	<string>Allow access to your microphone so you can send voice messages and make audio and video calls with support agents in chat.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string></string>
+	<string>Allow access to your photo library so you can save photos and files shared by support agents in chat.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string></string>
+	<string>Allow access to your photo library so you can share photos and files with support agents in chat.</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
+	<key>SIQPushMode</key>
+	<string>js</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>MaterialCommunityIcons.ttf</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>voip</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

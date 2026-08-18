@@ -1,7 +1,7 @@
-import RNZohoSalesIQ, { RNZohoSalesIQEmitter } from "../../commons/utils";
-import { LauncherProps } from "../../types/Listener";
-import { type ZSIQLauncherTypes, ZSIQLauncherModes } from "./types/Launcher";
-import { LauncherEvent } from "./types/Listener";
+import RNZohoSalesIQ, { RNZohoSalesIQEmitter } from '../../commons/utils';
+import { LauncherProps } from '../../types/Listener';
+import { type ZSIQLauncherTypes, ZSIQLauncherModes } from './types/Launcher';
+import { LauncherEvent } from './types/Listener';
 
 export const ZSIQLauncher = {
   Launcher: {
@@ -18,10 +18,16 @@ export const ZSIQLauncher = {
     setMinimumPressDuration: function (duration) {
       RNZohoSalesIQ.setMinimumPressDuration(duration);
     },
+    showOperatorImage: function (show) {
+      RNZohoSalesIQ.showOperatorImageInLauncher(show);
+    },
     addListener: function (callback) {
-      return RNZohoSalesIQEmitter.addListener("LAUNCHER_EVENT_LISTENER", callback);
+      return RNZohoSalesIQEmitter.addListener(
+        'LAUNCHER_EVENT_LISTENER',
+        callback
+      );
     },
     Event: LauncherEvent,
-    ...LauncherProps
+    ...LauncherProps,
   },
 } as ZSIQLauncherTypes;

@@ -1,3 +1,3 @@
 export class SIQEmailTranscriptTheme {
-    textFieldTintColor = "null";
+  textFieldTintColor = 'null';
 }

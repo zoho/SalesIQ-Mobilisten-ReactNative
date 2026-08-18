@@ -1,85 +1,197 @@
-import React from "react";
-import { NavigationProp, useFocusEffect } from "@react-navigation/native";
-import { SafeAreaView, ScrollView, View } from "react-native";
-import { styles } from "../styles/styles";
-import SalesIQLogoComponent from "../components/SalesIQLogoComponent";
-import ButtonComponent from "../components/ButtonComponent";
-import LauncherVisibilitySegmentedComponent from "../components/LauncherVisibilitySegmentedComponent";
-import Divider from "../components/Divider";
-import RegisteredUserComponent from "../components/RegisteredUserComponent";
-import SetLanguageComponent from "../components/SetLanguageComponent";
-import { ZohoSalesIQ } from "@react-native-zohosalesiq/mobilisten";
+import React from 'react';
+import {Pressable, View} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const HomeScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
-    useFocusEffect(() => {
-        /*
-        This API lets you set an apt title for each and every screen in your application,
-        thus making it easy for you to track down the trail of your visitors when they navigate through the screens of your mobile app.
-        It will be visible within the Activity section in the chat window.
-        Refer https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-set-tracking-title.html
-      */
-        ZohoSalesIQ.setPageTitle("Home Screen");
-    });
+import useTheme from '../theme/useTheme';
+import type {RootStackParamList} from '../navigation';
+import ScreenScaffold from '../components/ui/ScreenScaffold';
+import Card from '../components/ui/Card';
+import Section from '../components/ui/Section';
+import ListRow from '../components/ui/ListRow';
+import AppText from '../components/ui/AppText';
+import {AppIcons} from '../components/ui/icons';
+import {useSettings} from '../state/settings';
 
-    const openSalesIQSupport = () => {
-        ZohoSalesIQ.openChat(); //This API is used to open the SalesIQ SDK from the custom launcher view
-    };
+type NavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
-    const trackVisitorActions = () => {
-        /*
-            This API would let you track specified custom actions performed by the visitors in your mobile application.
-            The actions will be visible within the Activity section in the chat window.
+/** Screen 01 — dashboard for every module; the hero reflects automatic SDK init. */
+const HomeScreen = () => {
+  const {colors} = useTheme();
+  const navigation = useNavigation<NavProp>();
+  const {initStatus, initError} = useSettings();
 
-            You can also use this API to open the chat window and trigger a new chat based on the performed custom action
-            by setting the shouldOpenChatWindow parameter to true. By default, the shouldOpenChatWindow parameter is set to false.
-            Refer https://www.zoho.com/salesiq/help/developer-section/react-native-sdk-tracking-set-custom-actions.html
-        */
-        ZohoSalesIQ.performCustomAction("Added to cart");
-    };
+  const heroCopy =
+    initStatus === 'initialized'
+      ? {
+          title: 'SDK initialized at launch',
+          body: 'Brand online · chat & calls available',
+        }
+      : initStatus === 'keysRequired'
+      ? {
+          title: 'Keys required',
+          body: 'Add your app key and access key in Settings to initialize',
+        }
+      : initStatus === 'failed'
+      ? {
+          title: 'Initialization failed',
+          body: initError ?? 'Check Settings for details and retry',
+        }
+      : {
+          title: 'Initializing…',
+          body: 'The SDK starts automatically at launch',
+        };
 
-    return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView style={[styles.container, {marginHorizontal: 15}]}>
-                <SalesIQLogoComponent />
-                <ButtonComponent
-                    title="Open SalesIQ support"
-                    onPress={openSalesIQSupport}
-                />
-                <LauncherVisibilitySegmentedComponent />
-                <Divider />
+  const dotColor =
+    initStatus === 'initialized'
+      ? colors.secondary
+      : initStatus === 'failed'
+      ? colors.danger
+      : colors.accent;
 
-                <RegisteredUserComponent />
-                <Divider />
+  return (
+    <ScreenScaffold
+      title="Mobilisten"
+      subtitle="SalesIQ SDK showcase"
+      showBack={false}
+      headerRight={
+        <Pressable
+          onPress={() => navigation.navigate('Settings')}
+          accessibilityRole="button"
+          accessibilityLabel="Settings"
+          hitSlop={8}
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: 10,
+            backgroundColor: colors.tintPrimary,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <MaterialCommunityIcons
+            name={AppIcons.settings}
+            size={20}
+            color={colors.primary}
+          />
+        </Pressable>
+      }>
+      <Card>
+        <View style={{padding: 15, gap: 7}}>
+          <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+            <View
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: dotColor,
+              }}
+            />
+            <AppText variant="subhead" weight="600" style={{fontSize: 13}}>
+              {heroCopy.title}
+            </AppText>
+          </View>
+          <AppText variant="caption" tone="secondary" style={{lineHeight: 17}}>
+            {heroCopy.body}
+          </AppText>
+        </View>
+      </Card>
 
-                <ButtonComponent
-                    title="Set visitor details"
-                    onPress={() =>
-                        navigation.navigate("SetVisitorDetailsScreen", {
-                            name: "Set Visitor Details Screen",
-                        })
-                    }
-                />
-                <SetLanguageComponent />
-                <Divider />
+      <Section title="Demo app">
+        <Card>
+          <ListRow
+            title="Zylker store"
+            subtitle="A shopping app with SalesIQ built in"
+            icon="homepage"
+            tint="primary"
+            chevron
+            onPress={() => navigation.navigate('Store')}
+          />
+        </Card>
+      </Section>
 
-                <ButtonComponent
-                    title="Track visitor actions"
-                    onPress={trackVisitorActions}
-                    outlinedButtonStyle={undefined}
-                />
-                <View>
-                    <ButtonComponent
-                        title="Fetch SalesIQ data"
-                        onPress={() =>
-                            navigation.navigate("FetchSalesIQDataScreen", {
-                                name: "Fetch SalesIQ Data Screen",
-                            })
-                        }
-                    />
-                </View>
-            </ScrollView>
-        </SafeAreaView>
-    );
+      <Section title="Engage">
+        <Card>
+          <ListRow
+            title="Chat"
+            subtitle="Start & manage conversations"
+            icon="chat"
+            tint="primary"
+            chevron
+            onPress={() => navigation.navigate('Chat')}
+          />
+          <ListRow
+            title="Calls"
+            subtitle="Voice calls & history"
+            icon="calls"
+            tint="secondary"
+            chevron
+            onPress={() => navigation.navigate('Calls')}
+          />
+          <ListRow
+            title="Launcher"
+            subtitle="Visibility & position"
+            icon="launcher"
+            tint="accent"
+            chevron
+            onPress={() => navigation.navigate('Launcher')}
+          />
+        </Card>
+      </Section>
+
+      <Section title="Audience & content">
+        <Card>
+          <ListRow
+            title="Visitor"
+            icon="visitor"
+            tint="secondary"
+            chevron
+            onPress={() => navigation.navigate('Visitor')}
+          />
+          <ListRow
+            title="Knowledge base"
+            icon="knowledgeBase"
+            tint="accent"
+            chevron
+            onPress={() => navigation.navigate('KnowledgeBase')}
+          />
+          <ListRow
+            title="Homepage & help center"
+            icon="homepage"
+            tint="primary"
+            chevron
+            onPress={() => navigation.navigate('HomepageHelpCenter')}
+          />
+        </Card>
+      </Section>
+
+      <Section title="System">
+        <Card>
+          <ListRow
+            title="Core & configuration"
+            icon="core"
+            tint="primary"
+            chevron
+            onPress={() => navigation.navigate('Core')}
+          />
+          <ListRow
+            title="Notifications"
+            icon="notifications"
+            tint="accent"
+            chevron
+            onPress={() => navigation.navigate('Notifications')}
+          />
+          <ListRow
+            title="Events console"
+            icon="events"
+            tint="secondary"
+            chevron
+            onPress={() => navigation.navigate('Events')}
+          />
+        </Card>
+      </Section>
+    </ScreenScaffold>
+  );
 };
 
 export default HomeScreen;

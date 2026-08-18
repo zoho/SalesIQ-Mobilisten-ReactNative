@@ -7,17 +7,13 @@
     </style>
 
     <!--    When syncThemeWithOS() API is set to true, Device is in Light Mode, SalesIQ in Light mode with DarkActionBar-->
-    <style name="Theme.SalesIQ.Base.DarkActionBar" parent="Theme.SalesIQ.Light">
-        <item name="siq_launcher_backgroundcolor">#E50914</item>
-        <item name="siq_launcher_unreadbadge_backgroundcolor">#FFFFFF</item>
-        <item name="siq_launcher_unreadbadge_textcolor">#000000</item>
+    <style name="Theme.SalesIQ.Base.DarkActionBar" parent="Theme.SalesIQ.Light.DarkActionBar">
+        <item name="colorAccent">#c2151e</item>
     </style>
 
     <!--    When syncThemeWithOS() API is set to true, Device is in Dark Mode, SalesIQ in Light mode with DarkActionBar-->
     <style name="Theme.SalesIQ.Base.Dark" parent="Theme.SalesIQ.Dark">
-        <item name="siq_launcher_backgroundcolor">#018786</item>
-        <item name="siq_launcher_unreadbadge_backgroundcolor">#000000</item>
-        <item name="siq_launcher_unreadbadge_textcolor">#FFFFFF</item>
+        <item name="colorAccent">#c2151e</item>
     </style>
 
 </resources>

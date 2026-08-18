@@ -1,4 +1,35 @@
+pluginManagement { includeBuild("../../node_modules/@react-native/gradle-plugin") }
+plugins { id("com.facebook.react.settings") }
+
+// Monorepo autolinking (RN 0.75+).
+//
+// The react settings plugin spawns `node <cli.js> config` via a raw ProcessBuilder that inherits
+// only the Gradle daemon's PATH. When node is provided by a version manager (nvm/fnm/asdf) it is
+// not on that PATH, so the default `autolinkLibrariesFromCommand()` fails with exit code 1.
+// Resolve an absolute node binary through a login shell so the command works regardless of how
+// node is installed, and point the CLI at the repo-root react-native (deps are hoisted there).
+def nodeBinary = "node"
+try {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine "bash", "-lc", "command -v node"
+        standardOutput = stdout
+        ignoreExitValue = true
+    }
+    def resolved = stdout.toString().trim()
+    if (resolved) {
+        nodeBinary = resolved
+    }
+} catch (ignored) {
+    // Fall back to bare "node" (relies on PATH).
+}
+
+extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
+    ex.autolinkLibrariesFromCommand(
+        [nodeBinary, "../node_modules/react-native/cli.js", "config"]
+    )
+}
+
 rootProject.name = 'mobilistensampleapp'
-apply from: file("$rootDir/../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 include ':app'
 includeBuild('../../node_modules/@react-native/gradle-plugin')

@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- NATIVE push flow: the app's own MyFirebaseMessagingService (declared in the main manifest) is the
+         FCM entry point. @react-native-firebase's messaging service is auto-merged from the library, so
+         remove it here — only one FirebaseMessagingService may receive com.google.firebase.MESSAGING_EVENT. -->
+    <application>
+        <service
+            android:name="io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService"
+            tools:node="remove" />
+    </application>
+</manifest>

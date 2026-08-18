@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="zsiq_disable_encrypted_shared_preferences">false</bool>
+    <bool name="zsiq_internal_api_for_testing_force_fail_encrypted_shared_preferences">false</bool>
+    <bool name="zsiq_internal_api_for_testing_print_debug_logs">true</bool>
+    <bool name="zsiq_utilise_conversation_attributes_only_for_call_screen">false</bool>
+    <bool name="zsiq_mobilisten_allow_video_compressing">true</bool>
+
+    <bool name="zsiq_mobilisten_allow_sending_message_on_no_internet_connection">false</bool>
+    <bool name="zsiq_mobilisten_prevent_pii_in_vts_socket_url">true</bool>
+</resources>

@@ -25,8 +25,18 @@ export const ZSIQKnowledgeBase = {
     open: function (type, id, callback) {
       RNZohoSalesIQ.openKnowledgeBase(type, id, callback);
     },
-    getSingleResource: function (type, id, callback) {
-      RNZohoSalesIQ.getKnowledgeBaseSingleResource(type, id, callback);
+    getSingleResource: function (type, id, third: any = undefined) {
+      if (typeof third === 'boolean') {
+        // Extended signature: getSingleResource(type, id, shouldFallbackToDefaultLanguage)
+        // returns a Promise<Resource>.
+        return RNZohoSalesIQ.getKnowledgeBaseSingleResourceWithLanguageFallback(
+          type,
+          id,
+          third
+        );
+      }
+      // Legacy signature: getSingleResource(type, id, callback) — `third` is the callback.
+      RNZohoSalesIQ.getKnowledgeBaseSingleResource(type, id, third);
     },
     getResources: function (
       type,
@@ -35,8 +45,23 @@ export const ZSIQKnowledgeBase = {
       page = 1,
       limit = 99,
       searchKey = null,
-      callback
+      seventh: any = undefined
     ) {
+      if (typeof seventh === 'boolean') {
+        // Extended signature: getResources(type, departmentId, parentCategoryId, page, limit,
+        //                     searchKey, includeChildCategoryResources) returns a Promise.
+        return RNZohoSalesIQ.getKnowledgeBaseResourcesWithChildCategories(
+          type,
+          departmentId,
+          parentCategoryId,
+          page,
+          limit,
+          searchKey,
+          seventh
+        );
+      }
+      // Legacy signature: getResources(type, departmentId, parentCategoryId, page, limit,
+      //                   searchKey, callback) — `seventh` is the callback.
       RNZohoSalesIQ.getKnowledgeBaseResources(
         type,
         departmentId,
@@ -44,7 +69,7 @@ export const ZSIQKnowledgeBase = {
         page,
         limit,
         searchKey,
-        callback
+        seventh
       );
     },
     getCategories: function (
@@ -61,7 +86,10 @@ export const ZSIQKnowledgeBase = {
       );
     },
     addListener: function (callback) {
-      return RNZohoSalesIQEmitter.addListener("KNOWLEDGEBASE_EVENT_LISTENER", callback);
+      return RNZohoSalesIQEmitter.addListener(
+        'KNOWLEDGEBASE_EVENT_LISTENER',
+        callback
+      );
     },
     Event: KnowledgeBaseListenerEvent,
   },

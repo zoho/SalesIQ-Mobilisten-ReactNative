@@ -10,6 +10,8 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.zoho.livechat.android.modules.common.ui.result.entities.CallError
+import com.zoho.livechat.android.modules.conversations.models.SalesIQConversation
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.sendPromise
 import com.zoho.salesiq.core.reactlibrary.RNZohoSalesIQCore.Companion.toSalesIQConversationMap
@@ -48,11 +50,6 @@ class RNZohoSalesIQCalls private constructor(reactContext: ReactApplicationConte
 
     private class RNSalesIQCallsListener : SalesIQCallsListener {
         override fun onCallStateChanged(callState: ZohoSalesIQCalls.SalesIQCallState) {
-            val callState = if (callState.status == ZohoSalesIQCalls.SalesIQCallStatus.ON_HOLD) {
-                callState.copy(status = ZohoSalesIQCalls.SalesIQCallStatus.CONNECTED)
-            } else {
-                callState
-            }
             eventEmitter(
                 ZSIQ_CALLS_EVENT_LISTENER, RNZohoSalesIQCore.getEventEmitterObjectWithMap(
                     EVENT_STATE_CHANGED, callState.toWritableMap()
@@ -65,6 +62,16 @@ class RNZohoSalesIQCalls private constructor(reactContext: ReactApplicationConte
                 ZSIQ_CALLS_EVENT_LISTENER, RNZohoSalesIQCore.getEventEmitterObjectWithMap(
                     EVENT_QUEUE_POSITION_CHANGED, mapOf(
                         "conversationId" to conversationId, "position" to position
+                    ).toWritableMap()
+                )
+            )
+        }
+
+        override fun onError(error: CallError) {
+            eventEmitter(
+                ZSIQ_CALLS_EVENT_LISTENER, RNZohoSalesIQCore.getEventEmitterObjectWithMap(
+                    EVENT_ERROR, mapOf(
+                        "code" to error.code, "message" to error.message
                     ).toWritableMap()
                 )
             )
@@ -166,6 +173,19 @@ class RNZohoSalesIQCalls private constructor(reactContext: ReactApplicationConte
 
     }
 
+    @ReactMethod
+    fun enableVoIP(token: String?, isTestDevice: Boolean, mode: String?) {
+        // iOS only: VoIP (PushKit) registration. On Android, call notifications are
+        // delivered through FCM via ZohoSalesIQ.Notification.registerPush.
+    }
+
+    @ReactMethod
+    fun handleVOIPNotificationAction(info: ReadableMap?, promise: Promise) {
+        // iOS only: VoIP (PushKit) notification handling. Resolve immediately so the
+        // JS promise never hangs on Android.
+        promise.resolve(null)
+    }
+
     companion object {
 
         private const val TAG = "RNZohoSalesIQCalls" // No I18N
@@ -174,6 +194,7 @@ class RNZohoSalesIQCalls private constructor(reactContext: ReactApplicationConte
 
         private const val EVENT_STATE_CHANGED = "EVENT_STATE_CHANGED" // No I18N
         private const val EVENT_QUEUE_POSITION_CHANGED = "EVENT_QUEUE_POSITION_CHANGED" // No I18N
+        private const val EVENT_ERROR = "EVENT_ERROR" // No I18N
         private const val ZSIQ_CALLS_EVENT_LISTENER = "ZSIQ_CALLS_EVENT_LISTENER" // No I18N
 
         private val HANDLER = Handler(Looper.getMainLooper())
